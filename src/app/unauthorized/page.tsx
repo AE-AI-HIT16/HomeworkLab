@@ -51,7 +51,7 @@ export default function UnauthorizedPage() {
 
                         <div className="w-full flex justify-center mb-4">
                             <Link
-                                href="mailto:instructor@hit.edu.vn"
+                                href="mailto:nguyenhuyhoangqbx5@gmail.com"
                                 className="w-full sm:w-auto px-8 py-3 bg-[var(--hw-primary)] text-white font-medium rounded-lg hover:brightness-110 active:scale-95 transition-all text-sm flex items-center justify-center gap-2 shadow-sm"
                             >
                                 Contact Admin

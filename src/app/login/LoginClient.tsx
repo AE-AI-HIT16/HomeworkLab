@@ -230,7 +230,7 @@ export default function LoginClient({ accessDenied, deniedUser }: LoginClientPro
                                         Go back
                                     </button>
                                     <Link
-                                        href="mailto:instructor@hit.edu.vn"
+                                        href="mailto:nguyenhuyhoangqbx5@gmail.com"
                                         className="w-full bg-[var(--hw-surface-container-high)] text-[var(--hw-on-surface)] py-3 rounded-lg font-medium hover:brightness-105 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
                                     >
                                         <span className="material-symbols-outlined text-sm">mail</span>
