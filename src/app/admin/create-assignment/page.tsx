@@ -2,14 +2,15 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { useActionState } from "react";
+import { createAssignmentAction, type CreateAssignmentFormState } from "./actions";
 
 export default function CreateAssignmentPage() {
-    const [title, setTitle] = useState("");
-    const [week, setWeek] = useState("Week 1: Fundamentals");
-    const [lesson, setLesson] = useState("Lecture 01: Setup");
-    const [description, setDescription] = useState("");
-    const [dueDate, setDueDate] = useState("");
-    const [points, setPoints] = useState("100");
+    const [state, formAction, isPending] = useActionState<CreateAssignmentFormState, FormData>(
+        createAssignmentAction,
+        {}
+    );
+
     const [fileUpload, setFileUpload] = useState(true);
     const [githubLink, setGithubLink] = useState(false);
 
@@ -113,8 +114,16 @@ export default function CreateAssignmentPage() {
                         </div>
                     </div>
 
-                    {/* Form Sections */}
-                    <div className="space-y-12 pb-20">
+                    {/* Error Message */}
+                    {state.error && (
+                        <div className="mb-6 p-4 bg-[var(--hw-error-container)] text-[var(--hw-on-error-container)] rounded-lg flex items-center gap-3">
+                            <span className="material-symbols-outlined">error</span>
+                            <p className="text-sm font-medium">{state.error}</p>
+                        </div>
+                    )}
+
+                    {/* Form */}
+                    <form action={formAction} className="space-y-12 pb-20">
                         {/* Section 1: Core Identity */}
                         <section>
                             <div className="flex items-center gap-2 mb-6">
@@ -130,11 +139,11 @@ export default function CreateAssignmentPage() {
                                             Assignment Title
                                         </label>
                                         <input
+                                            name="title"
                                             className="w-full bg-[var(--hw-surface-container-low)] border-none rounded-lg p-4 text-[var(--hw-on-surface)] focus:ring-2 focus:ring-[var(--hw-primary)]/10 transition-all placeholder:text-[var(--hw-on-surface-variant)]/40"
                                             placeholder="e.g. Introduction to Recursive Functions"
                                             type="text"
-                                            value={title}
-                                            onChange={(e) => setTitle(e.target.value)}
+                                            required
                                         />
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -143,13 +152,14 @@ export default function CreateAssignmentPage() {
                                                 Week / Module
                                             </label>
                                             <select
+                                                name="week"
                                                 className="w-full bg-[var(--hw-surface-container-low)] border-none rounded-lg p-4 text-[var(--hw-on-surface)] focus:ring-2 focus:ring-[var(--hw-primary)]/10 transition-all"
-                                                value={week}
-                                                onChange={(e) => setWeek(e.target.value)}
                                             >
                                                 <option>Week 1: Fundamentals</option>
                                                 <option>Week 2: Advanced Logic</option>
                                                 <option>Week 3: Data Structures</option>
+                                                <option>Week 4: Algorithms</option>
+                                                <option>Week 5: Projects</option>
                                             </select>
                                         </div>
                                         <div>
@@ -157,13 +167,14 @@ export default function CreateAssignmentPage() {
                                                 Lesson Context
                                             </label>
                                             <select
+                                                name="lesson"
                                                 className="w-full bg-[var(--hw-surface-container-low)] border-none rounded-lg p-4 text-[var(--hw-on-surface)] focus:ring-2 focus:ring-[var(--hw-primary)]/10 transition-all"
-                                                value={lesson}
-                                                onChange={(e) => setLesson(e.target.value)}
                                             >
                                                 <option>Lecture 01: Setup</option>
                                                 <option>Lecture 02: Syntax</option>
+                                                <option>Lecture 03: Functions</option>
                                                 <option>Practical 01: Debugging</option>
+                                                <option>Practical 02: Testing</option>
                                             </select>
                                         </div>
                                     </div>
@@ -187,30 +198,29 @@ export default function CreateAssignmentPage() {
                                         </label>
                                         <div className="border border-[var(--hw-outline-variant)]/20 rounded-lg overflow-hidden">
                                             <div className="bg-[var(--hw-surface-container-low)] px-4 py-2 border-b border-[var(--hw-outline-variant)]/10 flex gap-4">
-                                                <button className="text-[var(--hw-on-surface-variant)] hover:text-[var(--hw-primary)]">
+                                                <button type="button" className="text-[var(--hw-on-surface-variant)] hover:text-[var(--hw-primary)]">
                                                     <span className="material-symbols-outlined text-xl">format_bold</span>
                                                 </button>
-                                                <button className="text-[var(--hw-on-surface-variant)] hover:text-[var(--hw-primary)]">
+                                                <button type="button" className="text-[var(--hw-on-surface-variant)] hover:text-[var(--hw-primary)]">
                                                     <span className="material-symbols-outlined text-xl">format_italic</span>
                                                 </button>
-                                                <button className="text-[var(--hw-on-surface-variant)] hover:text-[var(--hw-primary)]">
+                                                <button type="button" className="text-[var(--hw-on-surface-variant)] hover:text-[var(--hw-primary)]">
                                                     <span className="material-symbols-outlined text-xl">format_list_bulleted</span>
                                                 </button>
-                                                <button className="text-[var(--hw-on-surface-variant)] hover:text-[var(--hw-primary)]">
+                                                <button type="button" className="text-[var(--hw-on-surface-variant)] hover:text-[var(--hw-primary)]">
                                                     <span className="material-symbols-outlined text-xl">link</span>
                                                 </button>
                                                 <div className="flex-1" />
-                                                <button className="text-[var(--hw-primary)] text-xs font-bold flex items-center gap-1">
+                                                <button type="button" className="text-[var(--hw-primary)] text-xs font-bold flex items-center gap-1">
                                                     <span className="material-symbols-outlined text-sm">spellcheck</span>
                                                     AI Review
                                                 </button>
                                             </div>
                                             <textarea
+                                                name="description"
                                                 className="w-full border-none p-4 focus:ring-0 text-[var(--hw-on-surface-variant)] leading-relaxed bg-transparent"
                                                 placeholder="Outline the learning objectives, requirements, and resources for this assignment..."
                                                 rows={8}
-                                                value={description}
-                                                onChange={(e) => setDescription(e.target.value)}
                                             />
                                         </div>
                                     </div>
@@ -220,10 +230,9 @@ export default function CreateAssignmentPage() {
                                                 Due Date &amp; Time
                                             </label>
                                             <input
+                                                name="dueDate"
                                                 className="w-full bg-[var(--hw-surface-container-low)] border-none rounded-lg p-4 text-[var(--hw-on-surface)] focus:ring-2 focus:ring-[var(--hw-primary)]/10 transition-all"
                                                 type="datetime-local"
-                                                value={dueDate}
-                                                onChange={(e) => setDueDate(e.target.value)}
                                             />
                                         </div>
                                         <div>
@@ -232,11 +241,11 @@ export default function CreateAssignmentPage() {
                                             </label>
                                             <div className="relative">
                                                 <input
+                                                    name="points"
                                                     className="w-full bg-[var(--hw-surface-container-low)] border-none rounded-lg p-4 text-[var(--hw-on-surface)] focus:ring-2 focus:ring-[var(--hw-primary)]/10 transition-all"
                                                     placeholder="100"
                                                     type="number"
-                                                    value={points}
-                                                    onChange={(e) => setPoints(e.target.value)}
+                                                    defaultValue="100"
                                                 />
                                                 <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-bold text-[var(--hw-on-surface-variant)]/40">
                                                     PTS
@@ -267,6 +276,7 @@ export default function CreateAssignmentPage() {
                                     </div>
                                     <input
                                         type="checkbox"
+                                        name="fileUpload"
                                         checked={fileUpload}
                                         onChange={(e) => setFileUpload(e.target.checked)}
                                         className="rounded border-[var(--hw-outline)] text-[var(--hw-primary)] focus:ring-[var(--hw-primary)]"
@@ -282,6 +292,7 @@ export default function CreateAssignmentPage() {
                                     </div>
                                     <input
                                         type="checkbox"
+                                        name="githubLink"
                                         checked={githubLink}
                                         onChange={(e) => setGithubLink(e.target.checked)}
                                         className="rounded border-[var(--hw-outline)] text-[var(--hw-primary)] focus:ring-[var(--hw-primary)]"
@@ -292,20 +303,33 @@ export default function CreateAssignmentPage() {
 
                         {/* Footer Actions */}
                         <div className="pt-8 border-t border-[var(--hw-surface-container)] flex flex-col sm:flex-row justify-between items-center gap-4">
-                            <button className="w-full sm:w-auto px-8 py-3 rounded-lg text-sm font-bold text-[var(--hw-on-surface-variant)] hover:bg-[var(--hw-surface-container)] transition-all">
-                                Save as Draft
-                            </button>
+                            <Link
+                                href="/dashboard"
+                                className="w-full sm:w-auto px-8 py-3 rounded-lg text-sm font-bold text-[var(--hw-on-surface-variant)] hover:bg-[var(--hw-surface-container)] transition-all text-center"
+                            >
+                                Cancel
+                            </Link>
                             <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
-                                <button className="w-full sm:w-auto px-8 py-3 rounded-lg text-sm font-bold text-[var(--hw-primary)] bg-[var(--hw-primary)]/10 hover:bg-[var(--hw-primary)]/20 transition-all">
-                                    Preview Student View
-                                </button>
-                                <button className="w-full sm:w-auto px-10 py-3 rounded-lg text-sm font-bold text-white bg-[var(--hw-primary)] hover:bg-[var(--hw-primary-container)] shadow-lg shadow-[var(--hw-primary)]/20 transition-all flex items-center justify-center gap-2">
-                                    Publish Assignment
-                                    <span className="material-symbols-outlined text-sm">send</span>
+                                <button
+                                    type="submit"
+                                    disabled={isPending}
+                                    className="w-full sm:w-auto px-10 py-3 rounded-lg text-sm font-bold text-white bg-[var(--hw-primary)] hover:bg-[var(--hw-primary-container)] shadow-lg shadow-[var(--hw-primary)]/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    {isPending ? (
+                                        <>
+                                            <span className="material-symbols-outlined text-sm animate-spin">progress_activity</span>
+                                            Publishing...
+                                        </>
+                                    ) : (
+                                        <>
+                                            Publish Assignment
+                                            <span className="material-symbols-outlined text-sm">send</span>
+                                        </>
+                                    )}
                                 </button>
                             </div>
                         </div>
-                    </div>
+                    </form>
                 </div>
             </main>
         </div>
