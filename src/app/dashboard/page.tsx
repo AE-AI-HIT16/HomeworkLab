@@ -1,181 +1,320 @@
 import { requireSession } from "@/lib/auth";
 import { getCurrentUserRole } from "@/lib/roles";
-import { WeekGroup } from "@/components/WeekGroup";
 import Image from "next/image";
 import Link from "next/link";
 import { getAssignments, getSubmissionsByStudent } from "@/lib/google-sheets";
 import { signOut } from "@/auth";
-import type { Submission } from "@/types";
+import type { Assignment, Submission } from "@/types";
 import EmptyAssignments from "@/components/EmptyAssignments";
+
+function getSubmissionStatus(assignment: Assignment, submission?: Submission) {
+    if (submission) {
+        return { label: "Submitted", type: "submitted" as const };
+    }
+    if (assignment.dueAt) {
+        const due = new Date(assignment.dueAt);
+        const now = new Date();
+        const diffDays = Math.ceil((due.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+        if (diffDays < 0) {
+            return { label: "Overdue", type: "overdue" as const };
+        }
+        if (diffDays <= 3) {
+            return { label: `Due Soon (${diffDays}d)`, type: "due-soon" as const };
+        }
+    }
+    return { label: "Not Submitted", type: "pending" as const };
+}
+
+function formatDueDate(dueAt?: string) {
+    if (!dueAt) return "No due date";
+    const d = new Date(dueAt);
+    return `Due: ${d.toLocaleDateString("en-US", { month: "short", day: "numeric" })}`;
+}
 
 export default async function DashboardPage() {
     await requireSession();
     const { role, session } = await getCurrentUserRole();
     const user = session!.user;
 
-    // Fetch published assignments
     const allAssignments = await getAssignments();
     const assignments = allAssignments.filter((a) => a.published);
-
-    // Fetch current user's submissions
     const userSubmissions = await getSubmissionsByStudent(user.githubUsername);
     const submissionMap = new Map<string, Submission>(
         userSubmissions.map((s) => [s.assignmentId, s])
     );
 
     // Group by week
-    const weekMap = new Map<number, typeof assignments>();
+    const weekMap = new Map<number, { title: string; assignments: Assignment[] }>();
     for (const a of assignments) {
-        const list = weekMap.get(a.week) ?? [];
-        list.push(a);
-        weekMap.set(a.week, list);
+        const existing = weekMap.get(a.week);
+        if (existing) {
+            existing.assignments.push(a);
+        } else {
+            weekMap.set(a.week, { title: `Week ${a.week}`, assignments: [a] });
+        }
     }
     const weeks = Array.from(weekMap.entries()).sort(([a], [b]) => a - b);
 
+    // Stats
+    const totalAssignments = assignments.length;
+    const submittedCount = userSubmissions.length;
+    const completionPct = totalAssignments > 0 ? Math.round((submittedCount / totalAssignments) * 100) : 0;
+
     return (
-        <div className="min-h-screen flex bg-[var(--hw-surface)] text-[var(--hw-on-surface)] antialiased">
-            {/* Sidebar */}
-            <aside className="hidden md:flex h-screen w-64 fixed left-0 top-0 bg-slate-50 flex-col p-4 space-y-2 z-40">
-                <div className="flex items-center px-4 py-6 space-x-3">
-                    <div className="w-8 h-8 bg-[var(--hw-primary)] rounded-lg flex items-center justify-center text-white">
-                        <span className="material-symbols-outlined text-[20px]">school</span>
-                    </div>
-                    <div>
-                        <h1 className="text-lg font-black text-indigo-600 leading-none">HIT <span className="text-slate-800">AI/DATA</span></h1>
-                        <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--hw-on-surface-variant)]/60 mt-1">
-                            AI Workspace
-                        </p>
-                    </div>
-                </div>
-
-                <nav className="flex-1 space-y-1">
-                    <span className="flex items-center px-4 py-3 bg-white text-indigo-600 shadow-sm rounded-lg text-sm font-medium">
-                        <span className="material-symbols-outlined mr-3">dashboard</span>
-                        Overview
-                    </span>
-                    <Link href="#" className="flex items-center px-4 py-3 text-slate-600 hover:bg-slate-100 hover:translate-x-1 transition-transform duration-200 text-sm font-medium">
-                        <span className="material-symbols-outlined mr-3">assignment</span>
-                        All Work
-                    </Link>
-                    {role === "admin" && (
-                        <>
-                            <Link href="#" className="flex items-center px-4 py-3 text-slate-600 hover:bg-slate-100 hover:translate-x-1 transition-transform duration-200 text-sm font-medium">
-                                <span className="material-symbols-outlined mr-3">group</span>
-                                Students
-                            </Link>
-                            <Link href="#" className="flex items-center px-4 py-3 text-slate-600 hover:bg-slate-100 hover:translate-x-1 transition-transform duration-200 text-sm font-medium">
-                                <span className="material-symbols-outlined mr-3">menu_book</span>
-                                Curriculum
-                            </Link>
-                            <Link href="#" className="flex items-center px-4 py-3 text-slate-600 hover:bg-slate-100 hover:translate-x-1 transition-transform duration-200 text-sm font-medium">
-                                <span className="material-symbols-outlined mr-3">monitoring</span>
-                                Analytics
-                            </Link>
-                        </>
-                    )}
-                </nav>
-
-                <div className="pt-4 border-t border-slate-200/50">
-                    <Link href="#" className="flex items-center px-4 py-3 text-slate-600 hover:bg-slate-100 text-sm font-medium">
-                        <span className="material-symbols-outlined mr-3">help</span>
-                        Help
-                    </Link>
-                    <form
-                        action={async () => {
-                            "use server";
-                            await signOut({ redirectTo: "/login" });
-                        }}
-                    >
-                        <button type="submit" className="flex items-center px-4 py-3 text-slate-600 hover:bg-slate-100 text-sm font-medium w-full">
-                            <span className="material-symbols-outlined mr-3">logout</span>
-                            Logout
-                        </button>
-                    </form>
-                </div>
-            </aside>
-
-            {/* Main Content */}
-            <main className="md:ml-64 min-h-screen pb-24 md:pb-12 bg-[var(--hw-surface)] flex-1">
-                {/* Top Bar */}
-                <header className="fixed top-0 right-0 left-0 md:left-64 z-30 bg-white/80 backdrop-blur-md shadow-sm flex items-center justify-between px-6 py-3">
-                    <div className="flex items-center gap-8">
-                        <span className="text-xl font-bold tracking-tight">HIT <span className="text-indigo-600">AI/DATA</span></span>
-                        <div className="hidden md:flex items-center gap-6">
-                            <span className="text-indigo-600 font-semibold border-b-2 border-indigo-600">Dashboard</span>
-                            <Link href="#" className="text-slate-500 hover:text-slate-900 transition-colors">Assignments</Link>
-                            <Link href="#" className="text-slate-500 hover:text-slate-900 transition-colors">Classroom</Link>
+        <div className="min-h-screen bg-[var(--hw-surface)] text-[var(--hw-on-surface)] antialiased">
+            {/* ═══ TOP NAV ═══ */}
+            <nav className="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-md shadow-sm h-16 flex items-center justify-between px-6">
+                <div className="flex items-center gap-8">
+                    <div className="flex items-center gap-2">
+                        <div className="w-7 h-7 bg-[var(--hw-primary)] rounded-lg flex items-center justify-center text-white">
+                            <span className="material-symbols-outlined text-[16px]">school</span>
                         </div>
+                        <span className="text-xl font-bold tracking-tight">HIT <span className="text-indigo-600">AI/DATA</span></span>
                     </div>
-                    <div className="flex items-center gap-4">
-                        {role === "admin" && (
-                            <Link
-                                href="/admin/create-assignment"
-                                className="hidden md:flex items-center gap-2 px-4 py-2 bg-[var(--hw-primary)] text-white font-medium rounded-lg hover:brightness-110 transition-all text-sm"
-                            >
-                                <span className="material-symbols-outlined text-lg">add</span>
+                    <div className="hidden md:flex items-center bg-[var(--hw-surface-container-low)] px-3 py-1.5 rounded-lg">
+                        <span className="material-symbols-outlined text-[var(--hw-outline)] text-sm mr-2">search</span>
+                        <input className="bg-transparent border-none focus:ring-0 text-sm w-64 placeholder:text-[var(--hw-outline)] outline-none" placeholder="Search assignments..." type="text" />
+                    </div>
+                </div>
+                <div className="flex items-center gap-4">
+                    <button className="text-slate-500 hover:text-indigo-500 transition-colors">
+                        <span className="material-symbols-outlined">notifications</span>
+                    </button>
+                    <button className="text-slate-500 hover:text-indigo-500 transition-colors">
+                        <span className="material-symbols-outlined">settings</span>
+                    </button>
+                    <div className="h-8 w-px bg-[var(--hw-surface-container-high)] mx-2 hidden md:block" />
+                    <form action={async () => { "use server"; await signOut({ redirectTo: "/login" }); }}>
+                        <button type="submit" className="text-slate-500 hover:text-indigo-500 transition-colors text-sm hidden md:block">Sign Out</button>
+                    </form>
+                    {user.image && (
+                        <Image src={user.image} alt={user.name ?? "Avatar"} width={32} height={32} className="rounded-full border border-[var(--hw-surface-container-high)]" />
+                    )}
+                </div>
+            </nav>
+
+            <div className="flex pt-16">
+                {/* ═══ SIDEBAR ═══ */}
+                <aside className="fixed left-0 h-[calc(100vh-64px)] w-64 bg-slate-50 flex-col p-4 space-y-2 text-sm hidden md:flex">
+                    <div className="mb-6 px-2">
+                        <h2 className="text-lg font-semibold text-indigo-600">Learning Space</h2>
+                        <p className="text-xs text-slate-500">Active Session</p>
+                    </div>
+                    <Link href="/dashboard" className="flex items-center gap-3 px-3 py-2.5 bg-white text-indigo-600 shadow-sm rounded-lg font-semibold">
+                        <span className="material-symbols-outlined">dashboard</span>
+                        Dashboard
+                    </Link>
+                    <Link href="#" className="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-100 rounded-lg hover:translate-x-1 transition-transform">
+                        <span className="material-symbols-outlined">auto_stories</span>
+                        Courses
+                    </Link>
+                    <Link href="#" className="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-100 rounded-lg hover:translate-x-1 transition-transform">
+                        <span className="material-symbols-outlined">local_library</span>
+                        Library
+                    </Link>
+                    <Link href="#" className="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-100 rounded-lg hover:translate-x-1 transition-transform">
+                        <span className="material-symbols-outlined">psychology</span>
+                        AI Tutor
+                    </Link>
+
+                    {role === "admin" && (
+                        <div className="mt-8 px-2">
+                            <Link href="/admin/create-assignment" className="block w-full bg-[var(--hw-primary)] text-white py-2.5 rounded-lg font-medium shadow-sm hover:brightness-110 active:scale-[0.98] transition-all text-center">
                                 New Assignment
                             </Link>
-                        )}
-                        <button className="p-2 text-slate-500 hover:bg-slate-50 rounded-full transition-all">
-                            <span className="material-symbols-outlined">notifications</span>
-                        </button>
-                        <button className="p-2 text-slate-500 hover:bg-slate-50 rounded-full transition-all">
+                        </div>
+                    )}
+
+                    <div className="mt-auto pt-4 space-y-1">
+                        <Link href="#" className="flex items-center gap-3 px-3 py-2 text-slate-600 hover:bg-slate-100 rounded-lg hover:translate-x-1 transition-transform">
+                            <span className="material-symbols-outlined">help_outline</span>
+                            Help
+                        </Link>
+                        <Link href="#" className="flex items-center gap-3 px-3 py-2 text-slate-600 hover:bg-slate-100 rounded-lg hover:translate-x-1 transition-transform">
                             <span className="material-symbols-outlined">settings</span>
-                        </button>
-                        <div className="flex items-center gap-2">
-                            {user.image && (
-                                <Image
-                                    src={user.image}
-                                    alt={user.name ?? "Avatar"}
-                                    width={32}
-                                    height={32}
-                                    className="rounded-full border border-[var(--hw-outline-variant)]/50"
-                                />
-                            )}
-                        </div>
+                            Settings
+                        </Link>
                     </div>
-                </header>
+                </aside>
 
-                {/* Content Area */}
-                <div className="pt-20 px-6 max-w-5xl mx-auto">
-                    {/* Welcome Header */}
-                    <div className="mb-10">
-                        <h2 className="text-3xl font-bold tracking-tight mb-2">
-                            Welcome back, {user.name?.split(" ")[0] ?? user.githubUsername}
-                        </h2>
-                        <p className="text-[var(--hw-on-surface-variant)]">
-                            {role === "admin" ? "Manage your classroom and assignments" : "Track your assignments and progress"}
+                {/* ═══ MAIN CONTENT ═══ */}
+                <main className="ml-0 md:ml-64 w-full p-8 min-h-screen bg-[var(--hw-surface)] xl:mr-80">
+                    <header className="mb-12">
+                        <h1 className="text-[1.75rem] font-medium tracking-tight text-[var(--hw-on-surface)] mb-2">My Learning Path</h1>
+                        <p className="text-[var(--hw-on-surface-variant)] text-sm">
+                            {role === "admin" ? "Admin View — All Assignments" : "Welcome back, " + (user.name?.split(" ")[0] ?? user.githubUsername)}
                         </p>
-                        <div className="mt-3">
-                            <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${role === "admin"
-                                ? "bg-[var(--hw-primary-fixed)] text-[var(--hw-on-primary-fixed)]"
-                                : "bg-emerald-100 text-emerald-800"
-                                }`}>
-                                <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>
-                                    {role === "admin" ? "shield_person" : "school"}
-                                </span>
-                                {role === "admin" ? "Admin / Giáo viên" : "Học viên"}
-                            </span>
-                        </div>
-                    </div>
+                    </header>
 
-                    {/* Assignments or Empty State */}
                     {weeks.length === 0 ? (
                         <EmptyAssignments />
                     ) : (
-                        <div className="space-y-8">
-                            {weeks.map(([week, weekAssignments]) => (
-                                <WeekGroup
-                                    key={week}
-                                    week={week}
-                                    assignments={weekAssignments}
-                                    submissionMap={submissionMap}
-                                />
+                        <div className="space-y-16">
+                            {weeks.map(([weekNum, { assignments: weekAssignments }]) => (
+                                <section key={weekNum}>
+                                    <div className="flex items-baseline gap-4 mb-6">
+                                        <h2 className="text-xl font-medium text-[var(--hw-on-surface)]">Week {weekNum}</h2>
+                                        <span className="h-px flex-1 bg-[var(--hw-surface-container-high)]" />
+                                    </div>
+                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                        {weekAssignments.map((a) => {
+                                            const sub = submissionMap.get(a.id);
+                                            const status = getSubmissionStatus(a, sub);
+
+                                            return (
+                                                <div
+                                                    key={a.id}
+                                                    className={`group bg-[var(--hw-surface-container-lowest)] p-6 rounded-xl shadow-[0_12px_40px_rgba(26,28,29,0.04)] hover:shadow-[0_12px_40px_rgba(26,28,29,0.08)] transition-all flex flex-col justify-between ${status.type === "due-soon"
+                                                            ? "border-l-4 border-l-amber-400"
+                                                            : status.type === "overdue"
+                                                                ? "border-l-4 border-l-red-400"
+                                                                : "border border-transparent hover:border-[var(--hw-outline-variant)]/20"
+                                                        }`}
+                                                >
+                                                    <div>
+                                                        <div className="flex justify-between items-start mb-4">
+                                                            <span className="text-[0.6875rem] font-bold tracking-widest uppercase text-[var(--hw-outline)]">
+                                                                LESSON {a.lesson}
+                                                            </span>
+                                                            <span className={`px-2.5 py-1 rounded-full text-[11px] font-bold tracking-wide flex items-center gap-1 ${status.type === "submitted"
+                                                                    ? "bg-emerald-50 text-emerald-700"
+                                                                    : status.type === "due-soon"
+                                                                        ? "bg-amber-50 text-amber-700"
+                                                                        : status.type === "overdue"
+                                                                            ? "bg-red-50 text-red-700"
+                                                                            : "bg-slate-100 text-slate-500"
+                                                                }`}>
+                                                                <span className="material-symbols-outlined text-[14px]" style={{ fontVariationSettings: status.type === "submitted" ? "'FILL' 1" : undefined }}>
+                                                                    {status.type === "submitted" ? "check_circle" : status.type === "due-soon" ? "priority_high" : status.type === "overdue" ? "error" : "radio_button_unchecked"}
+                                                                </span>
+                                                                {status.label}
+                                                            </span>
+                                                        </div>
+                                                        <h3 className="text-lg font-medium text-[var(--hw-on-surface)] mb-2">{a.title}</h3>
+                                                        <p className="text-[var(--hw-on-surface-variant)] text-sm leading-relaxed mb-6">
+                                                            {a.description || "No description provided."}
+                                                        </p>
+                                                    </div>
+                                                    <div className="flex items-center justify-between text-[var(--hw-outline)] text-xs border-t border-[var(--hw-surface-container-low)] pt-4">
+                                                        <span className={`flex items-center gap-1.5 ${status.type === "due-soon" ? "font-medium text-amber-600" : status.type === "overdue" ? "font-medium text-red-600" : ""
+                                                            }`}>
+                                                            <span className="material-symbols-outlined text-sm">
+                                                                {status.type === "due-soon" || status.type === "overdue" ? "schedule" : "calendar_today"}
+                                                            </span>
+                                                            {formatDueDate(a.dueAt)}
+                                                        </span>
+                                                        {status.type === "submitted" ? (
+                                                            <Link href={`/assignment/${a.id}`} className="text-[var(--hw-primary)] font-medium hover:underline">
+                                                                View Grades
+                                                            </Link>
+                                                        ) : status.type === "due-soon" ? (
+                                                            <Link href={`/assignment/${a.id}`} className="bg-[var(--hw-primary)] text-white px-4 py-1.5 rounded-lg text-xs font-semibold hover:brightness-110">
+                                                                Start Work
+                                                            </Link>
+                                                        ) : (
+                                                            <Link href={`/assignment/${a.id}`} className="text-[var(--hw-primary)] font-medium hover:underline">
+                                                                View Details
+                                                            </Link>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </section>
                             ))}
                         </div>
                     )}
-                </div>
-            </main>
+                </main>
+
+                {/* ═══ STATS SIDEBAR ═══ */}
+                <aside className="hidden xl:block w-80 p-8 border-l border-[var(--hw-surface-container-high)] bg-white/50 fixed right-0 top-16 h-[calc(100vh-64px)] overflow-y-auto">
+                    <h3 className="text-xs font-bold tracking-widest text-[var(--hw-outline)] uppercase mb-8">Course Mastery</h3>
+
+                    {/* Completion Stats */}
+                    <div className="mb-10">
+                        <div className="flex items-baseline gap-1 mb-2">
+                            <span className="text-4xl font-bold text-[var(--hw-on-surface)] tracking-tight">{completionPct}%</span>
+                            <span className="text-xs font-medium text-emerald-600">
+                                {submittedCount}/{totalAssignments} done
+                            </span>
+                        </div>
+                        <p className="text-[var(--hw-on-surface-variant)] text-sm mb-4">Module Completion</p>
+                        <div className="h-2 w-full bg-[var(--hw-surface-container-high)] rounded-full">
+                            <div className="h-full bg-[var(--hw-primary)] rounded-full transition-all" style={{ width: `${completionPct}%` }} />
+                        </div>
+                    </div>
+
+                    <div className="space-y-6">
+                        {/* AI Tutor Suggestion */}
+                        <div className="p-4 bg-[var(--hw-surface-container-low)] rounded-lg">
+                            <div className="flex items-center gap-3 mb-2">
+                                <span className="material-symbols-outlined text-[var(--hw-primary)] text-xl">auto_awesome</span>
+                                <span className="font-medium text-sm">AI Tutor Suggestion</span>
+                            </div>
+                            <p className="text-xs text-[var(--hw-on-surface-variant)] leading-relaxed">
+                                {submittedCount === 0
+                                    ? "Get started by submitting your first assignment to receive personalized learning recommendations."
+                                    : `Great progress! You've completed ${submittedCount} assignment${submittedCount > 1 ? "s" : ""}. Keep up the momentum!`}
+                            </p>
+                        </div>
+
+                        {/* Quick Stats */}
+                        <div className="p-4 bg-[var(--hw-primary)]/5 rounded-lg border border-[var(--hw-primary)]/10">
+                            <h4 className="text-xs font-bold text-[var(--hw-primary)] mb-3">QUICK STATS</h4>
+                            <div className="space-y-4">
+                                <div className="flex gap-3">
+                                    <div className="flex flex-col items-center justify-center bg-white h-10 w-10 rounded shadow-sm">
+                                        <span className="text-sm font-bold text-[var(--hw-on-surface)]">{totalAssignments}</span>
+                                    </div>
+                                    <div>
+                                        <p className="text-xs font-bold text-[var(--hw-on-surface)]">Total Assignments</p>
+                                        <p className="text-[10px] text-[var(--hw-outline)]">{weeks.length} week{weeks.length !== 1 ? "s" : ""}</p>
+                                    </div>
+                                </div>
+                                <div className="flex gap-3">
+                                    <div className="flex flex-col items-center justify-center bg-white h-10 w-10 rounded shadow-sm">
+                                        <span className="text-sm font-bold text-emerald-600">{submittedCount}</span>
+                                    </div>
+                                    <div>
+                                        <p className="text-xs font-bold text-[var(--hw-on-surface)]">Submitted</p>
+                                        <p className="text-[10px] text-[var(--hw-outline)]">On time</p>
+                                    </div>
+                                </div>
+                                <div className="flex gap-3">
+                                    <div className="flex flex-col items-center justify-center bg-white h-10 w-10 rounded shadow-sm">
+                                        <span className="text-sm font-bold text-amber-600">{totalAssignments - submittedCount}</span>
+                                    </div>
+                                    <div>
+                                        <p className="text-xs font-bold text-[var(--hw-on-surface)]">Pending</p>
+                                        <p className="text-[10px] text-[var(--hw-outline)]">Not yet submitted</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </aside>
+            </div>
+
+            {/* ═══ MOBILE BOTTOM NAV ═══ */}
+            <nav className="md:hidden fixed bottom-0 left-0 w-full bg-white/90 backdrop-blur-md shadow-[0_-4px_20px_rgba(0,0,0,0.05)] h-16 flex items-center justify-around px-4 z-50">
+                <Link href="/dashboard" className="flex flex-col items-center justify-center text-indigo-600">
+                    <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>dashboard</span>
+                    <span className="text-[10px] font-medium mt-1">Home</span>
+                </Link>
+                <Link href="#" className="flex flex-col items-center justify-center text-slate-400">
+                    <span className="material-symbols-outlined">auto_stories</span>
+                    <span className="text-[10px] font-medium mt-1">Courses</span>
+                </Link>
+                <Link href="#" className="flex flex-col items-center justify-center text-slate-400">
+                    <span className="material-symbols-outlined">local_library</span>
+                    <span className="text-[10px] font-medium mt-1">Library</span>
+                </Link>
+                <Link href="#" className="flex flex-col items-center justify-center text-slate-400">
+                    <span className="material-symbols-outlined">psychology</span>
+                    <span className="text-[10px] font-medium mt-1">AI Tutor</span>
+                </Link>
+            </nav>
         </div>
     );
 }
