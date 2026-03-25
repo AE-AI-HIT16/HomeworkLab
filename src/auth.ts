@@ -24,7 +24,12 @@ declare module "@auth/core/jwt" {
 
 export const authConfig: NextAuthConfig = {
     trustHost: true,
-    providers: [GitHub],
+    providers: [
+        GitHub({
+            clientId: process.env.AUTH_GITHUB_ID,
+            clientSecret: process.env.AUTH_GITHUB_SECRET,
+        }),
+    ],
 
     pages: {
         signIn: "/login",
@@ -69,3 +74,4 @@ export const authConfig: NextAuthConfig = {
 };
 
 export const { handlers, signIn, signOut, auth } = NextAuth(authConfig);
+
