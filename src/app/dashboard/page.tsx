@@ -138,12 +138,25 @@ export default async function DashboardPage() {
                 </aside>
 
                 {/* ═══ MAIN CONTENT ═══ */}
-                <main className="ml-0 md:ml-64 w-full p-8 min-h-screen bg-[var(--hw-surface)] xl:mr-80">
-                    <header className="mb-12">
-                        <h1 className="text-[1.75rem] font-medium tracking-tight text-[var(--hw-on-surface)] mb-2">My Learning Path</h1>
-                        <p className="text-[var(--hw-on-surface-variant)] text-sm">
-                            {role === "admin" ? "Admin View — All Assignments" : "Welcome back, " + (user.name?.split(" ")[0] ?? user.githubUsername)}
-                        </p>
+                <main className="ml-0 md:ml-64 w-full p-4 sm:p-6 md:p-8 min-h-screen bg-[var(--hw-surface)] xl:mr-80 pb-24">
+                    <header className="mb-6 md:mb-12">
+                        <div className="hidden md:block">
+                            <h1 className="text-[1.75rem] font-medium tracking-tight text-[var(--hw-on-surface)] mb-2">My Learning Path</h1>
+                            <p className="text-[var(--hw-on-surface-variant)] text-sm">
+                                {role === "admin" ? "Admin View — All Assignments" : "Welcome back, " + (user.name?.split(" ")[0] ?? user.githubUsername)}
+                            </p>
+                        </div>
+
+                        {/* Mobile 'CURRENT FOCUS' Banner */}
+                        <div className="md:hidden bg-[var(--hw-primary)] rounded-xl p-5 shadow-lg shadow-[var(--hw-primary)]/20 text-white relative overflow-hidden">
+                            <div className="absolute -top-12 -right-12 w-32 h-32 bg-white/10 rounded-full blur-2xl" />
+                            <div className="absolute -bottom-8 -left-8 w-24 h-24 bg-indigo-900/20 rounded-full blur-xl" />
+                            <div className="relative z-10">
+                                <span className="text-[10px] font-bold tracking-widest uppercase text-white/70 mb-1 block">Current Focus</span>
+                                <h2 className="text-[1.35rem] font-bold mb-1">{totalAssignments - submittedCount} Pending<br />Assignments</h2>
+                                <p className="text-[13px] text-white/90">Keep the momentum going, {user.name?.split(" ")[0] || "Alex"}!</p>
+                            </div>
+                        </div>
                     </header>
 
                     {weeks.length === 0 ? (
@@ -165,10 +178,10 @@ export default async function DashboardPage() {
                                                 <div
                                                     key={a.id}
                                                     className={`group bg-[var(--hw-surface-container-lowest)] p-6 rounded-xl shadow-[0_12px_40px_rgba(26,28,29,0.04)] hover:shadow-[0_12px_40px_rgba(26,28,29,0.08)] transition-all flex flex-col justify-between ${status.type === "due-soon"
-                                                            ? "border-l-4 border-l-amber-400"
-                                                            : status.type === "overdue"
-                                                                ? "border-l-4 border-l-red-400"
-                                                                : "border border-transparent hover:border-[var(--hw-outline-variant)]/20"
+                                                        ? "border-l-4 border-l-amber-400"
+                                                        : status.type === "overdue"
+                                                            ? "border-l-4 border-l-red-400"
+                                                            : "border border-transparent hover:border-[var(--hw-outline-variant)]/20"
                                                         }`}
                                                 >
                                                     <div>
@@ -177,12 +190,12 @@ export default async function DashboardPage() {
                                                                 LESSON {a.lesson}
                                                             </span>
                                                             <span className={`px-2.5 py-1 rounded-full text-[11px] font-bold tracking-wide flex items-center gap-1 ${status.type === "submitted"
-                                                                    ? "bg-emerald-50 text-emerald-700"
-                                                                    : status.type === "due-soon"
-                                                                        ? "bg-amber-50 text-amber-700"
-                                                                        : status.type === "overdue"
-                                                                            ? "bg-red-50 text-red-700"
-                                                                            : "bg-slate-100 text-slate-500"
+                                                                ? "bg-emerald-50 text-emerald-700"
+                                                                : status.type === "due-soon"
+                                                                    ? "bg-amber-50 text-amber-700"
+                                                                    : status.type === "overdue"
+                                                                        ? "bg-red-50 text-red-700"
+                                                                        : "bg-slate-100 text-slate-500"
                                                                 }`}>
                                                                 <span className="material-symbols-outlined text-[14px]" style={{ fontVariationSettings: status.type === "submitted" ? "'FILL' 1" : undefined }}>
                                                                     {status.type === "submitted" ? "check_circle" : status.type === "due-soon" ? "priority_high" : status.type === "overdue" ? "error" : "radio_button_unchecked"}
@@ -297,22 +310,22 @@ export default async function DashboardPage() {
             </div>
 
             {/* ═══ MOBILE BOTTOM NAV ═══ */}
-            <nav className="md:hidden fixed bottom-0 left-0 w-full bg-white/90 backdrop-blur-md shadow-[0_-4px_20px_rgba(0,0,0,0.05)] h-16 flex items-center justify-around px-4 z-50">
-                <Link href="/dashboard" className="flex flex-col items-center justify-center text-indigo-600">
-                    <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>dashboard</span>
-                    <span className="text-[10px] font-medium mt-1">Home</span>
+            <nav className="md:hidden fixed bottom-0 left-0 w-full bg-[var(--hw-surface-container-lowest)] border-t border-[var(--hw-outline-variant)]/20 shadow-[0_-4px_20px_rgba(0,0,0,0.03)] h-[72px] flex items-center justify-around px-2 z-50">
+                <Link href="/dashboard" className="flex flex-col items-center justify-center text-[var(--hw-primary)] gap-1 w-[22%] py-2 rounded-xl bg-[var(--hw-primary)]/5">
+                    <span className="material-symbols-outlined text-[20px]" style={{ fontVariationSettings: "'FILL' 1" }}>dashboard</span>
+                    <span className="text-[9px] font-bold tracking-wider uppercase text-[var(--hw-primary)]">Dashboard</span>
                 </Link>
-                <Link href="#" className="flex flex-col items-center justify-center text-slate-400">
-                    <span className="material-symbols-outlined">auto_stories</span>
-                    <span className="text-[10px] font-medium mt-1">Courses</span>
+                <Link href="#" className="flex flex-col items-center justify-center text-[var(--hw-outline)] gap-1 w-[22%] pb-2">
+                    <span className="material-symbols-outlined text-[20px]">assignment</span>
+                    <span className="text-[9px] font-bold tracking-wider uppercase">Tasks</span>
                 </Link>
-                <Link href="#" className="flex flex-col items-center justify-center text-slate-400">
-                    <span className="material-symbols-outlined">local_library</span>
-                    <span className="text-[10px] font-medium mt-1">Library</span>
+                <Link href="#" className="flex flex-col items-center justify-center text-[var(--hw-outline)] gap-1 w-[22%] pb-2">
+                    <span className="material-symbols-outlined text-[20px]">groups</span>
+                    <span className="text-[9px] font-bold tracking-wider uppercase">Students</span>
                 </Link>
-                <Link href="#" className="flex flex-col items-center justify-center text-slate-400">
-                    <span className="material-symbols-outlined">psychology</span>
-                    <span className="text-[10px] font-medium mt-1">AI Tutor</span>
+                <Link href="#" className="flex flex-col items-center justify-center text-[var(--hw-outline)] gap-1 w-[22%] pb-2">
+                    <span className="material-symbols-outlined text-[20px]">person</span>
+                    <span className="text-[9px] font-bold tracking-wider uppercase">Profile</span>
                 </Link>
             </nav>
         </div>

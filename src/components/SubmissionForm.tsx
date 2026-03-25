@@ -420,16 +420,16 @@ export function SubmissionForm({ assignmentId, existingSubmission, isPastDue }: 
                         )}
 
                         {/* Submit Actions */}
-                        <div className="mt-6 flex flex-col items-center">
+                        <div className="fixed md:static left-0 bottom-0 w-full md:w-auto p-4 md:p-0 bg-white/95 md:bg-transparent backdrop-blur-sm md:backdrop-blur-none border-t border-[var(--hw-outline-variant)]/20 md:border-none z-40 md:mt-6 flex flex-col items-center shadow-[0_-10px_20px_rgba(0,0,0,0.05)] md:shadow-none">
                             {isPastDue && (
-                                <p className="text-[10px] text-amber-600 font-medium mb-3 flex items-center gap-1 bg-amber-50 px-2 py-1 rounded">
+                                <p className="text-[10px] text-amber-600 font-medium mb-2 md:mb-3 flex items-center gap-1 bg-amber-50 px-2 py-1 rounded w-full md:w-auto justify-center">
                                     <span className="material-symbols-outlined text-[14px]">warning</span>
                                     Submitting late will incur a penalty.
                                 </p>
                             )}
                             <button
                                 type="submit"
-                                className="w-full bg-[var(--hw-primary)] text-white text-sm font-medium py-2.5 rounded-lg hover:brightness-110 active:scale-[0.98] transition-all shadow-[0_4px_12px_rgba(70,72,212,0.2)]"
+                                className="w-full bg-[var(--hw-primary)] text-white text-[15px] md:text-sm font-semibold py-3.5 md:py-2.5 rounded-xl md:rounded-lg hover:brightness-110 active:scale-[0.98] transition-all shadow-[0_4px_12px_rgba(70,72,212,0.2)] md:shadow-[0_4px_12px_rgba(70,72,212,0.2)]"
                             >
                                 Submit Assignment
                             </button>

@@ -130,7 +130,7 @@ export default async function AssignmentPage({ params }: AssignmentPageProps) {
                 </aside>
 
                 {/* ═══ MAIN CONTENT ═══ */}
-                <main className="ml-0 md:ml-56 w-full p-8 min-h-screen bg-[var(--hw-surface)] xl:mr-80">
+                <main className="ml-0 md:ml-56 w-full p-4 sm:p-6 md:p-8 min-h-screen bg-[var(--hw-surface)] xl:mr-80 pb-32 md:pb-8">
                     {/* Breadcrumb */}
                     <div className="text-[10px] font-bold uppercase tracking-[0.15em] text-[var(--hw-outline)] mb-4">
                         Week {assignment.week} → Lesson {assignment.lesson}
@@ -350,26 +350,6 @@ export default async function AssignmentPage({ params }: AssignmentPageProps) {
                     )}
                 </aside>
             </div>
-
-            {/* ═══ MOBILE BOTTOM NAV ═══ */}
-            <nav className="md:hidden fixed bottom-0 left-0 w-full bg-white/90 backdrop-blur-md shadow-[0_-4px_20px_rgba(0,0,0,0.05)] h-16 flex items-center justify-around px-4 z-50">
-                <Link href="/dashboard" className="flex flex-col items-center justify-center text-slate-400">
-                    <span className="material-symbols-outlined">dashboard</span>
-                    <span className="text-[10px] font-medium mt-1">Home</span>
-                </Link>
-                <span className="flex flex-col items-center justify-center text-indigo-600">
-                    <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>auto_stories</span>
-                    <span className="text-[10px] font-medium mt-1">Curriculum</span>
-                </span>
-                <Link href="#" className="flex flex-col items-center justify-center text-slate-400">
-                    <span className="material-symbols-outlined">local_library</span>
-                    <span className="text-[10px] font-medium mt-1">Library</span>
-                </Link>
-                <Link href="#" className="flex flex-col items-center justify-center text-slate-400">
-                    <span className="material-symbols-outlined">psychology</span>
-                    <span className="text-[10px] font-medium mt-1">AI Tutor</span>
-                </Link>
-            </nav>
         </div>
     );
 }

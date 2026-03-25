@@ -81,26 +81,31 @@ export default function LoginClient({ accessDenied, deniedUser }: LoginClientPro
                                 </button>
 
                                 {/* Workspace Features */}
-                                <div className="mt-8 pt-6 border-t border-[var(--hw-outline-variant)]/10 w-full">
-                                    <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[var(--hw-outline)] mb-4">
-                                        Workspace Access
+                                <div className="mt-8 relative w-full pt-8">
+                                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-16 h-px bg-[var(--hw-outline-variant)]/20" />
+                                    <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[var(--hw-outline)] mb-6">
+                                        Instructional Context
                                     </p>
-                                    <div className="space-y-3 text-left">
-                                        <div className="flex items-start gap-3 p-3 rounded-lg bg-[var(--hw-surface-container-low)]">
-                                            <span className="material-symbols-outlined text-[var(--hw-primary)] text-lg mt-0.5" style={{ fontVariationSettings: "'FILL' 1" }}>assignment</span>
+                                    <div className="space-y-3 text-left w-full">
+                                        <div className="flex items-center gap-4 p-4 rounded-xl bg-[var(--hw-surface-container-low)]">
+                                            <div className="w-10 h-10 rounded-lg flex items-center justify-center text-[var(--hw-primary)]">
+                                                <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 0" }}>auto_awesome</span>
+                                            </div>
                                             <div>
-                                                <p className="text-sm font-medium">Weekly Assignments</p>
-                                                <p className="text-xs text-[var(--hw-on-surface-variant)]">
-                                                    Pull latest homework repos directly to your cloud workspace.
+                                                <p className="text-[13px] font-bold text-[var(--hw-on-surface)]">AI Synthesis Active</p>
+                                                <p className="text-[11px] text-[var(--hw-on-surface-variant)] mt-0.5">
+                                                    Real-time feedback on push
                                                 </p>
                                             </div>
                                         </div>
-                                        <div className="flex items-start gap-3 p-3 rounded-lg bg-[var(--hw-surface-container-low)]">
-                                            <span className="material-symbols-outlined text-[var(--hw-primary)] text-lg mt-0.5" style={{ fontVariationSettings: "'FILL' 1" }}>track_changes</span>
+                                        <div className="flex items-center gap-4 p-4 rounded-xl bg-[var(--hw-surface-container-low)]">
+                                            <div className="w-10 h-10 rounded-lg flex items-center justify-center text-[var(--hw-primary)]">
+                                                <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 0" }}>history_edu</span>
+                                            </div>
                                             <div>
-                                                <p className="text-sm font-medium">Submission Tracking</p>
-                                                <p className="text-xs text-[var(--hw-on-surface-variant)]">
-                                                    Automated testing and real-time feedback on your AI models.
+                                                <p className="text-[13px] font-bold text-[var(--hw-on-surface)]">Tracking Submissions</p>
+                                                <p className="text-[11px] text-[var(--hw-on-surface-variant)] mt-0.5">
+                                                    History synced to main branch
                                                 </p>
                                             </div>
                                         </div>

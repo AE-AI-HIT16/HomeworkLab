@@ -31,64 +31,36 @@ export default function UnauthorizedPage() {
             </nav>
 
             {/* Main Content */}
-            <main className="flex-grow flex items-center justify-center px-6 pt-20">
-                <div className="max-w-3xl w-full grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-                    {/* Left Side: Error Illustration */}
-                    <div className="lg:col-span-5 flex flex-col items-center lg:items-end order-2 lg:order-1">
-                        <div className="relative">
-                            {/* Abstract Background Shapes */}
-                            <div className="absolute -top-6 -left-6 w-32 h-32 bg-[var(--hw-primary)]/5 rounded-full blur-3xl" />
-                            <div className="absolute -bottom-10 -right-4 w-40 h-40 bg-[var(--hw-primary-container)]/10 rounded-full blur-2xl" />
-
-                            {/* Main Error Visual */}
-                            <div className="relative bg-[var(--hw-surface-container-lowest)] p-8 rounded-xl shadow-[var(--hw-shadow-lg)] border border-[var(--hw-outline-variant)]/15 flex flex-col items-center">
-                                <div className="w-16 h-16 bg-[var(--hw-error)]/10 text-[var(--hw-error)] rounded-full flex items-center justify-center mb-4">
-                                    <span className="material-symbols-outlined text-4xl" style={{ fontVariationSettings: "'FILL' 1" }}>lock_person</span>
-                                </div>
-                                <div className="h-1 w-24 bg-[var(--hw-surface-container-high)] rounded-full overflow-hidden">
-                                    <div className="inference-glow h-full w-1/3 rounded-full" />
-                                </div>
-                                <div className="mt-6 space-y-2 w-full">
-                                    <div className="h-2 w-full bg-[var(--hw-surface-container-low)] rounded-full" />
-                                    <div className="h-2 w-3/4 bg-[var(--hw-surface-container-low)] rounded-full" />
-                                    <div className="h-2 w-5/6 bg-[var(--hw-surface-container-low)] rounded-full" />
-                                </div>
-                            </div>
-
-                            {/* Error Code Tag */}
-                            <div className="absolute -bottom-4 -left-12 hidden lg:block">
-                                <span className="bg-[var(--hw-surface-container-highest)] px-3 py-1.5 rounded text-[10px] tracking-widest font-semibold uppercase text-[var(--hw-on-surface-variant)]">
-                                    Error Code: 403_FORBIDDEN
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Right Side: Content */}
-                    <div className="lg:col-span-7 text-center lg:text-left order-1 lg:order-2">
-                        <div className="inline-flex items-center gap-2 px-3 py-1 bg-[var(--hw-secondary-container)]/30 text-[var(--hw-primary)] rounded-full mb-6">
-                            <span className="material-symbols-outlined text-sm">shield</span>
-                            <span className="text-[11px] font-bold uppercase tracking-wider">Security Protocol</span>
+            <main className="flex-grow flex items-center justify-center px-6 pt-24 pb-12 relative z-10 w-full">
+                <div className="bg-[var(--hw-surface-container-lowest)] rounded-xl pt-10 pb-8 px-8 sm:px-10 max-w-[420px] w-full shadow-[0_12px_40px_rgba(26,28,29,0.04)] relative z-10 border border-[var(--hw-outline-variant)]/20 mx-auto">
+                    <div className="flex flex-col items-center text-center">
+                        <div className="w-16 h-16 bg-[var(--hw-surface-container-high)] text-[var(--hw-outline)] rounded-full flex items-center justify-center mb-6 shadow-sm">
+                            <span className="material-symbols-outlined text-4xl" style={{ fontVariationSettings: "'FILL' 0" }}>person_off</span>
                         </div>
 
-                        <h1 className="text-5xl lg:text-6xl font-bold tracking-tight mb-6">
-                            Access Denied
+                        <h1 className="text-[1.75rem] font-semibold tracking-tight mb-2 text-[var(--hw-on-surface)]">
+                            Account Not Authorized
                         </h1>
 
-                        <p className="text-xl text-[var(--hw-on-surface-variant)] font-medium leading-relaxed max-w-md mb-10">
-                            Your GitHub account is not registered for this class.
+                        <p className="text-[14px] text-[var(--hw-on-surface-variant)] leading-relaxed mb-8 px-2">
+                            Your GitHub account isn't on the
+                            authorized list for AI Class 101 yet.
+                            <br /><br />
+                            If you think this is a mistake, please reach out to your instructor or the class administrator.
                         </p>
 
-                        <div className="flex flex-col sm:flex-row items-center gap-4">
+                        <div className="w-full flex justify-center mb-4">
                             <Link
-                                href="/login"
-                                className="w-full sm:w-auto px-8 py-3.5 bg-[var(--hw-primary)] text-white font-semibold rounded-lg shadow-sm hover:brightness-110 active:scale-95 transition-all duration-200 flex items-center justify-center gap-2"
+                                href="mailto:instructor@hit.edu.vn"
+                                className="w-full sm:w-auto px-8 py-3 bg-[var(--hw-primary)] text-white font-medium rounded-lg hover:brightness-110 active:scale-95 transition-all text-sm flex items-center justify-center gap-2 shadow-sm"
                             >
-                                <span className="material-symbols-outlined text-lg">home</span>
-                                Go Back Home
+                                Contact Admin
                             </Link>
+                        </div>
 
+                        <div className="w-full flex justify-center mt-2">
                             <form
+                                className="w-full"
                                 action={async () => {
                                     "use server";
                                     await signOut({ redirectTo: "/login" });
@@ -96,20 +68,11 @@ export default function UnauthorizedPage() {
                             >
                                 <button
                                     type="submit"
-                                    className="w-full sm:w-auto px-8 py-3.5 bg-[var(--hw-surface-container-high)] text-[var(--hw-on-surface)] font-semibold rounded-lg hover:brightness-105 active:scale-95 transition-all duration-200 flex items-center justify-center gap-2"
+                                    className="w-full text-[13px] font-medium text-[var(--hw-primary)] hover:text-[var(--hw-on-primary-fixed-variant)] bg-transparent py-2 transition-colors flex items-center justify-center"
                                 >
-                                    <span className="material-symbols-outlined text-lg">logout</span>
-                                    Đăng xuất
+                                    Sign Out & Try Different Account
                                 </button>
                             </form>
-                        </div>
-
-                        <div className="mt-12 pt-10 border-t border-transparent relative">
-                            <div className="absolute top-0 left-0 w-1/4 h-px bg-gradient-to-r from-[var(--hw-outline-variant)]/30 to-transparent" />
-                            <div className="flex items-center gap-4 text-[var(--hw-on-surface-variant)]/60">
-                                <span className="material-symbols-outlined text-lg">info</span>
-                                <p className="text-sm">Contact your instructor if you believe this is a mistake.</p>
-                            </div>
                         </div>
                     </div>
                 </div>
