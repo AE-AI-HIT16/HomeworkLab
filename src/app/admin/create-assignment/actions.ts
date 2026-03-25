@@ -4,7 +4,6 @@ import { auth } from "@/auth";
 import { getUserRole } from "@/lib/roles";
 import { saveAssignment } from "@/lib/google-sheets";
 import { redirect } from "next/navigation";
-import { v4 as uuidv4 } from "crypto";
 
 export interface CreateAssignmentFormState {
     error?: string;
