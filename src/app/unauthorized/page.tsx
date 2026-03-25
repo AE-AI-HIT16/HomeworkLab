@@ -7,7 +7,7 @@ export default function UnauthorizedPage() {
             {/* Top Nav */}
             <nav className="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-md shadow-sm flex items-center justify-between px-6 py-3">
                 <div className="flex items-center gap-8">
-                    <span className="text-xl font-bold tracking-tight">HomeworkLab</span>
+                    <span className="text-xl font-bold tracking-tight">HIT <span className="text-[var(--hw-primary)]">AI/DATA</span></span>
                     <div className="hidden md:flex items-center gap-6">
                         <span className="text-[var(--hw-outline)] cursor-default">Dashboard</span>
                         <span className="text-[var(--hw-outline)] cursor-default">Assignments</span>
@@ -118,7 +118,7 @@ export default function UnauthorizedPage() {
             {/* Footer */}
             <footer className="py-12 px-6 flex flex-col lg:flex-row justify-between items-center gap-6 text-[var(--hw-on-surface-variant)]/40">
                 <div className="flex items-center gap-6">
-                    <span className="text-[10px] font-bold uppercase tracking-[0.2em]">© 2024 HomeworkLab AI Workspace</span>
+                    <span className="text-[10px] font-bold uppercase tracking-[0.2em]">© 2024 HIT — AI/DATA</span>
                     <div className="w-1 h-1 bg-[var(--hw-outline-variant)]/30 rounded-full" />
                     <span className="text-[10px] font-bold uppercase tracking-[0.2em] hover:text-[var(--hw-primary)] transition-colors cursor-pointer">Privacy Policy</span>
                 </div>

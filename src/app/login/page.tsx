@@ -24,7 +24,7 @@ export default async function LoginPage() {
               <span className="material-symbols-outlined text-white text-2xl">menu_book</span>
             </div>
             <h1 className="text-[1.75rem] font-medium tracking-tight mb-2">
-              Welcome to HomeworkLab
+              Welcome to <span className="text-[var(--hw-primary)]">HIT</span> — AI/DATA
             </h1>
             <p className="text-[var(--hw-on-surface-variant)] text-sm">
               Your professional AI-integrated workspace

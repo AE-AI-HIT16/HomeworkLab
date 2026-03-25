@@ -17,9 +17,9 @@ function getEnvVar(key: string, required = true): string {
         // We bypass throwing if we are in the build phase.
         const isBuild = process.env.npm_lifecycle_event === "build" || process.env.NEXT_PHASE !== undefined;
         if (!isBuild && (process.env.NODE_ENV === "production" || process.env.STRICT_ENV === "true")) {
-            throw new Error(`[HomeworkLab] Missing required environment variable: ${key}`);
+            throw new Error(`[HIT-AI/DATA] Missing required environment variable: ${key}`);
         } else {
-            console.warn(`[HomeworkLab] Warning: Missing ${key} (bypassed strict check for development/build).`);
+            console.warn(`[HIT-AI/DATA] Warning: Missing ${key} (bypassed strict check for development/build).`);
             return "";
         }
     }

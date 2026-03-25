@@ -9,8 +9,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "HomeworkLab — AI Workspace",
-  description: "Your professional AI-integrated workspace for education",
+  title: "HIT - AI/DATA",
+  description: "Nền tảng học tập AI & Data Science cho sinh viên HIT",
 };
 
 export default function RootLayout({

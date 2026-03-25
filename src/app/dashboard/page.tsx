@@ -41,7 +41,7 @@ export default async function DashboardPage() {
                         <span className="material-symbols-outlined text-[20px]">school</span>
                     </div>
                     <div>
-                        <h1 className="text-lg font-black text-indigo-600 leading-none">HomeworkLab</h1>
+                        <h1 className="text-lg font-black text-indigo-600 leading-none">HIT <span className="text-slate-800">AI/DATA</span></h1>
                         <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--hw-on-surface-variant)]/60 mt-1">
                             AI Workspace
                         </p>
@@ -99,7 +99,7 @@ export default async function DashboardPage() {
                 {/* Top Bar */}
                 <header className="fixed top-0 right-0 left-0 md:left-64 z-30 bg-white/80 backdrop-blur-md shadow-sm flex items-center justify-between px-6 py-3">
                     <div className="flex items-center gap-8">
-                        <span className="text-xl font-bold tracking-tight">HomeworkLab</span>
+                        <span className="text-xl font-bold tracking-tight">HIT <span className="text-indigo-600">AI/DATA</span></span>
                         <div className="hidden md:flex items-center gap-6">
                             <span className="text-indigo-600 font-semibold border-b-2 border-indigo-600">Dashboard</span>
                             <Link href="#" className="text-slate-500 hover:text-slate-900 transition-colors">Assignments</Link>
@@ -148,8 +148,8 @@ export default async function DashboardPage() {
                         </p>
                         <div className="mt-3">
                             <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${role === "admin"
-                                    ? "bg-[var(--hw-primary-fixed)] text-[var(--hw-on-primary-fixed)]"
-                                    : "bg-emerald-100 text-emerald-800"
+                                ? "bg-[var(--hw-primary-fixed)] text-[var(--hw-on-primary-fixed)]"
+                                : "bg-emerald-100 text-emerald-800"
                                 }`}>
                                 <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>
                                     {role === "admin" ? "shield_person" : "school"}

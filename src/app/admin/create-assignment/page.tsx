@@ -23,7 +23,7 @@ export default function CreateAssignmentPage() {
                         <span className="material-symbols-outlined text-[20px]">school</span>
                     </div>
                     <div>
-                        <h1 className="text-lg font-black text-indigo-600 leading-none">HomeworkLab</h1>
+                        <h1 className="text-lg font-black text-indigo-600 leading-none">HIT <span className="text-slate-800">AI/DATA</span></h1>
                         <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--hw-on-surface-variant)]/60 mt-1">
                             AI Workspace
                         </p>
