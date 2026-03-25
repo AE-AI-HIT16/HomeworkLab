@@ -1,26 +1,138 @@
 @import "tailwindcss";
 
+/* ─── HomeworkLab Design System (Stitch Indigo Theme) ─── */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Primary */
+  --hw-primary: #4648d4;
+  --hw-primary-container: #6063ee;
+  --hw-primary-fixed: #e1e0ff;
+  --hw-primary-fixed-dim: #c0c1ff;
+  --hw-on-primary: #ffffff;
+  --hw-on-primary-container: #fffbff;
+  --hw-on-primary-fixed: #07006c;
+
+  /* Secondary */
+  --hw-secondary: #575992;
+  --hw-secondary-container: #bdbefe;
+  --hw-on-secondary: #ffffff;
+
+  /* Tertiary */
+  --hw-tertiary: #904900;
+  --hw-tertiary-container: #b55d00;
+  --hw-tertiary-fixed: #ffdcc5;
+
+  /* Error */
+  --hw-error: #ba1a1a;
+  --hw-error-container: #ffdad6;
+  --hw-on-error: #ffffff;
+  --hw-on-error-container: #93000a;
+
+  /* Surface */
+  --hw-surface: #f9f9fa;
+  --hw-surface-dim: #d9dadb;
+  --hw-surface-bright: #f9f9fa;
+  --hw-surface-container: #eeeeef;
+  --hw-surface-container-low: #f3f3f4;
+  --hw-surface-container-high: #e8e8e9;
+  --hw-surface-container-highest: #e2e2e3;
+  --hw-surface-container-lowest: #ffffff;
+  --hw-surface-variant: #e2e2e3;
+  --hw-surface-tint: #494bd6;
+
+  /* On Surface */
+  --hw-on-surface: #1a1c1d;
+  --hw-on-surface-variant: #464554;
+  --hw-on-background: #1a1c1d;
+
+  /* Outline */
+  --hw-outline: #767586;
+  --hw-outline-variant: #c7c4d7;
+
+  /* Inverse */
+  --hw-inverse-surface: #2f3132;
+  --hw-inverse-on-surface: #f0f1f2;
+  --hw-inverse-primary: #c0c1ff;
+
+  /* Shadows */
+  --hw-shadow-sm: 0 1px 3px rgba(26, 28, 29, 0.04);
+  --hw-shadow-md: 0 4px 12px rgba(26, 28, 29, 0.06);
+  --hw-shadow-lg: 0 12px 40px rgba(26, 28, 29, 0.06);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  --color-background: var(--hw-surface);
+  --color-foreground: var(--hw-on-surface);
+  --font-sans: 'Inter', sans-serif;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  /* Design tokens as Tailwind colors */
+  --color-hw-primary: var(--hw-primary);
+  --color-hw-primary-container: var(--hw-primary-container);
+  --color-hw-primary-fixed: var(--hw-primary-fixed);
+  --color-hw-primary-fixed-dim: var(--hw-primary-fixed-dim);
+  --color-hw-on-primary: var(--hw-on-primary);
+  --color-hw-on-primary-container: var(--hw-on-primary-container);
+
+  --color-hw-secondary: var(--hw-secondary);
+  --color-hw-secondary-container: var(--hw-secondary-container);
+  --color-hw-on-secondary: var(--hw-on-secondary);
+
+  --color-hw-tertiary: var(--hw-tertiary);
+  --color-hw-tertiary-container: var(--hw-tertiary-container);
+  --color-hw-tertiary-fixed: var(--hw-tertiary-fixed);
+
+  --color-hw-error: var(--hw-error);
+  --color-hw-error-container: var(--hw-error-container);
+  --color-hw-on-error: var(--hw-on-error);
+  --color-hw-on-error-container: var(--hw-on-error-container);
+
+  --color-hw-surface: var(--hw-surface);
+  --color-hw-surface-dim: var(--hw-surface-dim);
+  --color-hw-surface-container: var(--hw-surface-container);
+  --color-hw-surface-container-low: var(--hw-surface-container-low);
+  --color-hw-surface-container-high: var(--hw-surface-container-high);
+  --color-hw-surface-container-highest: var(--hw-surface-container-highest);
+  --color-hw-surface-container-lowest: var(--hw-surface-container-lowest);
+  --color-hw-surface-variant: var(--hw-surface-variant);
+
+  --color-hw-on-surface: var(--hw-on-surface);
+  --color-hw-on-surface-variant: var(--hw-on-surface-variant);
+
+  --color-hw-outline: var(--hw-outline);
+  --color-hw-outline-variant: var(--hw-outline-variant);
+
+  --color-hw-inverse-surface: var(--hw-inverse-surface);
+  --color-hw-inverse-on-surface: var(--hw-inverse-on-surface);
+  --color-hw-inverse-primary: var(--hw-inverse-primary);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--hw-surface);
+  color: var(--hw-on-surface);
+  font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+/* Glass panel effect */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+/* AI dot pattern background */
+.ai-pattern {
+  background-image: radial-gradient(var(--hw-primary) 0.5px, transparent 0.5px);
+  background-size: 24px 24px;
+  opacity: 0.03;
+}
+
+/* Indigo gradient glow */
+.inference-glow {
+  background: linear-gradient(90deg, #4648d4, #6063ee, #4648d4);
+  background-size: 200% 100%;
 }
