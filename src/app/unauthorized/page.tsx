@@ -1,7 +1,12 @@
-import { signOut } from "@/auth";
+import { auth, signOut } from "@/auth";
 import Link from "next/link";
 
-export default function UnauthorizedPage() {
+export default async function UnauthorizedPage() {
+    const session = await auth();
+    const githubUsername = session?.user?.githubUsername || "[Your GitHub Username]";
+    const name = session?.user?.name || "[Your Name]";
+
+    const mailToUrl = `mailto:nguyenhuyhoangqbx5@gmail.com?subject=${encodeURIComponent("Yêu cầu cấp quyền truy cập HIT AI/DATA")}&body=${encodeURIComponent(`Xin chào Admin,\n\nVui lòng thêm tài khoản GitHub của tôi vào danh sách được cấp quyền truy cập hệ thống HIT AI/DATA.\n\nThông tin của tôi:\n- Họ và tên: ${name}\n- GitHub Username: ${githubUsername}\n\nXin cảm ơn!`)}`;
     return (
         <div className="min-h-screen flex flex-col bg-[var(--hw-surface)] text-[var(--hw-on-surface)]">
             {/* Top Nav */}
@@ -50,12 +55,12 @@ export default function UnauthorizedPage() {
                         </p>
 
                         <div className="w-full flex justify-center mb-4">
-                            <Link
-                                href="mailto:nguyenhuyhoangqbx5@gmail.com"
+                            <a
+                                href={mailToUrl}
                                 className="w-full sm:w-auto px-8 py-3 bg-[var(--hw-primary)] text-white font-medium rounded-lg hover:brightness-110 active:scale-95 transition-all text-sm flex items-center justify-center gap-2 shadow-sm"
                             >
                                 Contact Admin
-                            </Link>
+                            </a>
                         </div>
 
                         <div className="w-full flex justify-center mt-2">

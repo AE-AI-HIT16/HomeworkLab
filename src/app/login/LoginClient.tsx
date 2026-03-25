@@ -14,6 +14,8 @@ type LoginState = "default" | "loading" | "denied";
 export default function LoginClient({ accessDenied, deniedUser }: LoginClientProps) {
     const [state, setState] = useState<LoginState>(accessDenied ? "denied" : "default");
 
+    const mailToUrl = `mailto:nguyenhuyhoangqbx5@gmail.com?subject=${encodeURIComponent("Yêu cầu cấp quyền truy cập HIT AI/DATA")}&body=${encodeURIComponent(`Xin chào Admin,\n\nVui lòng thêm tài khoản GitHub của tôi vào danh sách được cấp quyền truy cập hệ thống HIT AI/DATA.\n\nThông tin của tôi:\n- Họ và tên: [Nhập tên của bạn]\n- GitHub Username: ${deniedUser || "[Nhập username]"}\n\nXin cảm ơn!`)}`;
+
     const handleSignIn = () => {
         setState("loading");
         signIn("github", { callbackUrl: "/dashboard" });
@@ -229,13 +231,13 @@ export default function LoginClient({ accessDenied, deniedUser }: LoginClientPro
                                         <span className="material-symbols-outlined text-sm">arrow_back</span>
                                         Go back
                                     </button>
-                                    <Link
-                                        href="mailto:nguyenhuyhoangqbx5@gmail.com"
+                                    <a
+                                        href={mailToUrl}
                                         className="w-full bg-[var(--hw-surface-container-high)] text-[var(--hw-on-surface)] py-3 rounded-lg font-medium hover:brightness-105 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
                                     >
                                         <span className="material-symbols-outlined text-sm">mail</span>
                                         Contact Instructor
-                                    </Link>
+                                    </a>
                                 </div>
 
                                 {/* Security Badge */}
