@@ -1,18 +1,24 @@
 import { NextResponse } from "next/server";
 
-// Temporary debug endpoint under /api/auth/ path to bypass middleware
-// REMOVE before production
+// Temporary debug endpoint — REMOVE before production
 export async function GET() {
+    // List ALL env var keys (no values!) to understand what Vercel provides
+    const allKeys = Object.keys(process.env).sort();
+
     return NextResponse.json({
-        hasAuthSecret: !!process.env.AUTH_SECRET,
-        authSecretLength: process.env.AUTH_SECRET?.length ?? 0,
-        authSecretFirst4: process.env.AUTH_SECRET?.substring(0, 4) ?? "MISSING",
-        hasGithubId: !!process.env.AUTH_GITHUB_ID,
-        githubIdValue: process.env.AUTH_GITHUB_ID ?? "MISSING",
-        hasGithubSecret: !!process.env.AUTH_GITHUB_SECRET,
-        githubSecretLength: process.env.AUTH_GITHUB_SECRET?.length ?? 0,
-        githubSecretFirst4: process.env.AUTH_GITHUB_SECRET?.substring(0, 4) ?? "MISSING",
+        totalEnvVars: allKeys.length,
+        authRelated: allKeys.filter(k => k.includes("AUTH") || k.includes("GITHUB")),
+        googleRelated: allKeys.filter(k => k.includes("GOOGLE")),
+        vercelRelated: allKeys.filter(k => k.includes("VERCEL")),
+        nextRelated: allKeys.filter(k => k.startsWith("NEXT")),
         nodeEnv: process.env.NODE_ENV,
-        allAuthEnvKeys: Object.keys(process.env).filter(k => k.startsWith("AUTH") || k.startsWith("NEXT")).sort(),
+        // Check if vars exist (no values exposed)
+        checks: {
+            AUTH_SECRET: !!process.env.AUTH_SECRET,
+            AUTH_GITHUB_ID: !!process.env.AUTH_GITHUB_ID,
+            AUTH_GITHUB_SECRET: !!process.env.AUTH_GITHUB_SECRET,
+            ADMIN_GITHUB_USERNAMES: !!process.env.ADMIN_GITHUB_USERNAMES,
+            GOOGLE_SHEET_ID: !!process.env.GOOGLE_SHEET_ID,
+        }
     });
 }
