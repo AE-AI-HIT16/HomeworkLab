@@ -4,6 +4,7 @@ import { getAssignmentById, getSubmission } from "@/lib/google-sheets";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
+import { SubmissionForm } from "@/components/SubmissionForm";
 
 interface AssignmentPageProps {
     params: Promise<{ id: string }>;
@@ -141,8 +142,8 @@ export default async function AssignmentPage({ params }: AssignmentPageProps) {
                     <div className="flex items-center gap-3 mb-8">
                         {isSubmitted ? (
                             <span className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 ${isLate
-                                    ? "bg-amber-50 text-amber-700"
-                                    : "bg-emerald-50 text-emerald-700"
+                                ? "bg-amber-50 text-amber-700"
+                                : "bg-emerald-50 text-emerald-700"
                                 }`}>
                                 <span className="material-symbols-outlined text-[14px]" style={{ fontVariationSettings: "'FILL' 1" }}>
                                     {isLate ? "schedule" : "check_circle"}
@@ -193,118 +194,17 @@ export default async function AssignmentPage({ params }: AssignmentPageProps) {
                         </div>
                     </section>
 
-                    {/* Late Submission Warning */}
-                    {isPastDue && !isSubmitted && (
-                        <div className="mb-8 p-4 bg-amber-50 border border-amber-200 rounded-lg flex items-start gap-3">
-                            <span className="material-symbols-outlined text-amber-600 text-xl mt-0.5">warning</span>
-                            <div>
-                                <p className="text-sm font-bold text-amber-800">WARNING: LATE SUBMISSION</p>
-                                <p className="text-xs text-amber-700 mt-1">
-                                    Submitting after {formatDate(assignment.dueAt)} may result in a point deduction. Today is {formatDate(new Date().toISOString())}.
-                                </p>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Instructions (shown for not-submitted state) */}
-                    {!isSubmitted && (
-                        <section className="mb-12">
-                            <h2 className="text-lg font-medium text-[var(--hw-on-surface)] mb-6">Instructions</h2>
-                            <div className="space-y-6">
-                                <div className="flex gap-4">
-                                    <div className="w-8 h-8 rounded-full bg-[var(--hw-surface-container-lowest)] flex items-center justify-center shadow-sm flex-shrink-0">
-                                        <span className="text-sm font-bold text-[var(--hw-primary)]">1</span>
-                                    </div>
-                                    <div>
-                                        <h4 className="font-medium text-sm">Review the Assignment Brief</h4>
-                                        <p className="text-xs text-[var(--hw-on-surface-variant)] mt-1">Read through the requirements and key objectives above.</p>
-                                    </div>
-                                </div>
-                                <div className="flex gap-4">
-                                    <div className="w-8 h-8 rounded-full bg-[var(--hw-surface-container-lowest)] flex items-center justify-center shadow-sm flex-shrink-0">
-                                        <span className="text-sm font-bold text-[var(--hw-primary)]">2</span>
-                                    </div>
-                                    <div>
-                                        <h4 className="font-medium text-sm">Complete Your Work</h4>
-                                        <p className="text-xs text-[var(--hw-on-surface-variant)] mt-1">Develop your solution following the guidelines and best practices.</p>
-                                    </div>
-                                </div>
-                                <div className="flex gap-4">
-                                    <div className="w-8 h-8 rounded-full bg-[var(--hw-surface-container-lowest)] flex items-center justify-center shadow-sm flex-shrink-0">
-                                        <span className="text-sm font-bold text-[var(--hw-primary)]">3</span>
-                                    </div>
-                                    <div>
-                                        <h4 className="font-medium text-sm">Submit Your Assignment</h4>
-                                        <p className="text-xs text-[var(--hw-on-surface-variant)] mt-1">Upload your files or provide a GitHub repository link using the submission panel.</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </section>
-                    )}
-
-                    {/* Submitted State: Submission Summary */}
-                    {isSubmitted && (
-                        <section className="mb-12">
-                            <div className="flex items-center justify-between mb-4">
-                                <h2 className="text-lg font-medium text-[var(--hw-on-surface)]">Submission Summary</h2>
-                                <span className="text-xs text-[var(--hw-outline)] uppercase tracking-widest font-bold">Transaction Log</span>
-                            </div>
-                            <div className="bg-[var(--hw-surface-container-lowest)] p-6 rounded-xl shadow-[0_12px_40px_rgba(26,28,29,0.04)]">
-                                {/* File/Repo info */}
-                                <div className="flex items-center gap-4 p-4 bg-[var(--hw-surface-container-low)] rounded-lg mb-6">
-                                    <div className="w-10 h-10 rounded-lg bg-[var(--hw-primary)]/10 flex items-center justify-center">
-                                        <span className="material-symbols-outlined text-[var(--hw-primary)]">
-                                            {submissionType === "repo_link" ? "code" : "description"}
-                                        </span>
-                                    </div>
-                                    <div className="flex-1">
-                                        <p className="font-medium text-sm">
-                                            {submissionType === "repo_link" ? (
-                                                <>
-                                                    Repository Link:{" "}
-                                                    <a href={submission?.repoUrl ?? "#"} target="_blank" rel="noopener" className="text-[var(--hw-primary)] hover:underline">
-                                                        {submission?.repoUrl?.replace("https://", "") ?? "github.com/student/repo"}
-                                                    </a>
-                                                </>
-                                            ) : (
-                                                <>
-                                                    {submission?.file?.name ?? "Submission_File.pdf"}
-                                                    <span className="text-[var(--hw-outline)] ml-2 text-xs">
-                                                        {submission?.file?.size ? `${(submission.file.size / 1024).toFixed(1)} KB` : ""}
-                                                    </span>
-                                                </>
-                                            )}
-                                        </p>
-                                    </div>
-                                    {submissionType === "file" && (
-                                        <button className="text-[var(--hw-primary)] hover:text-[var(--hw-primary-container)]">
-                                            <span className="material-symbols-outlined">download</span>
-                                        </button>
-                                    )}
-                                </div>
-
-                                {/* Submission metadata */}
-                                <div className="grid grid-cols-2 gap-4 mb-6">
-                                    <div>
-                                        <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--hw-outline)] mb-1">Submitted On</p>
-                                        <p className="text-sm font-medium">{formatDateTime(submission?.submittedAt)}</p>
-                                    </div>
-                                    <div>
-                                        <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--hw-outline)] mb-1">Status</p>
-                                        <p className={`text-sm font-medium ${isLate ? "text-amber-600" : "text-emerald-600"}`}>
-                                            {isLate ? "Late" : "On Time"}
-                                        </p>
-                                    </div>
-                                </div>
-
-                                {/* Resubmit */}
-                                <Link href={`/assignment/${id}`} className="inline-flex items-center gap-2 bg-[var(--hw-primary)] text-white px-5 py-2.5 rounded-lg font-medium text-sm hover:brightness-110 active:scale-[0.98] transition-all">
-                                    <span className="material-symbols-outlined text-lg">refresh</span>
-                                    Resubmit Assignment
-                                </Link>
-                            </div>
-                        </section>
-                    )}
+                    {/* Assignment Submission Module */}
+                    <section className="mb-12">
+                        <h2 className="text-lg font-medium text-[var(--hw-on-surface)] mb-4">
+                            Assignment Submission
+                        </h2>
+                        <SubmissionForm
+                            assignmentId={assignment.id}
+                            existingSubmission={submission ?? undefined}
+                            isPastDue={isPastDue}
+                        />
+                    </section>
 
                     {/* Resources */}
                     {assignment.promptFiles.length > 0 && (
@@ -314,7 +214,7 @@ export default async function AssignmentPage({ params }: AssignmentPageProps) {
                                 {assignment.promptFiles.map((file, i) => (
                                     <a
                                         key={i}
-                                        href={file.url}
+                                        href={`https://drive.google.com/file/d/${file.driveFileId}/view`}
                                         target="_blank"
                                         rel="noopener"
                                         className="flex items-center gap-3 p-4 bg-[var(--hw-surface-container-lowest)] rounded-xl shadow-[0_12px_40px_rgba(26,28,29,0.04)] hover:shadow-[0_12px_40px_rgba(26,28,29,0.08)] transition-all group"
@@ -421,54 +321,28 @@ export default async function AssignmentPage({ params }: AssignmentPageProps) {
                                 </span>
                             </div>
 
-                            {/* Submission Tabs Placeholder */}
-                            <div>
-                                <div className="flex gap-2 mb-4">
-                                    <span className="px-3 py-1.5 bg-[var(--hw-surface-container-lowest)] text-sm font-medium rounded-lg shadow-sm cursor-pointer">
-                                        File Upload
-                                    </span>
-                                    <span className="px-3 py-1.5 bg-[var(--hw-surface-container-low)] text-sm text-[var(--hw-outline)] rounded-lg cursor-pointer hover:bg-[var(--hw-surface-container-high)] transition-colors">
-                                        GitHub Link
-                                    </span>
-                                </div>
+                            <div className="mb-6">
 
-                                {/* Drop Zone */}
-                                <div className="border-2 border-dashed border-[var(--hw-outline-variant)]/30 rounded-xl p-8 text-center hover:border-[var(--hw-primary)]/30 transition-colors cursor-pointer group">
-                                    <div className="w-12 h-12 rounded-full bg-[var(--hw-surface-container-low)] flex items-center justify-center mx-auto mb-3 group-hover:bg-[var(--hw-primary)]/10 transition-colors">
-                                        <span className="material-symbols-outlined text-[var(--hw-on-surface-variant)] group-hover:text-[var(--hw-primary)] transition-colors">cloud_upload</span>
-                                    </div>
-                                    <p className="text-sm font-medium text-[var(--hw-on-surface)]">Drop your assignment here</p>
-                                    <p className="text-[10px] text-[var(--hw-outline)] mt-1">
-                                        Accepts PDF, DOCX, or ZIP (Max 50MB)
-                                    </p>
-                                </div>
-                            </div>
-
-                            {/* Submit Button */}
-                            <button className="w-full bg-[var(--hw-primary)] text-white py-3 rounded-lg font-medium shadow-lg shadow-[var(--hw-primary)]/20 hover:brightness-110 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
-                                Submit Assignment
-                                <span className="material-symbols-outlined text-lg">send</span>
-                            </button>
-
-                            {/* Grading Rubric */}
-                            <div>
-                                <h4 className="text-xs font-bold uppercase tracking-widest text-[var(--hw-outline)] mb-3">Grading Rubric</h4>
-                                <div className="space-y-2">
-                                    <div className="flex justify-between text-xs">
-                                        <span className="text-[var(--hw-on-surface-variant)]">Completeness</span>
-                                        <span className="font-medium">40 pts</span>
-                                    </div>
-                                    <div className="flex justify-between text-xs">
-                                        <span className="text-[var(--hw-on-surface-variant)]">Code Quality</span>
-                                        <span className="font-medium">30 pts</span>
-                                    </div>
-                                    <div className="flex justify-between text-xs">
-                                        <span className="text-[var(--hw-on-surface-variant)]">Documentation</span>
-                                        <span className="font-medium">20 pts</span>
-                                    </div>
-                                    <div className="flex justify-between text-xs">
-                                        <span className="text-[var(--hw-on-surface-variant)]">Format Compliance</span>
-                                        <span className="font-medium">10 pts</span>
+                                {/* Grading Rubric */}
+                                <div>
+                                    <h4 className="text-xs font-bold uppercase tracking-widest text-[var(--hw-outline)] mb-3">Grading Rubric</h4>
+                                    <div className="space-y-2">
+                                        <div className="flex justify-between text-xs">
+                                            <span className="text-[var(--hw-on-surface-variant)]">Completeness</span>
+                                            <span className="font-medium">40 pts</span>
+                                        </div>
+                                        <div className="flex justify-between text-xs">
+                                            <span className="text-[var(--hw-on-surface-variant)]">Code Quality</span>
+                                            <span className="font-medium">30 pts</span>
+                                        </div>
+                                        <div className="flex justify-between text-xs">
+                                            <span className="text-[var(--hw-on-surface-variant)]">Documentation</span>
+                                            <span className="font-medium">20 pts</span>
+                                        </div>
+                                        <div className="flex justify-between text-xs">
+                                            <span className="text-[var(--hw-on-surface-variant)]">Format Compliance</span>
+                                            <span className="font-medium">10 pts</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
