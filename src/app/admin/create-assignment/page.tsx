@@ -448,7 +448,7 @@ export default function CreateAssignmentPage() {
                                     {/* Manual Link Fallback */}
                                     <div>
                                         <label className="block text-xs font-bold text-[var(--hw-on-surface-variant)] uppercase tracking-wider mb-2">
-                                            Link Google Drive thư mục bài tập (Giải pháp tạm thời)
+                                            Link Đề Bài / Tài Liệu (Google Drive, GitHub...)
                                         </label>
                                         <div className="flex gap-4">
                                             <input
@@ -456,7 +456,7 @@ export default function CreateAssignmentPage() {
                                                 value={manualDriveLink}
                                                 onChange={(e) => setManualDriveLink(e.target.value)}
                                                 className="flex-1 bg-[var(--hw-surface-container-low)] border-none rounded-lg p-4 text-[var(--hw-on-surface)] focus:ring-2 focus:ring-[var(--hw-primary)]/10 transition-all placeholder:text-[var(--hw-on-surface-variant)]/40"
-                                                placeholder="VD: https://drive.google.com/drive/folders/..."
+                                                placeholder="VD: https://drive.google... hoặc https://github.com/..."
                                                 type="url"
                                             />
                                         </div>

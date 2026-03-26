@@ -61,13 +61,21 @@ export async function createAssignmentAction(
         }
     }
 
-    // Add manual drive link as a special PromptFile
+    // Add manual link as a special PromptFile
     if (driveFolderLink?.trim()) {
-        const urlIdMatch = driveFolderLink.match(/[-\w]{25,}/);
-        const externalId = urlIdMatch ? urlIdMatch[0] : driveFolderLink.trim();
+        const url = driveFolderLink.trim();
+        let externalId = url;
+
+        // If it's a Drive URL, try to extract the ID for cleaner rendering, otherwise keep full URL
+        if (url.includes("drive.google.com")) {
+            const urlIdMatch = url.match(/[-\w]{25,}/);
+            if (urlIdMatch) {
+                externalId = urlIdMatch[0];
+            }
+        }
 
         promptFiles.push({
-            name: "🔗 Link Drive Đề Bài",
+            name: "🔗 Link Đề Bài / Tài Liệu",
             driveFileId: externalId,
             mimeType: "text/uri-list",
             sizeBytes: 0,
