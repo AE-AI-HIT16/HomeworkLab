@@ -2,7 +2,6 @@
 
 import { signIn } from "next-auth/react";
 import { useState } from "react";
-import Link from "next/link";
 
 interface LoginClientProps {
     accessDenied: boolean;
@@ -14,7 +13,7 @@ type LoginState = "default" | "loading" | "denied";
 export default function LoginClient({ accessDenied, deniedUser }: LoginClientProps) {
     const [state, setState] = useState<LoginState>(accessDenied ? "denied" : "default");
 
-    const mailToUrl = `mailto:nguyenhuyhoangqbx5@gmail.com?subject=${encodeURIComponent("Yêu cầu cấp quyền truy cập HIT AI/DATA")}&body=${encodeURIComponent(`Xin chào Admin,\n\nVui lòng thêm tài khoản GitHub của tôi vào danh sách được cấp quyền truy cập hệ thống HIT AI/DATA.\n\nThông tin của tôi:\n- Họ và tên: [Nhập tên của bạn]\n- GitHub Username: ${deniedUser || "[Nhập username]"}\n\nXin cảm ơn!`)}`;
+    const mailToUrl = `mailto:nguyenhuyhoangqbx5@gmail.com?subject=${encodeURIComponent("Access Request: HIT AI/DATA")}&body=${encodeURIComponent(`Hello Admin,\n\nPlease add my GitHub account to the authorized access list for the HIT AI/DATA system.\n\nMy Information:\n- Full Name: [Enter your name]\n- GitHub Username: ${deniedUser || "[Enter username]"}\n\nThank you!`)}`;
 
     const handleSignIn = () => {
         setState("loading");

@@ -3,9 +3,9 @@ import { getCurrentUserRole } from "@/lib/roles";
 import { getAssignmentById, getSubmission } from "@/lib/google-sheets";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
 import { SubmissionForm } from "@/components/SubmissionForm";
 import { NotebookPreview } from "@/components/NotebookPreview";
+import { TopNav } from "@/components/TopNav";
 
 interface AssignmentPageProps {
     params: Promise<{ id: string }>;
@@ -31,6 +31,17 @@ function formatDateTime(iso?: string): string {
     });
 }
 
+/**
+ * Helper to translate legacy Vietnamese resource names
+ */
+function translateResourceName(name: string): string {
+    const lower = name.toLowerCase();
+    if (lower.includes("link đề bài") || lower.includes("tài liệu")) return "🔗 Assignment Drive Link";
+    if (lower === "de-bai") return "Course Materials";
+    if (lower === "nop-bai") return "Student Submissions";
+    return name;
+}
+
 export default async function AssignmentPage({ params }: AssignmentPageProps) {
     const { id } = await params;
     const session = await requireSession();
@@ -46,87 +57,51 @@ export default async function AssignmentPage({ params }: AssignmentPageProps) {
     const isPastDue = assignment.dueAt ? new Date(assignment.dueAt) < new Date() : false;
     const isSubmitted = !!submission;
     const isLate = submission?.isLate ?? false;
-    const submissionType = submission?.type; // "file" | "repo_link"
 
     return (
-        <div className="min-h-screen bg-[var(--hw-surface)] text-[var(--hw-on-surface)] antialiased">
-            {/* ═══ TOP NAV ═══ */}
-            <nav className="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-md shadow-sm h-14 flex items-center justify-between px-6">
-                <div className="flex items-center gap-8">
-                    <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 bg-[var(--hw-primary)] rounded-md flex items-center justify-center text-white">
-                            <span className="material-symbols-outlined text-[14px]">school</span>
-                        </div>
-                        <span className="text-lg font-bold tracking-tight">HIT <span className="text-indigo-600">AI/DATA</span></span>
-                    </div>
-                    <div className="hidden md:flex items-center gap-6 text-sm">
-                        <Link href="/dashboard" className="text-slate-500 hover:text-slate-900 transition-colors">Dashboard</Link>
-                        <span className="text-indigo-600 font-semibold border-b-2 border-indigo-600 pb-0.5">Curriculum</span>
-                        <Link href="#" className="text-slate-500 hover:text-slate-900 transition-colors">Resources</Link>
-                        <Link href="#" className="text-slate-500 hover:text-slate-900 transition-colors">Settings</Link>
-                    </div>
-                </div>
-                <div className="flex items-center gap-4">
-                    <button className="text-slate-500 hover:text-indigo-500 transition-colors">
-                        <span className="material-symbols-outlined text-xl">notifications</span>
-                    </button>
-                    <button className="text-slate-500 hover:text-indigo-500 transition-colors">
-                        <span className="material-symbols-outlined text-xl">help_outline</span>
-                    </button>
-                    {user.image && (
-                        <Image src={user.image} alt={user.name ?? "Avatar"} width={28} height={28} className="rounded-full border border-[var(--hw-surface-container-high)]" />
-                    )}
-                </div>
-            </nav>
+        <div className="min-h-screen bg-[var(--hw-surface)] flex flex-col font-sans antialiased">
+            <TopNav
+                user={{
+                    name: session.user.name,
+                    email: session.user.email,
+                    image: session.user.image,
+                    githubUsername: session.user.githubUsername
+                }}
+                role={role}
+                showSearch={false}
+            />
 
-            <div className="flex pt-14">
-                {/* ═══ LEFT SIDEBAR — Curriculum Nav ═══ */}
-                <aside className="fixed left-0 h-[calc(100vh-56px)] w-56 bg-slate-50 flex-col p-4 text-sm hidden md:flex">
+            <div className="flex pt-16">
+                {/* ═══ SIDEBAR ═══ */}
+                <aside className="fixed left-0 h-[calc(100vh-64px)] w-56 bg-slate-50 flex-col p-4 text-sm hidden md:flex border-r border-slate-100">
                     <div className="mb-6 px-2">
-                        <h2 className="text-base font-semibold text-[var(--hw-on-surface)]">Curriculum</h2>
-                        <p className="text-[10px] uppercase tracking-widest text-slate-500 font-bold mt-0.5">AI Foundations 2024</p>
+                        <div className="flex items-center gap-2 mb-1">
+                            <div className="w-6 h-6 bg-indigo-600 rounded-md flex items-center justify-center text-white">
+                                <span className="material-symbols-outlined text-[14px]">school</span>
+                            </div>
+                            <h2 className="text-sm font-semibold text-slate-900 tracking-tight">HIT AI/DATA</h2>
+                        </div>
+                        <p className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Week {assignment.week} • Lesson {assignment.lesson}</p>
                     </div>
                     <nav className="flex-1 space-y-1">
-                        <Link href="#" className="flex items-center gap-2 px-3 py-2 text-slate-600 hover:bg-slate-100 rounded-lg hover:translate-x-1 transition-transform">
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                            Introduction to LLMs
+                        <Link href="/dashboard" className="flex items-center gap-2 px-3 py-2 text-slate-600 hover:bg-slate-100 rounded-lg hover:translate-x-1 transition-transform">
+                            <span className="material-symbols-outlined text-lg">arrow_back</span>
+                            Back to Dashboard
                         </Link>
-                        <span className="flex items-center gap-2 px-3 py-2 bg-white text-indigo-600 shadow-sm rounded-lg font-semibold">
-                            <span className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
-                            Prompt Engineering
+                        <span className="flex items-center gap-2 px-3 py-2 bg-indigo-50 text-indigo-700 shadow-sm rounded-lg font-semibold border border-indigo-100/50">
+                            <span className="material-symbols-outlined text-lg">{isSubmitted ? "check_circle" : "assignment"}</span>
+                            {isSubmitted ? "Submitted" : "Not Submitted"}
                         </span>
-                        <Link href="#" className="flex items-center gap-2 px-3 py-2 text-slate-600 hover:bg-slate-100 rounded-lg hover:translate-x-1 transition-transform">
-                            <span className="w-1.5 h-1.5 rounded-full bg-slate-300" />
-                            Neural Architectures
-                        </Link>
-                        <Link href="#" className="flex items-center gap-2 px-3 py-2 text-slate-600 hover:bg-slate-100 rounded-lg hover:translate-x-1 transition-transform">
-                            <span className="w-1.5 h-1.5 rounded-full bg-slate-300" />
-                            Ethics in AI
-                        </Link>
-                        <Link href="#" className="flex items-center gap-2 px-3 py-2 text-slate-600 hover:bg-slate-100 rounded-lg hover:translate-x-1 transition-transform">
-                            <span className="w-1.5 h-1.5 rounded-full bg-slate-300" />
-                            Final Capstone
-                        </Link>
                     </nav>
 
-                    {isSubmitted && (
-                        <div className="mt-auto">
-                            <Link href="/dashboard" className="w-full flex items-center justify-center gap-2 bg-[var(--hw-primary)] text-white py-2.5 rounded-lg font-medium shadow-sm hover:brightness-110 active:scale-[0.98] transition-all text-sm">
-                                <span className="material-symbols-outlined text-lg">trending_up</span>
-                                View Progress
-                            </Link>
-                        </div>
-                    )}
-
-                    <div className="pt-4 space-y-1 mt-auto">
-                        <Link href="#" className="flex items-center gap-3 px-3 py-2 text-slate-600 hover:bg-slate-100 rounded-lg">
-                            <span className="material-symbols-outlined text-lg">support</span>
-                            Support
-                        </Link>
-                        <Link href="#" className="flex items-center gap-3 px-3 py-2 text-slate-600 hover:bg-slate-100 rounded-lg">
-                            <span className="material-symbols-outlined text-lg">inventory_2</span>
-                            Archive
-                        </Link>
+                    <div className="mt-auto px-2 pb-4">
+                         <div className="p-4 bg-indigo-50/50 rounded-xl border border-indigo-100 relative overflow-hidden group">
+                            <div className="absolute top-0 right-0 w-12 h-12 bg-indigo-200 rounded-full blur-xl opacity-30 -mr-6 -mt-6" />
+                            <p className="text-[10px] font-bold text-indigo-800 uppercase mb-1 relative z-10">Performance</p>
+                            <p className="text-xs text-indigo-600 font-medium relative z-10">
+                                {isSubmitted ? "Check your grades on the dashboard." : "Complete this task to improve your score."}
+                            </p>
+                         </div>
                     </div>
                 </aside>
 
@@ -172,6 +147,15 @@ export default async function AssignmentPage({ params }: AssignmentPageProps) {
                                 Assignment due {formatDate(assignment.dueAt)}, {formatDateTime(submission.submittedAt)}
                             </span>
                         )}
+                        {role === "admin" && (
+                            <Link 
+                                href={`/admin/assignments/${id}`}
+                                className="ml-auto flex items-center gap-1.5 text-xs font-bold text-indigo-600 hover:text-indigo-800 transition-colors bg-indigo-50 px-3 py-1.5 rounded-lg border border-indigo-100"
+                            >
+                                <span className="material-symbols-outlined text-[16px]">grading</span>
+                                Grade this Assignment
+                            </Link>
+                        )}
                     </div>
 
                     {/* Assignment Brief */}
@@ -215,7 +199,7 @@ export default async function AssignmentPage({ params }: AssignmentPageProps) {
                                 {assignment.promptFiles.map((file, i) => {
                                     const ext = file.name.split(".").pop()?.toLowerCase();
                                     const isNotebook = ext === "ipynb";
-                                    const isExternalLink = file.mimeType === "text/uri-list" || file.name === "🔗 Link Drive Đề Bài";
+                                    const isExternalLink = file.mimeType === "text/uri-list" || file.name === "🔗 Assignment Drive Link";
 
                                     if (isNotebook) {
                                         return (
@@ -245,7 +229,7 @@ export default async function AssignmentPage({ params }: AssignmentPageProps) {
                                                     <span className="material-symbols-outlined text-orange-600">link</span>
                                                 </div>
                                                 <div className="flex-1 min-w-0">
-                                                    <p className="text-sm font-medium text-orange-900 truncate">{file.name}</p>
+                                                    <p className="text-sm font-medium text-orange-900 truncate">{translateResourceName(file.name)}</p>
                                                     <p className="text-[10px] text-orange-600/70 uppercase">
                                                         External Link
                                                     </p>

@@ -16,7 +16,7 @@ const GOOGLE_REFRESH_TOKEN = env.GOOGLE_REFRESH_TOKEN;
 
 let driveApi: ReturnType<typeof google.drive>;
 
-/** Lấy Drive API Client */
+/** Get Drive API Client */
 export function getDriveApi() {
     if (!driveApi) {
         // 1. Try OAuth2 first (Personal Gmail with 30TB Storage)
@@ -53,9 +53,9 @@ export function getDriveApi() {
 }
 
 /** 
- * Tìm hoặc tạo thư mục.
- * @param name Tên thư mục cần tạo
- * @param parentId ID thư mục cha (mặc định là ROOT folder)
+ * Find or create a folder.
+ * @param name Folder name to create
+ * @param parentId Parent folder ID (defaults to ROOT folder)
  */
 export async function findOrCreateFolder(name: string, parentId?: string): Promise<string | undefined> {
     const drive = getDriveApi();
@@ -67,7 +67,7 @@ export async function findOrCreateFolder(name: string, parentId?: string): Promi
     }
 
     try {
-        // Tìm xem folder đã tồn tại chưa
+        // Check if the folder already exists
         const query = `name = '${name.replace(/'/g, "\\'")}' and '${parent}' in parents and mimeType = 'application/vnd.google-apps.folder' and trashed = false`;
         const res = await drive.files.list({
             q: query,
@@ -81,7 +81,7 @@ export async function findOrCreateFolder(name: string, parentId?: string): Promi
             return res.data.files[0].id!;
         }
 
-        // Tạo mới nếu chưa có
+        // Create new if it doesn't exist
         const folderMetadata = {
             name: name,
             mimeType: "application/vnd.google-apps.folder",
@@ -96,7 +96,7 @@ export async function findOrCreateFolder(name: string, parentId?: string): Promi
 
         return createRes.data.id!;
     } catch (error) {
-        console.error("Lỗi khi findOrCreateFolder:", error);
+        console.error("Error in findOrCreateFolder:", error);
         throw error;
     }
 }
@@ -108,8 +108,8 @@ export interface AssignmentFolders {
 }
 
 /** 
- * Tạo hệ thống folder cho 1 assignment:
- * ROOT > [W{week}-L{lesson}] {title} > [de-bai, nop-bai]
+ * Create folder structure for an assignment:
+ * ROOT > [W{week}-L{lesson}] {title} > [course-materials, student-submissions]
  */
 export async function createAssignmentFolders(week: number, lesson: number, title: string): Promise<AssignmentFolders> {
     const drive = getDriveApi();
@@ -117,13 +117,13 @@ export async function createAssignmentFolders(week: number, lesson: number, titl
 
     const parentName = `[W${week}-L${lesson}] ${title}`;
 
-    // Tạo folder cha
+    // Create parent folder
     const parentFolderId = await findOrCreateFolder(parentName);
     if (!parentFolderId) return {};
 
-    // Tạo 2 subfolder
-    const promptFolderId = await findOrCreateFolder("de-bai", parentFolderId);
-    const submissionFolderId = await findOrCreateFolder("nop-bai", parentFolderId);
+    // Create 2 subfolders
+    const promptFolderId = await findOrCreateFolder("course-materials", parentFolderId);
+    const submissionFolderId = await findOrCreateFolder("student-submissions", parentFolderId);
 
     return {
         parentFolderId,
@@ -133,7 +133,7 @@ export async function createAssignmentFolders(week: number, lesson: number, titl
 }
 
 /**
- * Xóa dấu tiếng Việt và ký tự đặc biệt để tạo tên file an toàn
+ * Remove Vietnamese diacritics and special characters to create a safe filename
  */
 export function normalizeFileName(studentName: string, week: number, lesson: number, originalFileName: string): string {
     const noDiacritics = studentName
@@ -148,11 +148,11 @@ export function normalizeFileName(studentName: string, week: number, lesson: num
 
     const ext = originalFileName.includes(".") ? "." + originalFileName.split(".").pop() : "";
 
-    return `${safeName}_Tuan${week}_Bai${lesson}${ext}`;
+    return `${safeName}_Week${week}_Lesson${lesson}${ext}`;
 }
 
 /**
- * Upload file nộp bài lên Drive
+ * Upload student submission file to Drive
  */
 export async function uploadSubmissionFile(
     fileBuffer: Buffer,
@@ -190,14 +190,14 @@ export async function uploadSubmissionFile(
             sizeBytes: fileBuffer.length,
         };
     } catch (error) {
-        console.error("Lỗi khi upload submission file:", error);
+        console.error("Error uploading submission file:", error);
         throw error;
     }
 }
 
 /**
- * Upload file đề bài lên Drive và set quyền public-read.
- * Trả về PromptFile metadata để lưu vào Google Sheets.
+ * Upload resource file to Drive and set permission to public-read.
+ * Returns PromptFile metadata for Google Sheets storage.
  */
 export async function uploadPromptFile(
     fileBuffer: Buffer,
@@ -208,7 +208,7 @@ export async function uploadPromptFile(
     const drive = getDriveApi();
 
     if (!drive) {
-        // Mock mode khi không có credentials
+        // Mock mode when credentials are missing
         console.log("[Mock] Upload prompt file:", originalFileName, "-> folder", folderId);
         return {
             name: originalFileName,
@@ -252,7 +252,7 @@ export async function uploadPromptFile(
             sizeBytes: fileBuffer.length,
         };
     } catch (error) {
-        console.error("Lỗi khi upload prompt file:", error);
+        console.error("Error uploading prompt file:", error);
         throw error;
     }
 }

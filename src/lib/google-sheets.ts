@@ -74,7 +74,7 @@ export async function getAssignments(): Promise<Assignment[]> {
             let promptFiles: PromptFile[] = [];
             try {
                 if (row[8]) promptFiles = JSON.parse(row[8]);
-            } catch (e) {
+            } catch {
                 console.error(`Failed to parse promptFilesJSON for assignment ${row[0]}`);
             }
 
@@ -155,7 +155,7 @@ export async function getSubmissions(): Promise<Submission[]> {
             if (row[7]) {
                 try {
                     file = JSON.parse(row[7]);
-                } catch (e) {
+                } catch {
                     console.error(`Failed to parse fileJSON for submission ${row[0]}`);
                 }
             }
@@ -282,7 +282,7 @@ export interface AssignmentDetailData {
 }
 
 /**
- * Lấy chi tiết assignment cùng với danh sách học viên và bài nộp tương ứng.
+ * Get assignment details along with associated students and submissions.
  */
 export async function getAssignmentDetailsWithSubmissions(assignmentId: string): Promise<AssignmentDetailData | null> {
     const assignment = await getAssignmentById(assignmentId);
@@ -301,10 +301,26 @@ export async function getAssignmentDetailsWithSubmissions(assignmentId: string):
         subMap.set(sub.githubUsername.toLowerCase(), sub);
     }
 
+    // Build rows: Start with active students
     const rows: StudentSubmissionRow[] = activeStudents.map((student) => ({
         student,
         submission: subMap.get(student.githubUsername.toLowerCase()),
     }));
+
+    // Add extra rows for submissions from users not in the active student list
+    const studentUsernames = new Set(activeStudents.map(s => s.githubUsername.toLowerCase()));
+    const extraSubmissions = allSubmissions.filter(s => !studentUsernames.has(s.githubUsername.toLowerCase()));
+    
+    for (const sub of extraSubmissions) {
+        rows.push({
+            student: {
+                githubUsername: sub.githubUsername,
+                name: sub.studentName || sub.githubUsername,
+                active: false,
+            },
+            submission: sub
+        });
+    }
 
     // Sort: submitted first (late last among submitted), then missing
     rows.sort((a, b) => {
@@ -320,9 +336,9 @@ export async function getAssignmentDetailsWithSubmissions(assignmentId: string):
 
     const submittedCount = allSubmissions.length;
     const stats = {
-        total: activeStudents.length,
+        total: Math.max(activeStudents.length, submittedCount),
         submitted: submittedCount,
-        missing: activeStudents.length - submittedCount,
+        missing: Math.max(0, activeStudents.length - submittedCount),
         late: allSubmissions.filter((s) => s.isLate).length,
         files: allSubmissions.filter((s) => s.type === "file").length,
         repos: allSubmissions.filter((s) => s.type === "repo_link").length,

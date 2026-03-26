@@ -1,11 +1,10 @@
 import { requireSession } from "@/lib/auth";
 import { getCurrentUserRole } from "@/lib/roles";
-import Image from "next/image";
 import Link from "next/link";
 import { getAssignments, getSubmissionsByStudent } from "@/lib/google-sheets";
-import { signOut } from "@/auth";
 import type { Assignment, Submission } from "@/types";
 import EmptyAssignments from "@/components/EmptyAssignments";
+import { TopNav } from "@/components/TopNav";
 
 function getSubmissionStatus(assignment: Assignment, submission?: Submission) {
     if (submission) {
@@ -31,13 +30,20 @@ function formatDueDate(dueAt?: string) {
     return `Due: ${d.toLocaleDateString("en-US", { month: "short", day: "numeric" })}`;
 }
 
-export default async function DashboardPage() {
+export default async function DashboardPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
     await requireSession();
     const { role, session } = await getCurrentUserRole();
     const user = session!.user;
+    const { q } = await searchParams;
 
     const allAssignments = await getAssignments();
-    const assignments = allAssignments.filter((a) => a.published);
+    const publishedAssignments = allAssignments.filter((a) => a.published);
+    const assignments = q
+        ? publishedAssignments.filter((a) =>
+            a.title.toLowerCase().includes(q.toLowerCase()) ||
+            (a.description ?? "").toLowerCase().includes(q.toLowerCase())
+        )
+        : publishedAssignments;
     const userSubmissions = await getSubmissionsByStudent(user.githubUsername);
     const submissionMap = new Map<string, Submission>(
         userSubmissions.map((s) => [s.assignmentId, s])
@@ -56,42 +62,22 @@ export default async function DashboardPage() {
     const weeks = Array.from(weekMap.entries()).sort(([a], [b]) => a - b);
 
     // Stats
-    const totalAssignments = assignments.length;
-    const submittedCount = userSubmissions.length;
+    const totalAssignments = publishedAssignments.length;
+    const submittedCount = userSubmissions.filter(s => publishedAssignments.some(a => a.id === s.assignmentId)).length;
     const completionPct = totalAssignments > 0 ? Math.round((submittedCount / totalAssignments) * 100) : 0;
 
     return (
         <div className="min-h-screen bg-[var(--hw-surface)] text-[var(--hw-on-surface)] antialiased">
-            {/* ═══ TOP NAV ═══ */}
-            <nav className="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-md shadow-sm h-16 flex items-center justify-between px-6">
-                <div className="flex items-center gap-8">
-                    <div className="flex items-center gap-2">
-                        <div className="w-7 h-7 bg-[var(--hw-primary)] rounded-lg flex items-center justify-center text-white">
-                            <span className="material-symbols-outlined text-[16px]">school</span>
-                        </div>
-                        <span className="text-xl font-bold tracking-tight">HIT <span className="text-indigo-600">AI/DATA</span></span>
-                    </div>
-                    <div className="hidden md:flex items-center bg-[var(--hw-surface-container-low)] px-3 py-1.5 rounded-lg">
-                        <span className="material-symbols-outlined text-[var(--hw-outline)] text-sm mr-2">search</span>
-                        <input className="bg-transparent border-none focus:ring-0 text-sm w-64 placeholder:text-[var(--hw-outline)] outline-none" placeholder="Search assignments..." type="text" />
-                    </div>
-                </div>
-                <div className="flex items-center gap-4">
-                    <button className="text-slate-500 hover:text-indigo-500 transition-colors">
-                        <span className="material-symbols-outlined">notifications</span>
-                    </button>
-                    <button className="text-slate-500 hover:text-indigo-500 transition-colors">
-                        <span className="material-symbols-outlined">settings</span>
-                    </button>
-                    <div className="h-8 w-px bg-[var(--hw-surface-container-high)] mx-2 hidden md:block" />
-                    <form action={async () => { "use server"; await signOut({ redirectTo: "/login" }); }}>
-                        <button type="submit" className="text-slate-500 hover:text-indigo-500 transition-colors text-sm hidden md:block">Sign Out</button>
-                    </form>
-                    {user.image && (
-                        <Image src={user.image} alt={user.name ?? "Avatar"} width={32} height={32} className="rounded-full border border-[var(--hw-surface-container-high)]" />
-                    )}
-                </div>
-            </nav>
+            <TopNav
+                user={{
+                    name: user.name,
+                    email: user.email,
+                    image: user.image,
+                    githubUsername: user.githubUsername
+                }}
+                role={role}
+                showSearch={true}
+            />
 
             <div className="flex pt-16">
                 {/* ═══ SIDEBAR ═══ */}
