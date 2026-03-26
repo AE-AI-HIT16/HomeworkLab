@@ -4,23 +4,6 @@ import { getUserRole } from "@/lib/roles";
 import { findOrCreateFolder, uploadPromptFile } from "@/lib/google-drive";
 import { env } from "@/lib/env";
 
-export const config = {
-    api: {
-        bodyParser: false,
-    },
-};
-
-// Allow up to 20MB
-export const maxDuration = 30;
-
-const ALLOWED_TYPES: Record<string, string> = {
-    "application/pdf": ".pdf",
-    "application/vnd.openxmlformats-officedocument.wordprocessingml.document": ".docx",
-    "application/zip": ".zip",
-    "application/x-zip-compressed": ".zip",
-    "application/octet-stream": "", // ipynb may come as this
-};
-
 const ALLOWED_EXTENSIONS = [".pdf", ".docx", ".zip", ".ipynb"];
 
 export async function POST(req: NextRequest) {
@@ -39,8 +22,9 @@ export async function POST(req: NextRequest) {
     let formData: FormData;
     try {
         formData = await req.formData();
-    } catch {
-        return NextResponse.json({ error: "Invalid form data" }, { status: 400 });
+    } catch (err) {
+        console.error("formData parse error:", err);
+        return NextResponse.json({ error: "Invalid form data. File có thể quá lớn (tối đa 20MB)." }, { status: 400 });
     }
 
     const file = formData.get("file") as File | null;
@@ -53,7 +37,7 @@ export async function POST(req: NextRequest) {
     const ext = "." + fileName.split(".").pop()?.toLowerCase();
     if (!ALLOWED_EXTENSIONS.includes(ext)) {
         return NextResponse.json(
-            { error: `File type not allowed. Supported: ${ALLOWED_EXTENSIONS.join(", ")}` },
+            { error: `Loại file không hỗ trợ. Chỉ nhận: ${ALLOWED_EXTENSIONS.join(", ")}` },
             { status: 400 }
         );
     }
@@ -68,11 +52,13 @@ export async function POST(req: NextRequest) {
     }
 
     // 5. Get or create upload folder
-    // Use assignmentFolderId if provided (when assignment already exists), otherwise use a temp staging folder
     const folderId = (formData.get("folderId") as string) || env.GOOGLE_DRIVE_ROOT_FOLDER_ID;
 
     if (!folderId) {
-        return NextResponse.json({ error: "Drive not configured" }, { status: 503 });
+        return NextResponse.json(
+            { error: "Google Drive chưa được cấu hình. Vui lòng set GOOGLE_DRIVE_ROOT_FOLDER_ID trong env." },
+            { status: 503 }
+        );
     }
 
     // Ensure de-bai folder exists under the given folder
@@ -80,9 +66,8 @@ export async function POST(req: NextRequest) {
     try {
         const promptFolderId = await findOrCreateFolder("de-bai", folderId);
         if (promptFolderId) targetFolderId = promptFolderId;
-    } catch {
-        // If folder creation fails, upload to root folder directly
-        console.warn("Could not create de-bai subfolder, uploading to root");
+    } catch (err) {
+        console.warn("Could not create de-bai subfolder, uploading to root:", err);
     }
 
     // 6. Upload to Drive
@@ -94,7 +79,11 @@ export async function POST(req: NextRequest) {
 
         return NextResponse.json(promptFile);
     } catch (error) {
-        console.error("Upload prompt file failed:", error);
-        return NextResponse.json({ error: "Upload failed. Please try again." }, { status: 500 });
+        const errMsg = error instanceof Error ? error.message : String(error);
+        console.error("Upload prompt file failed:", errMsg);
+        return NextResponse.json(
+            { error: `Upload thất bại: ${errMsg.substring(0, 200)}` },
+            { status: 500 }
+        );
     }
 }

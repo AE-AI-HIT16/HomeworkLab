@@ -52,7 +52,9 @@ export default function CreateAssignmentPage() {
     // Prompt file upload state
     const [pendingFiles, setPendingFiles] = useState<PendingFile[]>([]);
     const [isDragging, setIsDragging] = useState(false);
+    const [isUploadingFiles, setIsUploadingFiles] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const formRef = useRef<HTMLFormElement>(null);
 
     const addFiles = useCallback((newFiles: FileList | File[]) => {
         const filesArray = Array.from(newFiles);
@@ -96,95 +98,93 @@ export default function CreateAssignmentPage() {
         }
     }, [addFiles]);
 
-    // Upload all pending files before submitting the form
-    const handleSubmit = useCallback(async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        const form = e.currentTarget;
+    // Upload pending files, then submit the form via server action
+    const handlePublish = useCallback(async () => {
+        const form = formRef.current;
+        if (!form) return;
 
-        // Upload any unuploaded files
-        const toUpload = pendingFiles.filter((f) => f.status === "pending" || f.status === "error");
+        setIsUploadingFiles(true);
 
-        if (toUpload.length > 0) {
-            // Mark all as uploading
-            setPendingFiles((prev) =>
-                prev.map((f) =>
-                    f.status === "pending" || f.status === "error"
-                        ? { ...f, status: "uploading" }
-                        : f
-                )
-            );
-
-            // Upload each file
-            const results = await Promise.all(
-                toUpload.map(async (pf) => {
-                    const uploadForm = new FormData();
-                    uploadForm.append("file", pf.file);
-                    try {
-                        const res = await fetch("/api/assignments/upload-prompt", {
-                            method: "POST",
-                            body: uploadForm,
-                        });
-                        if (!res.ok) {
-                            const err = await res.json();
-                            return { file: pf.file, error: err.error ?? "Upload thất bại" };
-                        }
-                        const promptFile: PromptFile = await res.json();
-                        return { file: pf.file, promptFile };
-                    } catch {
-                        return { file: pf.file, error: "Lỗi kết nối" };
-                    }
-                })
-            );
-
-            // Merge results back
-            setPendingFiles((prev) => {
-                const updated = [...prev];
-                for (const result of results) {
-                    const idx = updated.findIndex((f) => f.file === result.file);
-                    if (idx >= 0) {
-                        if (result.promptFile) {
-                            updated[idx] = { ...updated[idx], status: "done", promptFile: result.promptFile };
-                        } else {
-                            updated[idx] = { ...updated[idx], status: "error", error: result.error };
-                        }
-                    }
-                }
-                return updated;
-            });
-
-            // Check for errors
-            const hasError = results.some((r) => !r.promptFile);
-            if (hasError) {
-                return; // Stop submission, show errors
-            }
-
-            // Collect all uploaded prompt files (including previously done ones)
-            const allPromptFiles = [
-                ...pendingFiles.filter((f) => f.status === "done").map((f) => f.promptFile!),
-                ...results.filter((r) => r.promptFile).map((r) => r.promptFile!),
-            ];
-
-            // Inject into form
-            const hiddenInput = form.querySelector<HTMLInputElement>('[name="promptFilesJson"]');
-            if (hiddenInput) {
-                hiddenInput.value = JSON.stringify(allPromptFiles);
-            }
-        } else {
-            // All already uploaded
-            const allPromptFiles = pendingFiles
+        try {
+            // Upload any unuploaded files
+            const toUpload = pendingFiles.filter((f) => f.status === "pending" || f.status === "error");
+            let uploadedPromptFiles: PromptFile[] = pendingFiles
                 .filter((f) => f.status === "done" && f.promptFile)
                 .map((f) => f.promptFile!);
-            const hiddenInput = form.querySelector<HTMLInputElement>('[name="promptFilesJson"]');
-            if (hiddenInput) {
-                hiddenInput.value = JSON.stringify(allPromptFiles);
+
+            if (toUpload.length > 0) {
+                // Mark all as uploading
+                setPendingFiles((prev) =>
+                    prev.map((f) =>
+                        f.status === "pending" || f.status === "error"
+                            ? { ...f, status: "uploading" }
+                            : f
+                    )
+                );
+
+                // Upload each file
+                const results = await Promise.all(
+                    toUpload.map(async (pf) => {
+                        const uploadForm = new FormData();
+                        uploadForm.append("file", pf.file);
+                        try {
+                            const res = await fetch("/api/assignments/upload-prompt", {
+                                method: "POST",
+                                body: uploadForm,
+                            });
+                            if (!res.ok) {
+                                const err = await res.json();
+                                return { file: pf.file, error: err.error ?? "Upload thất bại" };
+                            }
+                            const promptFile: PromptFile = await res.json();
+                            return { file: pf.file, promptFile };
+                        } catch {
+                            return { file: pf.file, error: "Lỗi kết nối" };
+                        }
+                    })
+                );
+
+                // Merge results back
+                setPendingFiles((prev) => {
+                    const updated = [...prev];
+                    for (const result of results) {
+                        const idx = updated.findIndex((f) => f.file === result.file);
+                        if (idx >= 0) {
+                            if (result.promptFile) {
+                                updated[idx] = { ...updated[idx], status: "done", promptFile: result.promptFile };
+                            } else {
+                                updated[idx] = { ...updated[idx], status: "error", error: result.error };
+                            }
+                        }
+                    }
+                    return updated;
+                });
+
+                // Check for errors
+                const hasError = results.some((r) => !r.promptFile);
+                if (hasError) {
+                    return; // Stop — show errors
+                }
+
+                // Merge newly uploaded files
+                uploadedPromptFiles = [
+                    ...uploadedPromptFiles,
+                    ...results.filter((r) => r.promptFile).map((r) => r.promptFile!),
+                ];
             }
+
+            // Build FormData from form inputs + inject promptFilesJson
+            const fd = new FormData(form);
+            fd.set("promptFilesJson", JSON.stringify(uploadedPromptFiles));
+
+            // Call server action directly
+            formAction(fd);
+        } finally {
+            setIsUploadingFiles(false);
         }
+    }, [pendingFiles, formAction]);
 
-        // Submit via server action
-        form.requestSubmit();
-    }, [pendingFiles]);
-
-    const isUploading = pendingFiles.some((f) => f.status === "uploading");
+    const isUploading = isUploadingFiles || pendingFiles.some((f) => f.status === "uploading");
 
     return (
         <div className="min-h-screen flex bg-[var(--hw-surface)] text-[var(--hw-on-surface)] antialiased">
@@ -295,7 +295,7 @@ export default function CreateAssignmentPage() {
                     )}
 
                     {/* Form */}
-                    <form onSubmit={handleSubmit} className="space-y-12 pb-20">
+                    <form ref={formRef} className="space-y-12 pb-20">
                         {/* Hidden input for prompt files */}
                         <input type="hidden" name="promptFilesJson" defaultValue="[]" />
 
@@ -496,12 +496,12 @@ export default function CreateAssignmentPage() {
                                                 <div
                                                     key={i}
                                                     className={`flex items-center gap-3 p-3 rounded-lg border transition-all ${pf.status === "done"
-                                                            ? "bg-emerald-50 border-emerald-200"
-                                                            : pf.status === "error"
-                                                                ? "bg-red-50 border-red-200"
-                                                                : pf.status === "uploading"
-                                                                    ? "bg-[var(--hw-primary)]/5 border-[var(--hw-primary)]/20"
-                                                                    : "bg-[var(--hw-surface-container-low)] border-transparent"
+                                                        ? "bg-emerald-50 border-emerald-200"
+                                                        : pf.status === "error"
+                                                            ? "bg-red-50 border-red-200"
+                                                            : pf.status === "uploading"
+                                                                ? "bg-[var(--hw-primary)]/5 border-[var(--hw-primary)]/20"
+                                                                : "bg-[var(--hw-surface-container-low)] border-transparent"
                                                         }`}
                                                 >
                                                     {/* File icon */}
@@ -613,7 +613,8 @@ export default function CreateAssignmentPage() {
                             </Link>
                             <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
                                 <button
-                                    type="submit"
+                                    type="button"
+                                    onClick={handlePublish}
                                     disabled={isPending || isUploading}
                                     className="w-full sm:w-auto px-10 py-3 rounded-lg text-sm font-bold text-white bg-[var(--hw-primary)] hover:bg-[var(--hw-primary-container)] shadow-lg shadow-[var(--hw-primary)]/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
