@@ -21,12 +21,7 @@ export function TopNav({ user, role, showSearch = false }: TopNavProps) {
     const pathname = usePathname();
     const dashboardLink = "/dashboard"; // Unified dashboard for all
 
-    const isActive = (path: string) => {
-        if (path === "/admin" && pathname === "/admin") return true;
-        if (path === "/dashboard" && pathname === "/dashboard") return true;
-        if (path !== "/admin" && path !== "/dashboard" && pathname.startsWith(path)) return true;
-        return false;
-    };
+    const isActive = (path: string) => pathname === path;
 
     const linkClass = (path: string) => 
         isActive(path)
@@ -66,16 +61,8 @@ export function TopNav({ user, role, showSearch = false }: TopNavProps) {
             </div>
 
             <div className="flex items-center gap-4">
-                {role === "admin" && pathname !== "/admin" && (
-                    <Link
-                        href="/admin/create-assignment"
-                        className="hidden sm:block bg-indigo-600 text-white text-xs font-medium px-4 py-2 rounded-lg hover:brightness-110 active:scale-95 transition-all shadow-sm shadow-indigo-600/20"
-                    >
-                        Create Assignment
-                    </Link>
-                )}
 
-                <button className="text-slate-500 hover:text-indigo-500 transition-colors">
+<button className="text-slate-500 hover:text-indigo-500 transition-colors">
                     <span className="material-symbols-outlined text-xl">notifications</span>
                 </button>
                 

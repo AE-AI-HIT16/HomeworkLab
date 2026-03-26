@@ -336,9 +336,9 @@ export async function getAssignmentDetailsWithSubmissions(assignmentId: string):
 
     const submittedCount = allSubmissions.length;
     const stats = {
-        total: Math.max(activeStudents.length, submittedCount),
+        total: rows.length,
         submitted: submittedCount,
-        missing: Math.max(0, activeStudents.length - submittedCount),
+        missing: rows.length - submittedCount,
         late: allSubmissions.filter((s) => s.isLate).length,
         files: allSubmissions.filter((s) => s.type === "file").length,
         repos: allSubmissions.filter((s) => s.type === "repo_link").length,

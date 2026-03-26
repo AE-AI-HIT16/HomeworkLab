@@ -32,13 +32,18 @@ export default async function AdminAssignmentDetailPage({ params }: AdminAssignm
     const { assignment, stats, rows } = data;
     const isPastDue = assignment.dueAt ? new Date(assignment.dueAt) < new Date() : false;
 
+    // Build leaderboard from graded submissions
+    const leaderboard = rows
+        .filter((r) => r.submission?.grade !== undefined)
+        .sort((a, b) => (b.submission!.grade ?? 0) - (a.submission!.grade ?? 0));
+
     return (
         <main className="max-w-5xl mx-auto p-6 md:p-8">
             <Link
                 href="/admin"
-                className="text-sm text-blue-600 hover:text-blue-500 font-medium mb-6 inline-block"
+                className="text-sm text-indigo-600 hover:text-indigo-500 font-medium mb-6 inline-flex items-center gap-1"
             >
-                ← Back to Dashboard
+                ← Back to Analytics
             </Link>
 
             {/* Header */}
@@ -93,7 +98,53 @@ export default async function AdminAssignmentDetailPage({ params }: AdminAssignm
                 </div>
             </header>
 
-            {/* List */}
+            {/* Leaderboard */}
+            {leaderboard.length > 0 && (
+                <section className="mb-8">
+                    <h2 className="text-xl font-bold text-gray-900 mb-4">🏆 Leaderboard</h2>
+                    <div className="bg-white border border-slate-100 rounded-xl shadow-sm overflow-hidden">
+                        <table className="w-full text-sm">
+                            <thead>
+                                <tr className="bg-slate-50 border-b text-xs font-bold uppercase tracking-wider text-slate-400">
+                                    <th className="px-5 py-3 text-left w-12">Rank</th>
+                                    <th className="px-5 py-3 text-left">Student</th>
+                                    <th className="px-5 py-3 text-left">Score</th>
+                                    <th className="px-5 py-3 text-left">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-50">
+                                {leaderboard.map(({ student, submission }, index) => {
+                                    const medal = index === 0 ? "🥇" : index === 1 ? "🥈" : index === 2 ? "🥉" : `#${index + 1}`;
+                                    const grade = submission!.grade!;
+                                    const scoreColor = grade >= 80 ? "text-emerald-600" : grade >= 60 ? "text-amber-600" : "text-red-500";
+                                    return (
+                                        <tr key={student.githubUsername} className="hover:bg-slate-50 transition-colors">
+                                            <td className="px-5 py-3 text-lg">{medal}</td>
+                                            <td className="px-5 py-3">
+                                                <p className="font-semibold text-slate-900">{student.name}</p>
+                                                <p className="text-xs text-slate-400">@{student.githubUsername}</p>
+                                            </td>
+                                            <td className="px-5 py-3">
+                                                <span className={`text-xl font-bold ${scoreColor}`}>{grade}</span>
+                                                <span className="text-xs text-slate-400">/100</span>
+                                            </td>
+                                            <td className="px-5 py-3">
+                                                {submission!.isLate ? (
+                                                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 text-amber-600 border border-amber-100">Late</span>
+                                                ) : (
+                                                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100">On time</span>
+                                                )}
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            )}
+
+            {/* Detailed table */}
             <h2 className="text-xl font-bold text-gray-900 mb-4">Detailed Submission Status</h2>
             <AdminSubmissionTable assignmentId={assignment.id} rows={rows} />
         </main>
