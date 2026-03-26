@@ -66,11 +66,11 @@ export default function CreateAssignmentPage() {
         for (const file of filesArray) {
             const ext = "." + file.name.split(".").pop()?.toLowerCase();
             if (!ALLOWED_EXTENSIONS.includes(ext)) {
-                alert(`File "${file.name}" không được hỗ trợ. Chỉ nhận: ${ALLOWED_EXTENSIONS.join(", ")}`);
+                alert(`File "${file.name}" is not supported. Supported: ${ALLOWED_EXTENSIONS.join(", ")}`);
                 continue;
             }
             if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
-                alert(`File "${file.name}" quá lớn (tối đa ${MAX_FILE_SIZE_MB}MB)`);
+                alert(`File "${file.name}" is too large (max ${MAX_FILE_SIZE_MB}MB)`);
                 continue;
             }
             valid.push({ file, status: "pending" });
@@ -403,15 +403,35 @@ export default function CreateAssignmentPage() {
                                         </div>
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        <div>
-                                            <label className="block text-xs font-bold text-[var(--hw-on-surface-variant)] uppercase tracking-wider mb-2">
+                                        <div className="flex flex-col gap-2">
+                                            <label className="block text-xs font-bold text-[var(--hw-on-surface-variant)] uppercase tracking-wider">
                                                 Due Date &amp; Time
                                             </label>
-                                            <input
-                                                name="dueDate"
-                                                className="w-full bg-[var(--hw-surface-container-low)] border-none rounded-lg p-4 text-[var(--hw-on-surface)] focus:ring-2 focus:ring-[var(--hw-primary)]/10 transition-all"
-                                                type="datetime-local"
-                                            />
+                                            <div className="flex gap-4">
+                                                <div className="flex-1 relative group">
+                                                    <input
+                                                        name="dueDatePart"
+                                                        className="w-full bg-[var(--hw-surface-container-low)] border-none rounded-lg p-4 pl-11 text-[var(--hw-on-surface)] focus:ring-2 focus:ring-[var(--hw-primary)]/10 transition-all"
+                                                        type="date"
+                                                        required
+                                                    />
+                                                    <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[var(--hw-primary)] transition-colors">calendar_today</span>
+                                                </div>
+                                                <div className="w-56 relative group">
+                                                    <input
+                                                        name="dueTimePart"
+                                                        className="w-full bg-[var(--hw-surface-container-low)] border-none rounded-lg p-4 pl-11 text-[var(--hw-on-surface)] focus:ring-2 focus:ring-[var(--hw-primary)]/10 transition-all"
+                                                        type="text"
+                                                        placeholder="11:59 PM"
+                                                        defaultValue="11:59 PM"
+                                                        required
+                                                    />
+                                                    <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[var(--hw-primary)] transition-colors">schedule</span>
+                                                </div>
+                                            </div>
+                                            <p className="text-[10px] text-[var(--hw-on-surface-variant)]/60 italic ml-1">
+                                                Tip: Type time directly (e.g., &quot;2:30 PM&quot;, &quot;14:00&quot;)
+                                            </p>
                                         </div>
                                         <div>
                                             <label className="block text-xs font-bold text-[var(--hw-on-surface-variant)] uppercase tracking-wider mb-2">
@@ -440,7 +460,7 @@ export default function CreateAssignmentPage() {
                             <div className="flex items-center gap-2 mb-6">
                                 <div className="w-1.5 h-6 bg-orange-500 rounded-full" />
                                 <h5 className="text-sm font-bold uppercase tracking-widest text-[var(--hw-on-surface-variant)]">
-                                    03. Đề Bài &amp; Tài Liệu
+                                    03. Prompt &amp; Resources
                                 </h5>
                             </div>
                             <div className="bg-[var(--hw-surface-container-low)] p-1 rounded-xl">
@@ -448,7 +468,7 @@ export default function CreateAssignmentPage() {
                                     {/* Manual Link Fallback */}
                                     <div>
                                         <label className="block text-xs font-bold text-[var(--hw-on-surface-variant)] uppercase tracking-wider mb-2">
-                                            Link Đề Bài / Tài Liệu (Google Drive, GitHub...)
+                                            Prompt / Resource Link (Google Drive, GitHub...)
                                         </label>
                                         <div className="flex gap-4">
                                             <input
@@ -456,24 +476,24 @@ export default function CreateAssignmentPage() {
                                                 value={manualDriveLink}
                                                 onChange={(e) => setManualDriveLink(e.target.value)}
                                                 className="flex-1 bg-[var(--hw-surface-container-low)] border-none rounded-lg p-4 text-[var(--hw-on-surface)] focus:ring-2 focus:ring-[var(--hw-primary)]/10 transition-all placeholder:text-[var(--hw-on-surface-variant)]/40"
-                                                placeholder="VD: https://drive.google... hoặc https://github.com/..."
+                                                placeholder="e.g. https://drive.google... or https://github.com/..."
                                                 type="url"
                                             />
                                         </div>
                                         <p className="text-[10px] text-[var(--hw-on-surface-variant)] mt-2 italic">
-                                            Nếu tính năng Kéo Thả File bị lỗi Quota, hãy chủ động upload file lên Google Drive của bạn, chọn Share "Anyone with the link" và dán link vào đây.
+                                            If the file upload feature fails due to quota limits, please upload to your own Google Drive, set sharing to &quot;Anyone with the link&quot;, and paste the link here.
                                         </p>
                                     </div>
 
                                     <div className="relative flex py-5 items-center">
                                         <div className="flex-grow border-t border-[var(--hw-outline-variant)]/20"></div>
-                                        <span className="flex-shrink-0 mx-4 text-[var(--hw-on-surface-variant)] text-xs font-medium uppercase tracking-widest">Hoặc dùng API Tính năng Kéo Thả</span>
+                                        <span className="flex-shrink-0 mx-4 text-[var(--hw-on-surface-variant)] text-xs font-medium uppercase tracking-widest">Or use Drag &amp; Drop</span>
                                         <div className="flex-grow border-t border-[var(--hw-outline-variant)]/20"></div>
                                     </div>
 
                                     <div>
                                         <p className="text-xs text-[var(--hw-on-surface-variant)] mb-4">
-                                            Đính kèm file đề bài. File <code className="bg-orange-50 text-orange-700 px-1 py-0.5 rounded text-xs">.ipynb</code> sẽ được preview trực tiếp với syntax highlight cho học viên.
+                                            Attach assignment files. <code className="bg-orange-50 text-orange-700 px-1 py-0.5 rounded text-xs">.ipynb</code> files will be rendered directly with syntax highlighting for students.
                                         </p>
 
                                         {/* Dropzone */}
@@ -495,10 +515,10 @@ export default function CreateAssignmentPage() {
                                             </div>
                                             <div className="text-center">
                                                 <p className="text-sm font-semibold text-[var(--hw-on-surface)]">
-                                                    {isDragging ? "Thả file vào đây" : "Kéo thả hoặc click để chọn file"}
+                                                    {isDragging ? "Drop files here" : "Drag & drop or click to select files"}
                                                 </p>
                                                 <p className="text-xs text-[var(--hw-on-surface-variant)] mt-1">
-                                                    Hỗ trợ: <strong>.ipynb</strong>, .pdf, .docx, .zip — tối đa {MAX_FILE_SIZE_MB}MB/file
+                                                    Supports: <strong>.ipynb</strong>, .pdf, .docx, .zip — max {MAX_FILE_SIZE_MB}MB/file
                                                 </p>
                                             </div>
                                             <input
@@ -519,7 +539,7 @@ export default function CreateAssignmentPage() {
                                     {pendingFiles.length > 0 && (
                                         <div className="space-y-2">
                                             <p className="text-xs font-bold text-[var(--hw-on-surface-variant)] uppercase tracking-wider">
-                                                {pendingFiles.length} file đã chọn
+                                                {pendingFiles.length} files selected
                                             </p>
                                             {pendingFiles.map((pf, i) => (
                                                 <div
@@ -552,9 +572,9 @@ export default function CreateAssignmentPage() {
                                                     <div className="flex-1 min-w-0">
                                                         <p className="text-sm font-medium truncate text-[var(--hw-on-surface)]">{pf.file.name}</p>
                                                         <p className="text-[10px] text-[var(--hw-on-surface-variant)]">
-                                                            {pf.status === "uploading" && "Đang upload..."}
-                                                            {pf.status === "done" && `✓ Đã upload · ${formatBytes(pf.file.size)}`}
-                                                            {pf.status === "error" && `✗ Lỗi: ${pf.error}`}
+                                                            {pf.status === "uploading" && "Uploading..."}
+                                                            {pf.status === "done" && `✓ Uploaded · ${formatBytes(pf.file.size)}`}
+                                                            {pf.status === "error" && `✗ Error: ${pf.error}`}
                                                             {pf.status === "pending" && formatBytes(pf.file.size)}
                                                         </p>
                                                     </div>
@@ -580,7 +600,7 @@ export default function CreateAssignmentPage() {
                                         <div>
                                             <p className="text-xs font-bold text-orange-700 mb-1">Jupyter Notebook Preview</p>
                                             <p className="text-xs text-orange-600 leading-relaxed">
-                                                File <code className="bg-white/60 px-1 rounded">.ipynb</code> sẽ được render trực tiếp trên trang bài tập của học viên với syntax highlight Python, giúp sinh viên đọc đề mà không cần tải file về.
+                                                File <code className="bg-white/60 px-1 rounded">.ipynb</code> will be rendered directly on the student&apos;s assignment page with Python syntax highlighting, allowing them to read instructions without downloading.
                                             </p>
                                         </div>
                                     </div>
@@ -650,7 +670,7 @@ export default function CreateAssignmentPage() {
                                     {isUploading ? (
                                         <>
                                             <span className="material-symbols-outlined text-sm animate-spin">progress_activity</span>
-                                            Đang upload file...
+                                            Uploading files...
                                         </>
                                     ) : isPending ? (
                                         <>

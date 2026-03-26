@@ -1,11 +1,11 @@
 // ─── Roles ──────────────────────────────────────────────
 
-/** Vai trò trong hệ thống */
+/** Roles within the system */
 export type UserRole = "admin" | "student" | "unauthorized";
 
 // ─── Users ──────────────────────────────────────────────
 
-/** Học viên trong danh sách whitelist (mock → Google Sheet) */
+/** Students in the whitelist (mock → Google Sheet) */
 export interface Student {
     githubUsername: string;
     name: string;
@@ -13,7 +13,7 @@ export interface Student {
     active: boolean;
 }
 
-/** Admin / Giáo viên — lấy từ env var ADMIN_GITHUB_USERNAMES */
+/** Admin / Instructor — derived from ADMIN_GITHUB_USERNAMES env var */
 export interface Admin {
     githubUsername: string;
     name?: string;
@@ -21,34 +21,34 @@ export interface Admin {
 
 // ─── Assignments ────────────────────────────────────────
 
-/** File đề bài đính kèm (lưu trên Google Drive) */
+/** Attached prompt/resource files (stored on Google Drive) */
 export interface PromptFile {
-    /** Tên file hiển thị, VD: "Bài tập 1 - Linear Regression.pdf" */
+    /** Display filename, e.g., "Assignment 1 - Linear Regression.pdf" */
     name: string;
     /** Google Drive file ID */
     driveFileId: string;
     /** MIME type, VD: "application/pdf" */
     mimeType: string;
-    /** Kích thước file (bytes) */
+    /** File size (bytes) */
     sizeBytes?: number;
 }
 
-/** Bài tập */
+/** Assignment */
 export interface Assignment {
     id: string;
-    /** Tuần thứ mấy (1-based) */
+    /** Week number (1-based) */
     week: number;
-    /** Bài thứ mấy trong tuần (1-based) */
+    /** Lesson number within the week (1-based) */
     lesson: number;
     title: string;
     description?: string;
-    /** Hạn nộp — ISO 8601 string */
+    /** Due date — ISO 8601 string */
     dueAt?: string;
-    /** Đã publish cho học viên chưa */
+    /** Whether it has been published to students */
     published: boolean;
-    /** Google Drive folder ID chứa file đề + bài nộp */
+    /** Google Drive folder ID containing prompt files + submissions */
     driveFolderId?: string;
-    /** Danh sách file đề bài */
+    /** List of prompt/resource files */
     promptFiles: PromptFile[];
     /** ISO 8601 */
     createdAt: string;
@@ -58,12 +58,12 @@ export interface Assignment {
 
 // ─── Submissions ────────────────────────────────────────
 
-/** Loại bài nộp */
+/** Submission type */
 export type SubmissionType = "file" | "repo_link";
 
-/** Thông tin file bài nộp (khi type = "file") */
+/** Submission file details (when type = "file") */
 export interface SubmissionFile {
-    /** Tên file, VD: "bai_tap_1.ipynb" */
+    /** Filename, e.g., "assignment_1.ipynb" */
     name: string;
     /** Google Drive file ID */
     driveFileId: string;
@@ -71,7 +71,7 @@ export interface SubmissionFile {
     sizeBytes?: number;
 }
 
-/** Bài nộp */
+/** Submission */
 export interface Submission {
     id: string;
     assignmentId: string;
@@ -79,23 +79,23 @@ export interface Submission {
     studentName: string;
     /** ISO 8601 */
     submittedAt: string;
-    /** Loại nộp: upload file hoặc link GitHub repo */
+    /** Submission type: file upload or GitHub repo link */
     type: SubmissionType;
-    /** Thông tin file — khi type = "file" */
+    /** File details — when type = "file" */
     file?: SubmissionFile;
-    /** Link GitHub repo — khi type = "repo_link" */
+    /** Link GitHub repo — when type = "repo_link" */
     repoUrl?: string;
-    /** Nộp muộn hay không (so sánh với assignment.dueAt) */
+    /** Whether it is a late submission (compared to assignment.dueAt) */
     isLate: boolean;
-    /** Điểm (nếu đã chấm) */
+    /** Grade (if assigned) */
     grade?: number;
-    /** Nhận xét từ giáo viên */
+    /** Instructor feedback */
     feedback?: string;
 }
 
 // ─── Legacy aliases (backward compat) ───────────────────
 
-/** @deprecated Dùng Student thay thế */
+/** @deprecated Use Student instead */
 export type AllowedStudent = Student;
 
 // ─── Server Action Types ────────────────────────────────

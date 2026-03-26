@@ -7,7 +7,7 @@ import { getCurrentUserRole } from "@/lib/roles";
 import { createAssignmentFolders, normalizeFileName, uploadSubmissionFile } from "@/lib/google-drive";
 
 /**
- * Generate assignment ID theo format: w{week}-l{lesson}
+ * Generate assignment ID in format: w{week}-l{lesson}
  */
 function generateAssignmentId(week: number, lesson: number): string {
     return `w${week}-l${lesson}`;
@@ -31,31 +31,31 @@ export async function createAssignment(input: CreateAssignmentInput): Promise<Ac
     // 1. Verify admin role
     const { role } = await getCurrentUserRole();
     if (role !== "admin") {
-        return { success: false, error: "Bạn không có quyền tạo bài tập." };
+        return { success: false, error: "You do not have permission to create assignments." };
     }
 
     // 2. Validate input
     if (!input.title.trim()) {
-        return { success: false, error: "Tiêu đề không được để trống." };
+        return { success: false, error: "Title cannot be empty." };
     }
     if (input.week < 1 || !Number.isInteger(input.week)) {
-        return { success: false, error: "Tuần phải là số nguyên ≥ 1." };
+        return { success: false, error: "Week must be an integer ≥ 1." };
     }
     if (input.lesson < 1 || !Number.isInteger(input.lesson)) {
-        return { success: false, error: "Bài phải là số nguyên ≥ 1." };
+        return { success: false, error: "Lesson must be an integer ≥ 1." };
     }
 
     const now = new Date().toISOString();
     const id = generateAssignmentId(input.week, input.lesson);
 
-    // Xử lý tạo folder trên Google Drive
+    // Handle Drive folder creation
     let driveFolderId: string | undefined = undefined;
     try {
         const folders = await createAssignmentFolders(input.week, input.lesson, input.title.trim());
         driveFolderId = folders.parentFolderId;
     } catch (e) {
-        console.error("Lỗi tạo folder Drive:", e);
-        // Không block việc tạo bài tập, có thể tạo folder sau
+        console.error("Error creating Drive folder:", e);
+        // Don't block assignment creation, folder can be created later
     }
 
     const assignment: Assignment = {
@@ -80,13 +80,13 @@ export async function createAssignment(input: CreateAssignmentInput): Promise<Ac
     try {
         await saveAssignment(assignment);
         return { success: true, assignment };
-    } catch (e) {
-        return { success: false, error: "Lỗi lưu vào Google Sheets." };
+    } catch {
+        return { success: false, error: "Error saving to Google Sheets." };
     }
 }
 
 /**
- * Nộp bài tập (hỗ trợ FormData để upload file)
+ * Submit assignment (supports FormData for file upload)
  */
 export async function submitAssignment(formData: FormData): Promise<ActionResult> {
     const now = new Date().toISOString();
@@ -94,7 +94,7 @@ export async function submitAssignment(formData: FormData): Promise<ActionResult
     // 1. Get current logged in student
     const { role, session } = await getCurrentUserRole();
     if (role !== "student" && role !== "admin") {
-        return { success: false, error: "Bạn không có quyền nộp bài." };
+        return { success: false, error: "You do not have permission to submit assignments." };
     }
     const user = session!.user;
 
@@ -107,10 +107,10 @@ export async function submitAssignment(formData: FormData): Promise<ActionResult
     // 3. Get assignment to check deadline
     const assignment = await getAssignmentById(assignmentId);
     if (!assignment) {
-        return { success: false, error: "Bài tập không tồn tại." };
+        return { success: false, error: "Assignment not found." };
     }
     if (!assignment.published && role !== "admin") {
-        return { success: false, error: "Bài tập chưa được publish." };
+        return { success: false, error: "Assignment is not published yet." };
     }
     const isLate = assignment.dueAt ? new Date(now) > new Date(assignment.dueAt) : false;
 
@@ -118,35 +118,35 @@ export async function submitAssignment(formData: FormData): Promise<ActionResult
     let submissionFile: SubmissionFile | undefined;
     if (type === "file") {
         if (!file || file.size === 0) {
-            return { success: false, error: "Cần tải lên file để nộp bài." };
+            return { success: false, error: "A file is required for submission." };
         }
 
         // Server-side security checks
         const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20 MB
         if (file.size > MAX_FILE_SIZE) {
-            return { success: false, error: "Dung lượng file vượt quá giới hạn 20MB." };
+            return { success: false, error: "File size exceeds the 20MB limit." };
         }
 
         const allowedExtensions = ["py", "ipynb", "zip", "pdf", "docx", "csv", "txt", "md"];
         const ext = file.name.split(".").pop()?.toLowerCase() || "";
         if (!allowedExtensions.includes(ext)) {
-            return { success: false, error: "Định dạng file không được phép trên Server." };
+            return { success: false, error: "File format is not allowed on the server." };
         }
 
-        // Tạo tên file chuẩn: nguyenvana_Tuan1_Bai1.ipynb
+        // Generate standard filename: username_Week1_Lesson1.ipynb
         const safeName = normalizeFileName(user.name, assignment.week, assignment.lesson, file.name);
 
         try {
-            // Buffer từ web API File
+            // Buffer from web API File
             const arrayBuffer = await file.arrayBuffer();
             const buffer = Buffer.from(arrayBuffer);
 
-            // Tìm Folder "nop-bai" bằng cách tạo lại từ tên assignment (Drive helper sẽ tự động find by name)
+            // Find "submission" folder by regenerating it from assignment name
             const folders = await createAssignmentFolders(assignment.week, assignment.lesson, assignment.title);
             const folderId = folders.submissionFolderId;
 
             if (!folderId) {
-                return { success: false, error: "Hệ thống chưa tạo thư mục nhận bài. Báo cho giáo viên." };
+                return { success: false, error: "The submission directory has not been created. Please notify your instructor." };
             }
 
             const driveRes = await uploadSubmissionFile(buffer, safeName, file.type || guessMimeType(file.name), folderId);
@@ -161,7 +161,7 @@ export async function submitAssignment(formData: FormData): Promise<ActionResult
             }
         } catch (e) {
             console.error(e);
-            return { success: false, error: "Có lỗi khi upload file lên Google Drive." };
+            return { success: false, error: "Error uploading file to Google Drive." };
         }
     }
 
@@ -181,7 +181,7 @@ export async function submitAssignment(formData: FormData): Promise<ActionResult
     try {
         await saveSubmission(submission);
         return { success: true };
-    } catch (e) {
-        return { success: false, error: "Lỗi lưu thông tin nộp bài." };
+    } catch {
+        return { success: false, error: "Error saving submission info." };
     }
 }

@@ -19,13 +19,13 @@ export async function createAssignmentAction(
     // Auth check
     const session = await auth();
     if (!session?.user?.githubUsername) {
-        return { error: "Bạn cần đăng nhập để thực hiện thao tác này." };
+        return { error: "You must be logged in to perform this action." };
     }
 
     // Role check — only admins can create assignments
     const role = await getUserRole(session.user.githubUsername);
     if (role !== "admin") {
-        return { error: "Bạn không có quyền tạo bài tập." };
+        return { error: "You do not have permission to create assignments." };
     }
 
     // Extract form data
@@ -33,16 +33,14 @@ export async function createAssignmentAction(
     const week = formData.get("week") as string;
     const lesson = formData.get("lesson") as string;
     const description = formData.get("description") as string;
-    const dueDate = formData.get("dueDate") as string;
-    const points = formData.get("points") as string;
-    const fileUpload = formData.get("fileUpload") === "on";
-    const githubLink = formData.get("githubLink") === "on";
+    const datePart = formData.get("dueDatePart") as string;
+    const timePart = formData.get("dueTimePart") as string;
     const promptFilesJson = formData.get("promptFilesJson") as string | null;
     const driveFolderLink = formData.get("driveFolderLink") as string;
 
     // Validation
     if (!title?.trim()) {
-        return { error: "Vui lòng nhập tiêu đề bài tập." };
+        return { error: "Please enter a title for the assignment." };
     }
 
     // Parse week/lesson numbers
@@ -75,11 +73,32 @@ export async function createAssignmentAction(
         }
 
         promptFiles.push({
-            name: "🔗 Link Đề Bài / Tài Liệu",
+            name: "🔗 Assignment Drive Link",
             driveFileId: externalId,
             mimeType: "text/uri-list",
             sizeBytes: 0,
         });
+    }
+
+    // Combine Date and Time
+    let dueAt: string | undefined = undefined;
+    if (datePart && timePart) {
+        try {
+            // Attempt to parse date + time
+            // timePart could be "14:30" or "2:30 PM"
+            const dateTimeStr = `${datePart} ${timePart}`;
+            const parsedDate = new Date(dateTimeStr);
+            if (!isNaN(parsedDate.getTime())) {
+                dueAt = parsedDate.toISOString();
+            } else {
+                // If direct parse fails, try more robustly
+                dueAt = new Date(datePart).toISOString(); // fallback to just date if time is weird
+            }
+        } catch {
+            dueAt = datePart ? new Date(datePart).toISOString() : undefined;
+        }
+    } else if (datePart) {
+        dueAt = new Date(datePart).toISOString();
     }
 
     // Generate unique ID
@@ -102,7 +121,7 @@ export async function createAssignmentAction(
             lesson: lessonNum,
             title: title.trim(),
             description: description?.trim() || undefined,
-            dueAt: dueDate || undefined,
+            dueAt,
             published: true,
             driveFolderId,
             promptFiles,
@@ -117,6 +136,6 @@ export async function createAssignmentAction(
             throw error;
         }
         console.error("Failed to create assignment:", error);
-        return { error: "Không thể tạo bài tập. Vui lòng thử lại." };
+        return { error: "Could not create assignment. Please try again." };
     }
 }

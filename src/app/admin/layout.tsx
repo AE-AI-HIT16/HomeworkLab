@@ -1,6 +1,6 @@
 import { getCurrentUserRole } from "@/lib/roles";
 import { redirect } from "next/navigation";
-import { AdminTopNav } from "@/components/AdminTopNav";
+import { TopNav } from "@/components/TopNav";
 import { AdminSidebar } from "@/components/AdminSidebar";
 
 export const dynamic = "force-dynamic";
@@ -13,12 +13,12 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
     return (
         <div className="min-h-screen bg-[var(--hw-surface)] text-[var(--hw-on-surface)] flex flex-col font-sans">
-            <AdminTopNav user={{
+            <TopNav user={{
                 name: session.user.name,
                 email: session.user.email,
                 image: session.user.image,
                 githubUsername: session.user.githubUsername
-            }} />
+            }} role="admin" />
             <div className="flex flex-1 pt-14">
                 <AdminSidebar />
                 <div className="flex-1 md:ml-56 relative w-full">

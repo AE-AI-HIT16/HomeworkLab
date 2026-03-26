@@ -10,10 +10,10 @@ interface AdminAssignmentDetailPageProps {
 
 function formatDate(iso?: string): string {
     if (!iso) return "—";
-    return new Date(iso).toLocaleDateString("vi-VN", {
+    return new Date(iso).toLocaleDateString("en-US", {
         weekday: "short",
         day: "2-digit",
-        month: "2-digit",
+        month: "short",
         year: "numeric",
         hour: "2-digit",
         minute: "2-digit",
@@ -38,7 +38,7 @@ export default async function AdminAssignmentDetailPage({ params }: AdminAssignm
                 href="/admin"
                 className="text-sm text-blue-600 hover:text-blue-500 font-medium mb-6 inline-block"
             >
-                ← Quay lại Dashboard
+                ← Back to Dashboard
             </Link>
 
             {/* Header */}
@@ -47,7 +47,7 @@ export default async function AdminAssignmentDetailPage({ params }: AdminAssignm
                     <div>
                         <div className="flex items-center gap-3 mb-2 flex-wrap">
                             <span className="text-sm font-semibold text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
-                                Tuần {assignment.week} / Bài {assignment.lesson}
+                                Week {assignment.week} / Lesson {assignment.lesson}
                             </span>
                             <span
                                 className={`text-sm px-3 py-1 rounded-full font-medium ${assignment.published
@@ -55,7 +55,7 @@ export default async function AdminAssignmentDetailPage({ params }: AdminAssignm
                                     : "bg-gray-100 text-gray-500"
                                     }`}
                             >
-                                {assignment.published ? "Đã Publish" : "Bản nháp"}
+                                {assignment.published ? "Published" : "Draft"}
                             </span>
                         </div>
                         <h1 className="text-3xl font-bold text-gray-900">{assignment.title}</h1>
@@ -65,28 +65,28 @@ export default async function AdminAssignmentDetailPage({ params }: AdminAssignm
                 <div className="bg-white border rounded-xl p-5 mt-6 shadow-sm">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <div className="p-4 bg-gray-50 rounded-lg">
-                            <p className="text-sm text-gray-500 font-medium">Hạn nộp</p>
+                            <p className="text-sm text-gray-500 font-medium">Due Date</p>
                             <p className={`text-lg font-semibold mt-1 ${isPastDue ? "text-red-600" : "text-gray-900"}`}>
                                 {formatDate(assignment.dueAt)}
                             </p>
-                            {isPastDue && <p className="text-xs text-red-500 mt-1">Đã quá hạn</p>}
+                            {isPastDue && <p className="text-xs text-red-500 mt-1">Overdue</p>}
                         </div>
                         <div className="p-4 bg-blue-50 rounded-lg">
-                            <p className="text-sm text-blue-600 font-medium">Tiến độ</p>
+                            <p className="text-sm text-blue-600 font-medium">Progress</p>
                             <p className="text-lg font-bold text-blue-900 mt-1">
                                 {stats.submitted} / {stats.total}
                             </p>
-                            <p className="text-xs text-blue-500 mt-1">Học viên đã nộp</p>
+                            <p className="text-xs text-blue-500 mt-1">Students submitted</p>
                         </div>
                         <div className="p-4 bg-amber-50 rounded-lg">
-                            <p className="text-sm text-amber-600 font-medium">Nộp trễ</p>
+                            <p className="text-sm text-amber-600 font-medium">Late</p>
                             <p className="text-lg font-bold text-amber-900 mt-1">{stats.late}</p>
-                            <p className="text-xs text-amber-500 mt-1">Bài nộp sau hạn</p>
+                            <p className="text-xs text-amber-500 mt-1">Submitted late</p>
                         </div>
                         <div className="p-4 bg-green-50 rounded-lg">
-                            <p className="text-sm text-green-600 font-medium">Hình thức</p>
+                            <p className="text-sm text-green-600 font-medium">Content</p>
                             <p className="text-lg font-bold text-green-900 mt-1">
-                                {stats.files} <span className="text-sm font-normal">File</span> · {stats.repos} <span className="text-sm font-normal">Repo</span>
+                                {stats.files} <span className="text-sm font-normal">Files</span> · {stats.repos} <span className="text-sm font-normal">Repos</span>
                             </p>
                         </div>
                     </div>
@@ -94,8 +94,8 @@ export default async function AdminAssignmentDetailPage({ params }: AdminAssignm
             </header>
 
             {/* List */}
-            <h2 className="text-xl font-bold text-gray-900 mb-4">Trạng thái nộp bài chi tiết</h2>
-            <AdminSubmissionTable rows={rows} />
+            <h2 className="text-xl font-bold text-gray-900 mb-4">Detailed Submission Status</h2>
+            <AdminSubmissionTable assignmentId={assignment.id} rows={rows} />
         </main>
     );
 }

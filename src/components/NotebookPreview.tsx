@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useState, useCallback } from "react";
 import hljs from "highlight.js/lib/core";
 import python from "highlight.js/lib/languages/python";
 import "highlight.js/styles/github.css";
@@ -115,7 +115,7 @@ export function NotebookPreview({ driveFileId, name }: NotebookPreviewProps) {
             const data: Notebook = await res.json();
             setNotebook(data);
         } catch (e) {
-            setError(e instanceof Error ? e.message : "Không thể tải notebook");
+            setError(e instanceof Error ? e.message : "Failed to load notebook");
         } finally {
             setLoading(false);
         }
@@ -166,7 +166,7 @@ export function NotebookPreview({ driveFileId, name }: NotebookPreviewProps) {
                     {loading && (
                         <div className="flex items-center justify-center gap-3 py-12 text-slate-500">
                             <span className="material-symbols-outlined animate-spin text-[var(--hw-primary)]">progress_activity</span>
-                            <span className="text-sm">Đang tải notebook...</span>
+                            <span className="text-sm">Loading notebook...</span>
                         </div>
                     )}
 
@@ -230,7 +230,7 @@ export function NotebookPreview({ driveFileId, name }: NotebookPreviewProps) {
                                     className="text-[10px] font-bold text-[var(--hw-primary)] flex items-center gap-1 hover:underline"
                                 >
                                     <span className="material-symbols-outlined text-[12px]">open_in_new</span>
-                                    Mở trên Drive
+                                    Open in Drive
                                 </a>
                             </div>
                         </div>

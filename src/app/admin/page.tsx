@@ -16,12 +16,9 @@ export default async function AdminDashboardPage() {
         (a, b) => b.week - a.week || b.lesson - a.lesson
     );
 
-    // Calculate metrics
-    let totalSubmissionsCount = 0;
     const allAssignmentsWithSubmissions = await Promise.all(
         sortedAssignments.map(async (a) => {
             const subs = await getSubmissionsByAssignment(a.id);
-            totalSubmissionsCount += subs.length;
             const submittedUsernames = new Set(subs.map(s => s.githubUsername));
             return {
                 assignment: a,
@@ -31,8 +28,30 @@ export default async function AdminDashboardPage() {
         })
     );
 
+    const totalSubmissionsCount = allAssignmentsWithSubmissions.reduce((acc, curr) => acc + curr.submissions.length, 0);
+
     const activeAssignmentsCount = assignments.filter((a) => a.published).length;
+    
+    // Detailed Metrics
+    const gradedSubmissions = allAssignmentsWithSubmissions.flatMap(a => a.submissions).filter(s => s.grade !== undefined);
+    const averageScore = gradedSubmissions.length > 0 
+        ? Math.round(gradedSubmissions.reduce((acc, s) => acc + (s.grade || 0), 0) / gradedSubmissions.length)
+        : 0;
+
+    const pendingGradingCount = allAssignmentsWithSubmissions.flatMap(a => a.submissions).filter(s => s.grade === undefined).length;
+    const unreachableStudentsCount = activeStudents.filter(s => !allAssignmentsWithSubmissions.some(a => a.submissions.some(sub => sub.githubUsername === s.githubUsername))).length;
+
     const maxPossibleSubmissions = assignments.length * activeStudents.length;
+
+    // Weekly performance calculation (last 5 weeks)
+    const currentWeek = Math.max(...assignments.map(a => a.week), 0);
+    const weeklyAverages = Array.from({ length: 5 }, (_, i) => {
+        const week = currentWeek - (4 - i);
+        const weekAssignments = allAssignmentsWithSubmissions.filter(a => a.assignment.week === week);
+        const weekGrades = weekAssignments.flatMap(a => a.submissions).filter(s => s.grade !== undefined);
+        const avg = weekGrades.length > 0 ? Math.round(weekGrades.reduce((acc, s) => acc + (s.grade || 0), 0) / weekGrades.length) : 0;
+        return { week, avg };
+    });
 
     // EMPTY STATE
     if (assignments.length === 0) {
@@ -76,7 +95,6 @@ export default async function AdminDashboardPage() {
         );
     }
 
-    // ACTIVE STATE
     return (
         <main className="p-4 sm:p-6 md:p-8 max-w-6xl mx-auto md:mt-14 pb-24 md:pb-20 overflow-y-auto w-full">
             {/* Header */}
@@ -88,7 +106,7 @@ export default async function AdminDashboardPage() {
                 <div className="flex items-center gap-3">
                     <button className="flex items-center gap-2 bg-white border border-slate-200 text-slate-600 px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-slate-50 shadow-sm">
                         <span className="material-symbols-outlined text-[16px]">calendar_today</span>
-                        Week 12 (Current)
+                        Week {currentWeek} (Current)
                     </button>
                     <button className="flex items-center gap-2 bg-white border border-slate-200 text-slate-600 px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-slate-50 shadow-sm">
                         <span className="material-symbols-outlined text-[16px]">filter_list</span>
@@ -103,21 +121,21 @@ export default async function AdminDashboardPage() {
                     <p className="text-[10px] uppercase font-bold tracking-widest text-slate-500 mb-2">ACTIVE ASSIGNMENTS</p>
                     <div className="flex items-baseline gap-2">
                         <span className="text-4xl font-bold text-slate-900 tracking-tight">{activeAssignmentsCount}</span>
-                        <span className="text-xs font-semibold text-emerald-500">+2 from last week</span>
+                        <span className="text-xs font-semibold text-emerald-500">Live for students</span>
                     </div>
                 </div>
                 <div className="bg-white border text-sm border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col justify-center">
                     <p className="text-[10px] uppercase font-bold tracking-widest text-slate-500 mb-2">TOTAL SUBMISSIONS</p>
                     <div className="flex items-baseline gap-2">
                         <span className="text-4xl font-bold text-slate-900 tracking-tight">{totalSubmissionsCount}</span>
-                        <span className="text-xs font-semibold text-slate-400">/ {maxPossibleSubmissions} total</span>
+                        <span className="text-xs font-semibold text-slate-400">/ {maxPossibleSubmissions} possible</span>
                     </div>
                 </div>
                 <div className="bg-white border text-sm border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col justify-center">
                     <p className="text-[10px] uppercase font-bold tracking-widest text-slate-500 mb-2">AVERAGE SCORE</p>
                     <div className="flex items-baseline gap-2">
-                        <span className="text-4xl font-bold text-slate-900 tracking-tight">88.4%</span>
-                        <span className="text-xs font-semibold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">Top 5% of labs</span>
+                        <span className="text-4xl font-bold text-slate-900 tracking-tight">{averageScore}%</span>
+                        <span className="text-xs font-semibold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">Based on {gradedSubmissions.length} graded</span>
                     </div>
                 </div>
             </div>
@@ -144,25 +162,33 @@ export default async function AdminDashboardPage() {
                 </Link>
             </div>
 
-            {/* Bottom Visuals Overlay (Mockup for detailed class performance) */}
+            {/* Bottom Visuals */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-2 bg-slate-50 border text-sm border-slate-200 rounded-2xl p-6 shadow-sm">
                     <div className="flex items-center gap-2 mb-8">
                         <span className="material-symbols-outlined text-indigo-600 text-xl" style={{ fontVariationSettings: "'FILL' 1" }}>bar_chart</span>
-                        <h3 className="font-semibold text-slate-900">Detailed Class Performance</h3>
+                        <h3 className="font-semibold text-slate-900">Weekly Performance Trend</h3>
                     </div>
                     <div className="h-48 flex items-end justify-between px-4 pb-2 border-b border-slate-200/50 mb-6 gap-2">
-                        {/* Mock Chart Bars */}
-                        <div className="w-1/5 bg-indigo-200 rounded-t-lg h-[40%]" title="W8" />
-                        <div className="w-1/5 bg-indigo-300 rounded-t-lg h-[60%]" title="W9" />
-                        <div className="w-1/5 bg-indigo-200 rounded-t-lg h-[35%]" title="W10" />
-                        <div className="w-1/5 bg-indigo-200 rounded-t-lg h-[75%]" title="W11" />
-                        <div className="w-1/5 bg-indigo-600 rounded-t-lg h-[55%]" title="W12" />
+                        {weeklyAverages.map((w, idx) => (
+                            <div 
+                                key={idx} 
+                                className="w-1/6 bg-indigo-600/20 rounded-t-lg relative group transition-all hover:bg-indigo-600/40" 
+                                style={{ height: `${w.avg || 10}%` }}
+                            >
+                                <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">
+                                    {w.avg}%
+                                </div>
+                                <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[10px] text-slate-400 font-bold whitespace-nowrap">
+                                    W{w.week}
+                                </div>
+                            </div>
+                        ))}
                     </div>
-                    <div className="flex justify-between items-center text-xs">
-                        <p className="text-slate-500">Class average is 4.2% higher than the institutional baseline.</p>
+                    <div className="flex justify-between items-center text-xs mt-8">
+                        <p className="text-slate-500">Showing the average grade distribution across the last 5 operational weeks.</p>
                         <button className="font-semibold text-indigo-600 hover:text-indigo-800 transition-colors flex items-center gap-1">
-                            Download Report <span className="material-symbols-outlined text-[14px]">file_download</span>
+                            Full Analytics <span className="material-symbols-outlined text-[14px]">trending_up</span>
                         </button>
                     </div>
                 </div>
@@ -171,39 +197,53 @@ export default async function AdminDashboardPage() {
                     <h3 className="font-semibold text-slate-900 mb-6">Urgent Actions</h3>
 
                     <div className="space-y-4">
-                        <div className="flex items-center gap-3 p-3 bg-red-50/50 rounded-xl border border-red-100">
-                            <div className="w-8 h-8 rounded-full bg-red-100 text-red-600 flex items-center justify-center shrink-0">
-                                <span className="material-symbols-outlined text-[16px]">mail</span>
+                        {unreachableStudentsCount > 0 && (
+                            <div className="flex items-center gap-3 p-3 bg-red-50/50 rounded-xl border border-red-100">
+                                <div className="w-8 h-8 rounded-full bg-red-100 text-red-600 flex items-center justify-center shrink-0">
+                                    <span className="material-symbols-outlined text-[16px]">mail</span>
+                                </div>
+                                <div className="flex-1">
+                                    <p className="text-xs font-semibold text-slate-900">{unreachableStudentsCount} Students Missing</p>
+                                    <p className="text-[10px] text-slate-500 mt-0.5">No submissions across all assignments.</p>
+                                </div>
                             </div>
-                            <div className="flex-1">
-                                <p className="text-xs font-semibold text-slate-900">5 Students Unreachable</p>
-                                <p className="text-[10px] text-slate-500 mt-0.5">Lesson 3 follow-up required.</p>
-                            </div>
-                        </div>
+                        )}
 
-                        <div className="flex items-center gap-3 p-3 bg-indigo-50/50 rounded-xl border border-indigo-100">
-                            <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center shrink-0">
-                                <span className="material-symbols-outlined text-[16px]">check_circle</span>
+                        {pendingGradingCount > 0 ? (
+                            <div className="flex items-center gap-3 p-3 bg-indigo-50/50 rounded-xl border border-indigo-100">
+                                <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center shrink-0">
+                                    <span className="material-symbols-outlined text-[16px]">check_circle</span>
+                                </div>
+                                <div className="flex-1">
+                                    <p className="text-xs font-semibold text-slate-900">{pendingGradingCount} Submissions to Grade</p>
+                                    <p className="text-[10px] text-slate-500 mt-0.5">Check recent student uploads.</p>
+                                </div>
                             </div>
-                            <div className="flex-1">
-                                <p className="text-xs font-semibold text-slate-900">12 Assignments to Grade</p>
-                                <p className="text-[10px] text-slate-500 mt-0.5">Quantum Algorithms Lab.</p>
+                        ) : (
+                            <div className="flex items-center gap-3 p-3 bg-emerald-50/50 rounded-xl border border-emerald-100">
+                                <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
+                                    <span className="material-symbols-outlined text-[16px]">task_alt</span>
+                                </div>
+                                <div className="flex-1">
+                                    <p className="text-xs font-semibold text-slate-900">All Graded</p>
+                                    <p className="text-[10px] text-slate-500 mt-0.5">No pending submissions found.</p>
+                                </div>
                             </div>
-                        </div>
-
-                        <div className="flex items-center gap-3 p-3 bg-emerald-50/50 rounded-xl border border-emerald-100">
-                            <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
+                        )}
+                        
+                        <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100">
+                            <div className="w-8 h-8 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center shrink-0">
                                 <span className="material-symbols-outlined text-[16px]" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
                             </div>
                             <div className="flex-1">
-                                <p className="text-xs font-semibold text-slate-900">Weekly Module Ready</p>
-                                <p className="text-[10px] text-slate-500 mt-0.5">Draft approved by AI Curator.</p>
+                                <p className="text-xs font-semibold text-slate-900">Google Sheets Sync</p>
+                                <p className="text-[10px] text-slate-500 mt-0.5">Connected to `{assignments.length}` records.</p>
                             </div>
                         </div>
                     </div>
 
                     <button className="w-full mt-6 py-2 bg-white border border-slate-200 text-xs font-bold text-slate-600 rounded-lg hover:bg-slate-50 transition-colors">
-                        Manage Assistant Settings
+                        Manage Labs
                     </button>
                 </div>
             </div>
