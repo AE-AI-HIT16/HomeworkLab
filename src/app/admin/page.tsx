@@ -97,22 +97,9 @@ export default async function AdminDashboardPage() {
 
     return (
         <main className="p-4 sm:p-6 md:p-8 max-w-6xl mx-auto md:mt-14 pb-24 md:pb-20 overflow-y-auto w-full">
-            {/* Header */}
-            <div className="flex items-center justify-between mb-6 md:mb-8">
-                <div>
-                    <p className="text-[10px] uppercase font-bold tracking-widest text-indigo-600 mb-1">Analytics Overview</p>
-                    <h1 className="text-2xl font-bold tracking-tight text-slate-900">Assignment Dashboard</h1>
-                </div>
-                <div className="flex items-center gap-3">
-                    <button className="flex items-center gap-2 bg-white border border-slate-200 text-slate-600 px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-slate-50 shadow-sm">
-                        <span className="material-symbols-outlined text-[16px]">calendar_today</span>
-                        Week {currentWeek} (Current)
-                    </button>
-                    <button className="flex items-center gap-2 bg-white border border-slate-200 text-slate-600 px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-slate-50 shadow-sm">
-                        <span className="material-symbols-outlined text-[16px]">filter_list</span>
-                        Filter
-                    </button>
-                </div>
+            <div className="mb-6 md:mb-8">
+                <p className="text-[10px] uppercase font-bold tracking-widest text-indigo-600 mb-1">Analytics Overview</p>
+                <h1 className="text-2xl font-bold tracking-tight text-slate-900">Assignment Dashboard</h1>
             </div>
 
             {/* Metrics Row */}
