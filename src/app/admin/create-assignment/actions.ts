@@ -3,7 +3,9 @@
 import { auth } from "@/auth";
 import { getUserRole } from "@/lib/roles";
 import { saveAssignment } from "@/lib/google-sheets";
+import { createAssignmentFolders } from "@/lib/google-drive";
 import { redirect } from "next/navigation";
+import type { PromptFile } from "@/types";
 
 export interface CreateAssignmentFormState {
     error?: string;
@@ -35,6 +37,7 @@ export async function createAssignmentAction(
     const points = formData.get("points") as string;
     const fileUpload = formData.get("fileUpload") === "on";
     const githubLink = formData.get("githubLink") === "on";
+    const promptFilesJson = formData.get("promptFilesJson") as string | null;
 
     // Validation
     if (!title?.trim()) {
@@ -47,9 +50,28 @@ export async function createAssignmentAction(
     const weekNum = weekMatch ? parseInt(weekMatch[1]) : 1;
     const lessonNum = lessonMatch ? parseInt(lessonMatch[1]) : 1;
 
+    // Parse prompt files
+    let promptFiles: PromptFile[] = [];
+    if (promptFilesJson) {
+        try {
+            promptFiles = JSON.parse(promptFilesJson);
+        } catch {
+            console.warn("Could not parse promptFilesJson");
+        }
+    }
+
     // Generate unique ID
     const id = crypto.randomUUID();
     const now = new Date().toISOString();
+
+    // Create Drive folder structure
+    let driveFolderId: string | undefined;
+    try {
+        const folders = await createAssignmentFolders(weekNum, lessonNum, title.trim());
+        driveFolderId = folders.parentFolderId;
+    } catch (err) {
+        console.warn("Could not create Drive folders:", err);
+    }
 
     try {
         await saveAssignment({
@@ -60,8 +82,8 @@ export async function createAssignmentAction(
             description: description?.trim() || undefined,
             dueAt: dueDate || undefined,
             published: true,
-            driveFolderId: undefined,
-            promptFiles: [],
+            driveFolderId,
+            promptFiles,
             createdAt: now,
             updatedAt: now,
         });

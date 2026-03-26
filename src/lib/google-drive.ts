@@ -1,5 +1,6 @@
 import { google } from "googleapis";
 import { Readable } from "stream";
+import type { PromptFile } from "@/types";
 
 const SCOPES = ["https://www.googleapis.com/auth/drive"];
 
@@ -167,6 +168,66 @@ export async function uploadSubmissionFile(
         };
     } catch (error) {
         console.error("Lỗi khi upload submission file:", error);
+        throw error;
+    }
+}
+
+/**
+ * Upload file đề bài lên Drive và set quyền public-read.
+ * Trả về PromptFile metadata để lưu vào Google Sheets.
+ */
+export async function uploadPromptFile(
+    fileBuffer: Buffer,
+    originalFileName: string,
+    mimeType: string,
+    folderId: string
+): Promise<PromptFile> {
+    const drive = getDriveApi();
+
+    if (!drive) {
+        // Mock mode khi không có credentials
+        console.log("[Mock] Upload prompt file:", originalFileName, "-> folder", folderId);
+        return {
+            name: originalFileName,
+            driveFileId: `mock-prompt-${Date.now()}`,
+            mimeType,
+            sizeBytes: fileBuffer.length,
+        };
+    }
+
+    try {
+        // 1. Upload file
+        const createRes = await drive.files.create({
+            requestBody: {
+                name: originalFileName,
+                parents: [folderId],
+            },
+            media: {
+                mimeType,
+                body: Readable.from(fileBuffer),
+            },
+            fields: "id,name,size",
+        });
+
+        const fileId = createRes.data.id!;
+
+        // 2. Set permission: anyone with link can view
+        await drive.permissions.create({
+            fileId,
+            requestBody: {
+                role: "reader",
+                type: "anyone",
+            },
+        });
+
+        return {
+            name: originalFileName,
+            driveFileId: fileId,
+            mimeType,
+            sizeBytes: fileBuffer.length,
+        };
+    } catch (error) {
+        console.error("Lỗi khi upload prompt file:", error);
         throw error;
     }
 }

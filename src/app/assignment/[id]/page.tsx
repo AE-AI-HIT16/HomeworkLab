@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { SubmissionForm } from "@/components/SubmissionForm";
+import { NotebookPreview } from "@/components/NotebookPreview";
 
 interface AssignmentPageProps {
     params: Promise<{ id: string }>;
@@ -210,27 +211,56 @@ export default async function AssignmentPage({ params }: AssignmentPageProps) {
                     {assignment.promptFiles.length > 0 && (
                         <section className="mb-12">
                             <h2 className="text-lg font-medium text-[var(--hw-on-surface)] mb-4">Resources</h2>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                {assignment.promptFiles.map((file, i) => (
-                                    <a
-                                        key={i}
-                                        href={`https://drive.google.com/file/d/${file.driveFileId}/view`}
-                                        target="_blank"
-                                        rel="noopener"
-                                        className="flex items-center gap-3 p-4 bg-[var(--hw-surface-container-lowest)] rounded-xl shadow-[0_12px_40px_rgba(26,28,29,0.04)] hover:shadow-[0_12px_40px_rgba(26,28,29,0.08)] transition-all group"
-                                    >
-                                        <div className="w-10 h-10 rounded-lg bg-[var(--hw-primary)]/10 flex items-center justify-center flex-shrink-0">
-                                            <span className="material-symbols-outlined text-[var(--hw-primary)]">description</span>
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <p className="text-sm font-medium truncate">{file.name}</p>
-                                            <p className="text-[10px] text-[var(--hw-outline)]">
-                                                {file.mimeType ?? "Document"}
-                                            </p>
-                                        </div>
-                                        <span className="material-symbols-outlined text-[var(--hw-outline)] group-hover:text-[var(--hw-primary)] transition-colors">download</span>
-                                    </a>
-                                ))}
+                            <div className="space-y-3">
+                                {assignment.promptFiles.map((file, i) => {
+                                    const ext = file.name.split(".").pop()?.toLowerCase();
+                                    const isNotebook = ext === "ipynb";
+
+                                    if (isNotebook) {
+                                        return (
+                                            <NotebookPreview
+                                                key={i}
+                                                driveFileId={file.driveFileId}
+                                                name={file.name}
+                                            />
+                                        );
+                                    }
+
+                                    // PDF / DOCX / ZIP — Drive link card
+                                    const iconMap: Record<string, string> = {
+                                        pdf: "picture_as_pdf",
+                                        docx: "article",
+                                        zip: "folder_zip",
+                                    };
+                                    const colorMap: Record<string, string> = {
+                                        pdf: "text-red-500",
+                                        docx: "text-blue-500",
+                                        zip: "text-purple-500",
+                                    };
+                                    const icon = iconMap[ext ?? ""] ?? "description";
+                                    const color = colorMap[ext ?? ""] ?? "text-[var(--hw-primary)]";
+
+                                    return (
+                                        <a
+                                            key={i}
+                                            href={`https://drive.google.com/file/d/${file.driveFileId}/view`}
+                                            target="_blank"
+                                            rel="noopener"
+                                            className="flex items-center gap-3 p-4 bg-[var(--hw-surface-container-lowest)] rounded-xl shadow-[0_12px_40px_rgba(26,28,29,0.04)] hover:shadow-[0_12px_40px_rgba(26,28,29,0.08)] transition-all group"
+                                        >
+                                            <div className="w-10 h-10 rounded-lg bg-[var(--hw-surface-container-low)] flex items-center justify-center flex-shrink-0">
+                                                <span className={`material-symbols-outlined ${color}`}>{icon}</span>
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-sm font-medium truncate">{file.name}</p>
+                                                <p className="text-[10px] text-[var(--hw-outline)] uppercase">
+                                                    {ext ?? file.mimeType ?? "Document"}
+                                                </p>
+                                            </div>
+                                            <span className="material-symbols-outlined text-[var(--hw-outline)] group-hover:text-[var(--hw-primary)] transition-colors">download</span>
+                                        </a>
+                                    );
+                                })}
                             </div>
                         </section>
                     )}

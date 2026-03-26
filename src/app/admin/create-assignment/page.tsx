@@ -1,9 +1,44 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 import { useActionState } from "react";
 import { createAssignmentAction, type CreateAssignmentFormState } from "./actions";
+import type { PromptFile } from "@/types";
+
+const ALLOWED_EXTENSIONS = [".pdf", ".docx", ".zip", ".ipynb"];
+const MAX_FILE_SIZE_MB = 20;
+
+function getFileIcon(name: string): string {
+    const ext = name.split(".").pop()?.toLowerCase();
+    if (ext === "ipynb") return "data_object";
+    if (ext === "pdf") return "picture_as_pdf";
+    if (ext === "docx") return "article";
+    if (ext === "zip") return "folder_zip";
+    return "description";
+}
+
+function getFileColor(name: string): string {
+    const ext = name.split(".").pop()?.toLowerCase();
+    if (ext === "ipynb") return "text-orange-500";
+    if (ext === "pdf") return "text-red-500";
+    if (ext === "docx") return "text-blue-500";
+    if (ext === "zip") return "text-purple-500";
+    return "text-[var(--hw-primary)]";
+}
+
+function formatBytes(bytes: number): string {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+interface PendingFile {
+    file: File;
+    status: "pending" | "uploading" | "done" | "error";
+    promptFile?: PromptFile;
+    error?: string;
+}
 
 export default function CreateAssignmentPage() {
     const [state, formAction, isPending] = useActionState<CreateAssignmentFormState, FormData>(
@@ -13,6 +48,143 @@ export default function CreateAssignmentPage() {
 
     const [fileUpload, setFileUpload] = useState(true);
     const [githubLink, setGithubLink] = useState(false);
+
+    // Prompt file upload state
+    const [pendingFiles, setPendingFiles] = useState<PendingFile[]>([]);
+    const [isDragging, setIsDragging] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const addFiles = useCallback((newFiles: FileList | File[]) => {
+        const filesArray = Array.from(newFiles);
+        const valid: PendingFile[] = [];
+
+        for (const file of filesArray) {
+            const ext = "." + file.name.split(".").pop()?.toLowerCase();
+            if (!ALLOWED_EXTENSIONS.includes(ext)) {
+                alert(`File "${file.name}" không được hỗ trợ. Chỉ nhận: ${ALLOWED_EXTENSIONS.join(", ")}`);
+                continue;
+            }
+            if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+                alert(`File "${file.name}" quá lớn (tối đa ${MAX_FILE_SIZE_MB}MB)`);
+                continue;
+            }
+            valid.push({ file, status: "pending" });
+        }
+
+        setPendingFiles((prev) => [...prev, ...valid]);
+    }, []);
+
+    const removeFile = useCallback((index: number) => {
+        setPendingFiles((prev) => prev.filter((_, i) => i !== index));
+    }, []);
+
+    const handleDragOver = useCallback((e: React.DragEvent) => {
+        e.preventDefault();
+        setIsDragging(true);
+    }, []);
+
+    const handleDragLeave = useCallback((e: React.DragEvent) => {
+        e.preventDefault();
+        setIsDragging(false);
+    }, []);
+
+    const handleDrop = useCallback((e: React.DragEvent) => {
+        e.preventDefault();
+        setIsDragging(false);
+        if (e.dataTransfer.files.length > 0) {
+            addFiles(e.dataTransfer.files);
+        }
+    }, [addFiles]);
+
+    // Upload all pending files before submitting the form
+    const handleSubmit = useCallback(async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        const form = e.currentTarget;
+
+        // Upload any unuploaded files
+        const toUpload = pendingFiles.filter((f) => f.status === "pending" || f.status === "error");
+
+        if (toUpload.length > 0) {
+            // Mark all as uploading
+            setPendingFiles((prev) =>
+                prev.map((f) =>
+                    f.status === "pending" || f.status === "error"
+                        ? { ...f, status: "uploading" }
+                        : f
+                )
+            );
+
+            // Upload each file
+            const results = await Promise.all(
+                toUpload.map(async (pf) => {
+                    const uploadForm = new FormData();
+                    uploadForm.append("file", pf.file);
+                    try {
+                        const res = await fetch("/api/assignments/upload-prompt", {
+                            method: "POST",
+                            body: uploadForm,
+                        });
+                        if (!res.ok) {
+                            const err = await res.json();
+                            return { file: pf.file, error: err.error ?? "Upload thất bại" };
+                        }
+                        const promptFile: PromptFile = await res.json();
+                        return { file: pf.file, promptFile };
+                    } catch {
+                        return { file: pf.file, error: "Lỗi kết nối" };
+                    }
+                })
+            );
+
+            // Merge results back
+            setPendingFiles((prev) => {
+                const updated = [...prev];
+                for (const result of results) {
+                    const idx = updated.findIndex((f) => f.file === result.file);
+                    if (idx >= 0) {
+                        if (result.promptFile) {
+                            updated[idx] = { ...updated[idx], status: "done", promptFile: result.promptFile };
+                        } else {
+                            updated[idx] = { ...updated[idx], status: "error", error: result.error };
+                        }
+                    }
+                }
+                return updated;
+            });
+
+            // Check for errors
+            const hasError = results.some((r) => !r.promptFile);
+            if (hasError) {
+                return; // Stop submission, show errors
+            }
+
+            // Collect all uploaded prompt files (including previously done ones)
+            const allPromptFiles = [
+                ...pendingFiles.filter((f) => f.status === "done").map((f) => f.promptFile!),
+                ...results.filter((r) => r.promptFile).map((r) => r.promptFile!),
+            ];
+
+            // Inject into form
+            const hiddenInput = form.querySelector<HTMLInputElement>('[name="promptFilesJson"]');
+            if (hiddenInput) {
+                hiddenInput.value = JSON.stringify(allPromptFiles);
+            }
+        } else {
+            // All already uploaded
+            const allPromptFiles = pendingFiles
+                .filter((f) => f.status === "done" && f.promptFile)
+                .map((f) => f.promptFile!);
+            const hiddenInput = form.querySelector<HTMLInputElement>('[name="promptFilesJson"]');
+            if (hiddenInput) {
+                hiddenInput.value = JSON.stringify(allPromptFiles);
+            }
+        }
+
+        // Submit via server action
+        form.requestSubmit();
+    }, [pendingFiles]);
+
+    const isUploading = pendingFiles.some((f) => f.status === "uploading");
 
     return (
         <div className="min-h-screen flex bg-[var(--hw-surface)] text-[var(--hw-on-surface)] antialiased">
@@ -123,7 +295,10 @@ export default function CreateAssignmentPage() {
                     )}
 
                     {/* Form */}
-                    <form action={formAction} className="space-y-12 pb-20">
+                    <form onSubmit={handleSubmit} className="space-y-12 pb-20">
+                        {/* Hidden input for prompt files */}
+                        <input type="hidden" name="promptFilesJson" defaultValue="[]" />
+
                         {/* Section 1: Core Identity */}
                         <section>
                             <div className="flex items-center gap-2 mb-6">
@@ -257,12 +432,139 @@ export default function CreateAssignmentPage() {
                             </div>
                         </section>
 
-                        {/* Section 3: Submission Methods */}
+                        {/* Section 3: Prompt Files (NEW) */}
+                        <section>
+                            <div className="flex items-center gap-2 mb-6">
+                                <div className="w-1.5 h-6 bg-orange-500 rounded-full" />
+                                <h5 className="text-sm font-bold uppercase tracking-widest text-[var(--hw-on-surface-variant)]">
+                                    03. Đề Bài &amp; Tài Liệu
+                                </h5>
+                            </div>
+                            <div className="bg-[var(--hw-surface-container-low)] p-1 rounded-xl">
+                                <div className="bg-[var(--hw-surface-container-lowest)] p-8 rounded-lg space-y-6">
+                                    <div>
+                                        <p className="text-xs text-[var(--hw-on-surface-variant)] mb-4">
+                                            Đính kèm file đề bài. File <code className="bg-orange-50 text-orange-700 px-1 py-0.5 rounded text-xs">.ipynb</code> sẽ được preview trực tiếp với syntax highlight cho học viên.
+                                        </p>
+
+                                        {/* Dropzone */}
+                                        <div
+                                            onDragOver={handleDragOver}
+                                            onDragLeave={handleDragLeave}
+                                            onDrop={handleDrop}
+                                            onClick={() => fileInputRef.current?.click()}
+                                            className={`relative border-2 border-dashed rounded-xl p-10 flex flex-col items-center justify-center gap-3 cursor-pointer transition-all
+                                                ${isDragging
+                                                    ? "border-[var(--hw-primary)] bg-[var(--hw-primary)]/5 scale-[1.01]"
+                                                    : "border-[var(--hw-outline-variant)]/40 hover:border-[var(--hw-primary)]/50 hover:bg-[var(--hw-surface-container-low)]"
+                                                }`}
+                                        >
+                                            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-colors ${isDragging ? "bg-[var(--hw-primary)]/15" : "bg-[var(--hw-surface-container-low)]"}`}>
+                                                <span className={`material-symbols-outlined text-3xl transition-colors ${isDragging ? "text-[var(--hw-primary)]" : "text-[var(--hw-on-surface-variant)]"}`}>
+                                                    {isDragging ? "file_download" : "upload_file"}
+                                                </span>
+                                            </div>
+                                            <div className="text-center">
+                                                <p className="text-sm font-semibold text-[var(--hw-on-surface)]">
+                                                    {isDragging ? "Thả file vào đây" : "Kéo thả hoặc click để chọn file"}
+                                                </p>
+                                                <p className="text-xs text-[var(--hw-on-surface-variant)] mt-1">
+                                                    Hỗ trợ: <strong>.ipynb</strong>, .pdf, .docx, .zip — tối đa {MAX_FILE_SIZE_MB}MB/file
+                                                </p>
+                                            </div>
+                                            <input
+                                                ref={fileInputRef}
+                                                type="file"
+                                                multiple
+                                                accept=".pdf,.docx,.zip,.ipynb,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/zip,application/x-ipynb+json"
+                                                className="hidden"
+                                                onChange={(e) => {
+                                                    if (e.target.files) addFiles(e.target.files);
+                                                    e.target.value = "";
+                                                }}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* File List */}
+                                    {pendingFiles.length > 0 && (
+                                        <div className="space-y-2">
+                                            <p className="text-xs font-bold text-[var(--hw-on-surface-variant)] uppercase tracking-wider">
+                                                {pendingFiles.length} file đã chọn
+                                            </p>
+                                            {pendingFiles.map((pf, i) => (
+                                                <div
+                                                    key={i}
+                                                    className={`flex items-center gap-3 p-3 rounded-lg border transition-all ${pf.status === "done"
+                                                            ? "bg-emerald-50 border-emerald-200"
+                                                            : pf.status === "error"
+                                                                ? "bg-red-50 border-red-200"
+                                                                : pf.status === "uploading"
+                                                                    ? "bg-[var(--hw-primary)]/5 border-[var(--hw-primary)]/20"
+                                                                    : "bg-[var(--hw-surface-container-low)] border-transparent"
+                                                        }`}
+                                                >
+                                                    {/* File icon */}
+                                                    <div className="w-9 h-9 rounded-lg bg-white/80 flex items-center justify-center flex-shrink-0 shadow-sm">
+                                                        {pf.status === "uploading" ? (
+                                                            <span className="material-symbols-outlined text-[var(--hw-primary)] text-lg animate-spin">progress_activity</span>
+                                                        ) : pf.status === "done" ? (
+                                                            <span className="material-symbols-outlined text-emerald-600 text-lg">check_circle</span>
+                                                        ) : pf.status === "error" ? (
+                                                            <span className="material-symbols-outlined text-red-500 text-lg">error</span>
+                                                        ) : (
+                                                            <span className={`material-symbols-outlined text-lg ${getFileColor(pf.file.name)}`}>
+                                                                {getFileIcon(pf.file.name)}
+                                                            </span>
+                                                        )}
+                                                    </div>
+
+                                                    {/* File info */}
+                                                    <div className="flex-1 min-w-0">
+                                                        <p className="text-sm font-medium truncate text-[var(--hw-on-surface)]">{pf.file.name}</p>
+                                                        <p className="text-[10px] text-[var(--hw-on-surface-variant)]">
+                                                            {pf.status === "uploading" && "Đang upload..."}
+                                                            {pf.status === "done" && `✓ Đã upload · ${formatBytes(pf.file.size)}`}
+                                                            {pf.status === "error" && `✗ Lỗi: ${pf.error}`}
+                                                            {pf.status === "pending" && formatBytes(pf.file.size)}
+                                                        </p>
+                                                    </div>
+
+                                                    {/* Remove button */}
+                                                    {pf.status !== "uploading" && (
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => removeFile(i)}
+                                                            className="p-1 text-[var(--hw-on-surface-variant)] hover:text-red-500 transition-colors flex-shrink-0"
+                                                        >
+                                                            <span className="material-symbols-outlined text-lg">close</span>
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+
+                                    {/* Badge info for ipynb */}
+                                    <div className="flex items-start gap-3 p-4 bg-orange-50 rounded-lg border border-orange-100">
+                                        <span className="material-symbols-outlined text-orange-500 text-xl flex-shrink-0 mt-0.5">tips_and_updates</span>
+                                        <div>
+                                            <p className="text-xs font-bold text-orange-700 mb-1">Jupyter Notebook Preview</p>
+                                            <p className="text-xs text-orange-600 leading-relaxed">
+                                                File <code className="bg-white/60 px-1 rounded">.ipynb</code> sẽ được render trực tiếp trên trang bài tập của học viên với syntax highlight Python, giúp sinh viên đọc đề mà không cần tải file về.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        {/* Section 4: Submission Methods */}
                         <section>
                             <div className="flex items-center gap-2 mb-6">
                                 <div className="w-1.5 h-6 bg-[var(--hw-primary)] rounded-full" />
                                 <h5 className="text-sm font-bold uppercase tracking-widest text-[var(--hw-on-surface-variant)]">
-                                    03. Submission Methods
+                                    04. Submission Methods
                                 </h5>
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -312,10 +614,15 @@ export default function CreateAssignmentPage() {
                             <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
                                 <button
                                     type="submit"
-                                    disabled={isPending}
+                                    disabled={isPending || isUploading}
                                     className="w-full sm:w-auto px-10 py-3 rounded-lg text-sm font-bold text-white bg-[var(--hw-primary)] hover:bg-[var(--hw-primary-container)] shadow-lg shadow-[var(--hw-primary)]/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
-                                    {isPending ? (
+                                    {isUploading ? (
+                                        <>
+                                            <span className="material-symbols-outlined text-sm animate-spin">progress_activity</span>
+                                            Đang upload file...
+                                        </>
+                                    ) : isPending ? (
                                         <>
                                             <span className="material-symbols-outlined text-sm animate-spin">progress_activity</span>
                                             Publishing...
