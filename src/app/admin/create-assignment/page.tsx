@@ -49,6 +49,9 @@ export default function CreateAssignmentPage() {
     const [fileUpload, setFileUpload] = useState(true);
     const [githubLink, setGithubLink] = useState(false);
 
+    // Fallback Drive Link
+    const [manualDriveLink, setManualDriveLink] = useState("");
+
     // Prompt file upload state
     const [pendingFiles, setPendingFiles] = useState<PendingFile[]>([]);
     const [isDragging, setIsDragging] = useState(false);
@@ -442,6 +445,32 @@ export default function CreateAssignmentPage() {
                             </div>
                             <div className="bg-[var(--hw-surface-container-low)] p-1 rounded-xl">
                                 <div className="bg-[var(--hw-surface-container-lowest)] p-8 rounded-lg space-y-6">
+                                    {/* Manual Link Fallback */}
+                                    <div>
+                                        <label className="block text-xs font-bold text-[var(--hw-on-surface-variant)] uppercase tracking-wider mb-2">
+                                            Link Google Drive thư mục bài tập (Giải pháp tạm thời)
+                                        </label>
+                                        <div className="flex gap-4">
+                                            <input
+                                                name="driveFolderLink"
+                                                value={manualDriveLink}
+                                                onChange={(e) => setManualDriveLink(e.target.value)}
+                                                className="flex-1 bg-[var(--hw-surface-container-low)] border-none rounded-lg p-4 text-[var(--hw-on-surface)] focus:ring-2 focus:ring-[var(--hw-primary)]/10 transition-all placeholder:text-[var(--hw-on-surface-variant)]/40"
+                                                placeholder="VD: https://drive.google.com/drive/folders/..."
+                                                type="url"
+                                            />
+                                        </div>
+                                        <p className="text-[10px] text-[var(--hw-on-surface-variant)] mt-2 italic">
+                                            Nếu tính năng Kéo Thả File bị lỗi Quota, hãy chủ động upload file lên Google Drive của bạn, chọn Share "Anyone with the link" và dán link vào đây.
+                                        </p>
+                                    </div>
+
+                                    <div className="relative flex py-5 items-center">
+                                        <div className="flex-grow border-t border-[var(--hw-outline-variant)]/20"></div>
+                                        <span className="flex-shrink-0 mx-4 text-[var(--hw-on-surface-variant)] text-xs font-medium uppercase tracking-widest">Hoặc dùng API Tính năng Kéo Thả</span>
+                                        <div className="flex-grow border-t border-[var(--hw-outline-variant)]/20"></div>
+                                    </div>
+
                                     <div>
                                         <p className="text-xs text-[var(--hw-on-surface-variant)] mb-4">
                                             Đính kèm file đề bài. File <code className="bg-orange-50 text-orange-700 px-1 py-0.5 rounded text-xs">.ipynb</code> sẽ được preview trực tiếp với syntax highlight cho học viên.

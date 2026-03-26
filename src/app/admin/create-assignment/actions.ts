@@ -38,6 +38,7 @@ export async function createAssignmentAction(
     const fileUpload = formData.get("fileUpload") === "on";
     const githubLink = formData.get("githubLink") === "on";
     const promptFilesJson = formData.get("promptFilesJson") as string | null;
+    const driveFolderLink = formData.get("driveFolderLink") as string;
 
     // Validation
     if (!title?.trim()) {
@@ -58,6 +59,19 @@ export async function createAssignmentAction(
         } catch {
             console.warn("Could not parse promptFilesJson");
         }
+    }
+
+    // Add manual drive link as a special PromptFile
+    if (driveFolderLink?.trim()) {
+        const urlIdMatch = driveFolderLink.match(/[-\w]{25,}/);
+        const externalId = urlIdMatch ? urlIdMatch[0] : driveFolderLink.trim();
+
+        promptFiles.push({
+            name: "🔗 Link Drive Đề Bài",
+            driveFileId: externalId,
+            mimeType: "text/uri-list",
+            sizeBytes: 0,
+        });
     }
 
     // Generate unique ID

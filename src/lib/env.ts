@@ -44,4 +44,9 @@ export const env = {
     GOOGLE_SERVICE_ACCOUNT_EMAIL: getEnvVar("GOOGLE_SERVICE_ACCOUNT_EMAIL", false),
     GOOGLE_PRIVATE_KEY: getEnvVar("GOOGLE_PRIVATE_KEY", false).replace(/\\n/g, "\n"),
     GOOGLE_DRIVE_ROOT_FOLDER_ID: getEnvVar("GOOGLE_DRIVE_ROOT_FOLDER_ID", false),
+
+    // OAuth2 Authentication (Alternative to Service Accounts for Drive Upload)
+    GOOGLE_CLIENT_ID: getEnvVar("GOOGLE_CLIENT_ID", false),
+    GOOGLE_CLIENT_SECRET: getEnvVar("GOOGLE_CLIENT_SECRET", false),
+    GOOGLE_REFRESH_TOKEN: getEnvVar("GOOGLE_REFRESH_TOKEN", false),
 } as const;

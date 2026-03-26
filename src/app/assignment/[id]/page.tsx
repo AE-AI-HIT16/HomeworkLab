@@ -215,6 +215,7 @@ export default async function AssignmentPage({ params }: AssignmentPageProps) {
                                 {assignment.promptFiles.map((file, i) => {
                                     const ext = file.name.split(".").pop()?.toLowerCase();
                                     const isNotebook = ext === "ipynb";
+                                    const isExternalLink = file.mimeType === "text/uri-list" || file.name === "🔗 Link Drive Đề Bài";
 
                                     if (isNotebook) {
                                         return (
@@ -223,6 +224,34 @@ export default async function AssignmentPage({ params }: AssignmentPageProps) {
                                                 driveFileId={file.driveFileId}
                                                 name={file.name}
                                             />
+                                        );
+                                    }
+
+                                    // External Link
+                                    if (isExternalLink) {
+                                        const href = file.driveFileId.startsWith("http")
+                                            ? file.driveFileId
+                                            : `https://drive.google.com/drive/folders/${file.driveFileId}`;
+
+                                        return (
+                                            <a
+                                                key={i}
+                                                href={href}
+                                                target="_blank"
+                                                rel="noopener"
+                                                className="flex items-center gap-3 p-4 bg-orange-50/50 rounded-xl shadow-[0_12px_40px_rgba(26,28,29,0.04)] hover:shadow-[0_12px_40px_rgba(26,28,29,0.08)] transition-all group border border-orange-100"
+                                            >
+                                                <div className="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center flex-shrink-0">
+                                                    <span className="material-symbols-outlined text-orange-600">link</span>
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <p className="text-sm font-medium text-orange-900 truncate">{file.name}</p>
+                                                    <p className="text-[10px] text-orange-600/70 uppercase">
+                                                        External Link
+                                                    </p>
+                                                </div>
+                                                <span className="material-symbols-outlined text-orange-400 group-hover:text-orange-600 transition-colors">open_in_new</span>
+                                            </a>
                                         );
                                     }
 

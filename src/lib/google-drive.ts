@@ -10,13 +10,32 @@ const GOOGLE_SERVICE_ACCOUNT_EMAIL = env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
 const GOOGLE_PRIVATE_KEY = env.GOOGLE_PRIVATE_KEY;
 const GOOGLE_DRIVE_ROOT_FOLDER_ID = env.GOOGLE_DRIVE_ROOT_FOLDER_ID;
 
+const GOOGLE_CLIENT_ID = env.GOOGLE_CLIENT_ID;
+const GOOGLE_CLIENT_SECRET = env.GOOGLE_CLIENT_SECRET;
+const GOOGLE_REFRESH_TOKEN = env.GOOGLE_REFRESH_TOKEN;
+
 let driveApi: ReturnType<typeof google.drive>;
 
 /** Lấy Drive API Client */
 export function getDriveApi() {
     if (!driveApi) {
+        // 1. Try OAuth2 first (Personal Gmail with 30TB Storage)
+        if (GOOGLE_CLIENT_ID && GOOGLE_CLIENT_SECRET && GOOGLE_REFRESH_TOKEN) {
+            const oauth2Client = new google.auth.OAuth2(
+                GOOGLE_CLIENT_ID,
+                GOOGLE_CLIENT_SECRET
+            );
+            oauth2Client.setCredentials({
+                refresh_token: GOOGLE_REFRESH_TOKEN,
+            });
+
+            driveApi = google.drive({ version: "v3", auth: oauth2Client });
+            return driveApi;
+        }
+
+        // 2. Fallback to Service Account
         if (!GOOGLE_PRIVATE_KEY || !GOOGLE_SERVICE_ACCOUNT_EMAIL) {
-            console.warn("⚠️ Google Drive credentials missing.");
+            console.warn("⚠️ Google Drive credentials missing (neither OAuth2 nor Service Account).");
             return null;
         }
 
@@ -54,6 +73,8 @@ export async function findOrCreateFolder(name: string, parentId?: string): Promi
             q: query,
             fields: "files(id, name)",
             spaces: "drive",
+            supportsAllDrives: true,
+            includeItemsFromAllDrives: true,
         });
 
         if (res.data.files && res.data.files.length > 0) {
@@ -70,6 +91,7 @@ export async function findOrCreateFolder(name: string, parentId?: string): Promi
         const createRes = await drive.files.create({
             requestBody: folderMetadata,
             fields: "id",
+            supportsAllDrives: true,
         });
 
         return createRes.data.id!;
@@ -160,6 +182,7 @@ export async function uploadSubmissionFile(
             requestBody: fileMetadata,
             media: media,
             fields: "id",
+            supportsAllDrives: true,
         });
 
         return {
@@ -207,6 +230,7 @@ export async function uploadPromptFile(
                 body: Readable.from(fileBuffer),
             },
             fields: "id,name,size",
+            supportsAllDrives: true,
         });
 
         const fileId = createRes.data.id!;
@@ -218,6 +242,7 @@ export async function uploadPromptFile(
                 role: "reader",
                 type: "anyone",
             },
+            supportsAllDrives: true,
         });
 
         return {
