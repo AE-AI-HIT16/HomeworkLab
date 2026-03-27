@@ -23,21 +23,21 @@ export function TopNav({ user, role, showSearch = false }: TopNavProps) {
 
     const isActive = (path: string) => pathname === path;
 
-    const linkClass = (path: string) => 
+    const linkClass = (path: string) =>
         isActive(path)
-            ? "text-indigo-600 font-semibold border-b-2 border-indigo-600 pb-0.5"
-            : "text-slate-500 hover:text-slate-900 transition-colors";
+            ? "text-[var(--hw-primary)] font-semibold border-b-2 border-[var(--hw-primary)] pb-0.5"
+            : "text-[var(--hw-on-surface-variant)] hover:text-[var(--hw-on-surface)] transition-colors";
 
     return (
         <nav className="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-md shadow-sm h-16 flex items-center justify-between px-6">
             <div className="flex items-center gap-8">
                 {/* Unified Branding */}
                 <Link href={dashboardLink} className="flex items-center gap-2 group">
-                    <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white group-hover:rotate-3 transition-transform">
+                    <div className="w-8 h-8 bg-[var(--hw-primary)] rounded-lg flex items-center justify-center text-white group-hover:rotate-3 transition-transform">
                         <span className="material-symbols-outlined text-[20px]">school</span>
                     </div>
-                    <span className="text-xl font-bold tracking-tight text-slate-900">
-                        HIT <span className="text-indigo-600">AI/DATA</span>
+                    <span className="text-xl font-bold tracking-tight text-[var(--hw-on-surface)]">
+                        HIT <span className="text-[var(--hw-primary)]">AI/DATA</span>
                     </span>
                 </Link>
 
@@ -46,33 +46,18 @@ export function TopNav({ user, role, showSearch = false }: TopNavProps) {
                         Dashboard
                     </Link>
                     {role === "admin" && (
-                        <>
-                            <Link href="/admin" className={linkClass("/admin")}>
-                                Analytics
-                            </Link>
-                            <Link href="/admin/settings" className={linkClass("/admin/settings")}>
-                                Settings
-                            </Link>
-                        </>
+                        <Link href="/admin" className={linkClass("/admin")}>
+                            Analytics
+                        </Link>
                     )}
                 </div>
-                
+
                 {showSearch && <SearchBar />}
             </div>
 
             <div className="flex items-center gap-4">
 
-<button className="text-slate-500 hover:text-indigo-500 transition-colors">
-                    <span className="material-symbols-outlined text-xl">notifications</span>
-                </button>
-                
-                {role === "student" && (
-                     <button className="text-slate-500 hover:text-indigo-500 transition-colors hidden md:block">
-                        <span className="material-symbols-outlined text-xl">settings</span>
-                    </button>
-                )}
-
-                <div className="h-8 w-px bg-slate-200 mx-2 hidden md:block" />
+                <div className="h-8 w-px bg-[var(--hw-outline-variant)]/30 mx-2 hidden md:block" />
 
                 <div className="relative group cursor-pointer inline-flex items-center">
                     {user.image ? (
@@ -84,7 +69,7 @@ export function TopNav({ user, role, showSearch = false }: TopNavProps) {
                             className="rounded-full border border-slate-200"
                         />
                     ) : (
-                        <div className="w-8 h-8 bg-indigo-100 text-indigo-700 rounded-full flex items-center justify-center font-bold text-sm">
+                        <div className="w-8 h-8 bg-[var(--hw-primary-fixed)] text-[var(--hw-primary)] rounded-full flex items-center justify-center font-bold text-sm">
                             {user.name?.[0] ?? "U"}
                         </div>
                     )}
@@ -92,7 +77,7 @@ export function TopNav({ user, role, showSearch = false }: TopNavProps) {
                         <div className="px-3 py-2 border-b border-slate-100 mb-2">
                             <p className="font-semibold text-sm text-slate-900">{user.name}</p>
                             <p className="text-[10px] text-slate-500 truncate">@{user.githubUsername}</p>
-                            <div className="inline-block px-2 py-0.5 bg-indigo-50 text-indigo-700 text-[9px] font-bold uppercase rounded mt-1">
+                            <div className="inline-block px-2 py-0.5 bg-[var(--hw-primary-fixed)] text-[var(--hw-primary)] text-[9px] font-bold uppercase rounded mt-1">
                                 {role}
                             </div>
                         </div>

@@ -5,6 +5,7 @@ import { getAssignments, getSubmissionsByStudent } from "@/lib/google-sheets";
 import type { Assignment, Submission } from "@/types";
 import EmptyAssignments from "@/components/EmptyAssignments";
 import { TopNav } from "@/components/TopNav";
+import { StudentSidebar } from "@/components/StudentSidebar";
 
 function getSubmissionStatus(assignment: Assignment, submission?: Submission) {
     if (submission) {
@@ -80,48 +81,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
             />
 
             <div className="flex pt-16">
-                {/* ═══ SIDEBAR ═══ */}
-                <aside className="fixed left-0 h-[calc(100vh-64px)] w-64 bg-slate-50 flex-col p-4 space-y-2 text-sm hidden md:flex">
-                    <div className="mb-6 px-2">
-                        <h2 className="text-lg font-semibold text-indigo-600">Learning Space</h2>
-                        <p className="text-xs text-slate-500">Active Session</p>
-                    </div>
-                    <Link href="/dashboard" className="flex items-center gap-3 px-3 py-2.5 bg-white text-indigo-600 shadow-sm rounded-lg font-semibold">
-                        <span className="material-symbols-outlined">dashboard</span>
-                        Dashboard
-                    </Link>
-                    <Link href="/courses" className="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-100 rounded-lg hover:translate-x-1 transition-transform">
-                        <span className="material-symbols-outlined">auto_stories</span>
-                        Courses
-                    </Link>
-                    <Link href="#" className="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-100 rounded-lg hover:translate-x-1 transition-transform">
-                        <span className="material-symbols-outlined">local_library</span>
-                        Library
-                    </Link>
-                    <Link href="#" className="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-100 rounded-lg hover:translate-x-1 transition-transform">
-                        <span className="material-symbols-outlined">psychology</span>
-                        AI Tutor
-                    </Link>
-
-                    {role === "admin" && (
-                        <div className="mt-8 px-2">
-                            <Link href="/admin/create-assignment" className="block w-full bg-[var(--hw-primary)] text-white py-2.5 rounded-lg font-medium shadow-sm hover:brightness-110 active:scale-[0.98] transition-all text-center">
-                                New Assignment
-                            </Link>
-                        </div>
-                    )}
-
-                    <div className="mt-auto pt-4 space-y-1">
-                        <Link href="#" className="flex items-center gap-3 px-3 py-2 text-slate-600 hover:bg-slate-100 rounded-lg hover:translate-x-1 transition-transform">
-                            <span className="material-symbols-outlined">help_outline</span>
-                            Help
-                        </Link>
-                        <Link href="#" className="flex items-center gap-3 px-3 py-2 text-slate-600 hover:bg-slate-100 rounded-lg hover:translate-x-1 transition-transform">
-                            <span className="material-symbols-outlined">settings</span>
-                            Settings
-                        </Link>
-                    </div>
-                </aside>
+                <StudentSidebar role={role} />
 
                 {/* ═══ MAIN CONTENT ═══ */}
                 <main className="ml-0 md:ml-64 w-full p-4 sm:p-6 md:p-8 min-h-screen bg-[var(--hw-surface)] xl:mr-80 pb-24">
@@ -285,21 +245,13 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
 
             {/* ═══ MOBILE BOTTOM NAV ═══ */}
             <nav className="md:hidden fixed bottom-0 left-0 w-full bg-[var(--hw-surface-container-lowest)] border-t border-[var(--hw-outline-variant)]/20 shadow-[0_-4px_20px_rgba(0,0,0,0.03)] h-[72px] flex items-center justify-around px-2 z-50">
-                <Link href="/dashboard" className="flex flex-col items-center justify-center text-[var(--hw-primary)] gap-1 w-[22%] py-2 rounded-xl bg-[var(--hw-primary)]/5">
+                <Link href="/dashboard" className="flex flex-col items-center justify-center text-[var(--hw-primary)] gap-1 w-[30%] py-2 rounded-xl bg-[var(--hw-primary)]/5">
                     <span className="material-symbols-outlined text-[20px]" style={{ fontVariationSettings: "'FILL' 1" }}>dashboard</span>
                     <span className="text-[9px] font-bold tracking-wider uppercase text-[var(--hw-primary)]">Dashboard</span>
                 </Link>
-                <Link href="#" className="flex flex-col items-center justify-center text-[var(--hw-outline)] gap-1 w-[22%] pb-2">
-                    <span className="material-symbols-outlined text-[20px]">assignment</span>
-                    <span className="text-[9px] font-bold tracking-wider uppercase">Tasks</span>
-                </Link>
-                <Link href="#" className="flex flex-col items-center justify-center text-[var(--hw-outline)] gap-1 w-[22%] pb-2">
-                    <span className="material-symbols-outlined text-[20px]">groups</span>
-                    <span className="text-[9px] font-bold tracking-wider uppercase">Students</span>
-                </Link>
-                <Link href="#" className="flex flex-col items-center justify-center text-[var(--hw-outline)] gap-1 w-[22%] pb-2">
-                    <span className="material-symbols-outlined text-[20px]">person</span>
-                    <span className="text-[9px] font-bold tracking-wider uppercase">Profile</span>
+                <Link href="/courses" className="flex flex-col items-center justify-center text-[var(--hw-outline)] gap-1 w-[30%] pb-2">
+                    <span className="material-symbols-outlined text-[20px]">auto_stories</span>
+                    <span className="text-[9px] font-bold tracking-wider uppercase">Courses</span>
                 </Link>
             </nav>
         </div>

@@ -64,7 +64,7 @@ export default async function AdminDashboardPage() {
                             <div className="w-24 h-24 bg-slate-100 rounded-[2rem] rotate-[12deg]" />
                         </div>
                         <div className="w-28 h-28 bg-white rounded-3xl shadow-xl border border-slate-100 flex items-center justify-center relative z-10 transition-transform hover:scale-105 duration-300">
-                            <span className="material-symbols-outlined text-[48px] text-indigo-600">assignment_add</span>
+                            <span className="material-symbols-outlined text-[48px] text-[var(--hw-primary)]">assignment_add</span>
                         </div>
                     </div>
 
@@ -76,7 +76,7 @@ export default async function AdminDashboardPage() {
                     <div className="flex gap-4">
                         <Link
                             href="/admin/create-assignment"
-                            className="bg-indigo-600 text-white px-6 py-3 rounded-xl font-medium shadow-lg shadow-indigo-600/20 hover:brightness-110 active:scale-[0.98] transition-all flex items-center gap-2"
+                            className="bg-[var(--hw-primary)] text-white px-6 py-3 rounded-xl font-medium shadow-lg shadow-[var(--hw-primary)]/20 hover:brightness-110 active:scale-[0.98] transition-all flex items-center gap-2"
                         >
                             <span className="material-symbols-outlined text-lg">add</span>
                             Create your first assignment
@@ -98,7 +98,7 @@ export default async function AdminDashboardPage() {
     return (
         <main className="p-4 sm:p-6 md:p-8 max-w-6xl mx-auto md:mt-14 pb-24 md:pb-20 overflow-y-auto w-full">
             <div className="mb-6 md:mb-8">
-                <p className="text-[10px] uppercase font-bold tracking-widest text-indigo-600 mb-1">Analytics Overview</p>
+                <p className="text-[10px] uppercase font-bold tracking-widest text-[var(--hw-primary)] mb-1">Analytics Overview</p>
                 <h1 className="text-2xl font-bold tracking-tight text-slate-900">Assignment Dashboard</h1>
             </div>
 
@@ -122,7 +122,7 @@ export default async function AdminDashboardPage() {
                     <p className="text-[10px] uppercase font-bold tracking-widest text-slate-500 mb-2">AVERAGE SCORE</p>
                     <div className="flex items-baseline gap-2">
                         <span className="text-4xl font-bold text-slate-900 tracking-tight">{averageScore}%</span>
-                        <span className="text-xs font-semibold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">Based on {gradedSubmissions.length} graded</span>
+                        <span className="text-xs font-semibold text-[var(--hw-primary)] bg-[var(--hw-primary-fixed)] px-2 py-0.5 rounded">Based on {gradedSubmissions.length} graded</span>
                     </div>
                 </div>
             </div>
@@ -140,12 +140,12 @@ export default async function AdminDashboardPage() {
                 ))}
 
                 {/* New Assignment Card (Desktop Only) */}
-                <Link href="/admin/create-assignment" className="hidden md:flex border-2 border-dashed border-indigo-200 bg-indigo-50/30 rounded-xl p-6 flex-col items-center justify-center text-center h-[240px] hover:border-indigo-400 hover:bg-indigo-50/70 transition-colors group">
-                    <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-indigo-600 shadow-sm mb-4 group-hover:scale-110 transition-transform">
+                <Link href="/admin/create-assignment" className="hidden md:flex border-2 border-dashed border-[var(--hw-primary-fixed-dim)] bg-[var(--hw-primary-fixed)]/30 rounded-xl p-6 flex-col items-center justify-center text-center h-[240px] hover:border-[var(--hw-primary)] hover:bg-[var(--hw-primary-fixed)]/70 transition-colors group">
+                    <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-[var(--hw-primary)] shadow-sm mb-4 group-hover:scale-110 transition-transform">
                         <span className="material-symbols-outlined text-[24px]">add</span>
                     </div>
-                    <span className="font-semibold text-indigo-900 text-sm mb-1">New Assignment</span>
-                    <span className="text-[10px] uppercase font-bold tracking-widest text-indigo-400">Expand your curriculum</span>
+                    <span className="font-semibold text-[var(--hw-on-primary-fixed)] text-sm mb-1">New Assignment</span>
+                    <span className="text-[10px] uppercase font-bold tracking-widest text-[var(--hw-primary)]/50">Expand your curriculum</span>
                 </Link>
             </div>
 
@@ -153,14 +153,14 @@ export default async function AdminDashboardPage() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-2 bg-slate-50 border text-sm border-slate-200 rounded-2xl p-6 shadow-sm">
                     <div className="flex items-center gap-2 mb-8">
-                        <span className="material-symbols-outlined text-indigo-600 text-xl" style={{ fontVariationSettings: "'FILL' 1" }}>bar_chart</span>
+                        <span className="material-symbols-outlined text-[var(--hw-primary)] text-xl" style={{ fontVariationSettings: "'FILL' 1" }}>bar_chart</span>
                         <h3 className="font-semibold text-slate-900">Weekly Performance Trend</h3>
                     </div>
                     <div className="h-48 flex items-end justify-between px-4 pb-2 border-b border-slate-200/50 mb-6 gap-2">
                         {weeklyAverages.map((w, idx) => (
                             <div 
                                 key={idx} 
-                                className="w-1/6 bg-indigo-600/20 rounded-t-lg relative group transition-all hover:bg-indigo-600/40" 
+                                className="w-1/6 bg-[var(--hw-primary)]/20 rounded-t-lg relative group transition-all hover:bg-[var(--hw-primary)]/40" 
                                 style={{ height: `${w.avg || 10}%` }}
                             >
                                 <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">
@@ -174,7 +174,7 @@ export default async function AdminDashboardPage() {
                     </div>
                     <div className="flex justify-between items-center text-xs mt-8">
                         <p className="text-slate-500">Showing the average grade distribution across the last 5 operational weeks.</p>
-                        <button className="font-semibold text-indigo-600 hover:text-indigo-800 transition-colors flex items-center gap-1">
+                        <button className="font-semibold text-[var(--hw-primary)] hover:text-[var(--hw-on-primary-fixed)] transition-colors flex items-center gap-1">
                             Full Analytics <span className="material-symbols-outlined text-[14px]">trending_up</span>
                         </button>
                     </div>
@@ -197,8 +197,8 @@ export default async function AdminDashboardPage() {
                         )}
 
                         {pendingGradingCount > 0 ? (
-                            <div className="flex items-center gap-3 p-3 bg-indigo-50/50 rounded-xl border border-indigo-100">
-                                <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center shrink-0">
+                            <div className="flex items-center gap-3 p-3 bg-[var(--hw-primary-fixed)]/50 rounded-xl border border-[var(--hw-primary-fixed-dim)]">
+                                <div className="w-8 h-8 rounded-full bg-[var(--hw-primary-fixed-dim)] text-[var(--hw-primary)] flex items-center justify-center shrink-0">
                                     <span className="material-symbols-outlined text-[16px]">check_circle</span>
                                 </div>
                                 <div className="flex-1">

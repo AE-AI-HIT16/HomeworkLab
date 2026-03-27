@@ -40,7 +40,7 @@ export default async function GradingDetailPage({ params }: Props) {
         <main className="max-w-5xl mx-auto p-6 md:p-8">
             {/* Breadcrumb */}
             <div className="flex items-center gap-2 text-xs text-slate-400 font-medium mb-6">
-                <Link href="/admin/grading" className="hover:text-indigo-600 transition-colors">Grading</Link>
+                <Link href="/admin/grading" className="hover:text-[var(--hw-primary)] transition-colors">Grading</Link>
                 <span>/</span>
                 <span className="text-slate-700 truncate max-w-[200px]">{assignment.title}</span>
             </div>
@@ -70,9 +70,9 @@ export default async function GradingDetailPage({ params }: Props) {
                         <p className="text-xs text-blue-600 font-medium mb-1">Progress</p>
                         <p className="text-xl font-bold text-blue-900">{stats.submitted} <span className="text-sm font-normal text-blue-400">/ {stats.total}</span></p>
                     </div>
-                    <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-4 shadow-sm">
-                        <p className="text-xs text-indigo-600 font-medium mb-1">Graded</p>
-                        <p className="text-xl font-bold text-indigo-900">{leaderboard.length} <span className="text-sm font-normal text-indigo-400">/ {stats.submitted}</span></p>
+                    <div className="bg-[var(--hw-primary-fixed)] border border-[var(--hw-primary-fixed-dim)] rounded-xl p-4 shadow-sm">
+                        <p className="text-xs text-[var(--hw-primary)] font-medium mb-1">Graded</p>
+                        <p className="text-xl font-bold text-[var(--hw-on-primary-fixed)]">{leaderboard.length} <span className="text-sm font-normal text-indigo-400">/ {stats.submitted}</span></p>
                     </div>
                     <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-4 shadow-sm">
                         <p className="text-xs text-emerald-600 font-medium mb-1">Avg Score</p>

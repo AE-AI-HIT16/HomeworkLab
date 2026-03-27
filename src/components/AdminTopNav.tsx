@@ -7,11 +7,11 @@ export function AdminTopNav({ user }: { user: { name?: string | null, email?: st
         <nav className="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-md shadow-sm h-14 flex items-center justify-between px-6">
             <div className="flex items-center gap-8">
                 <Link href="/admin" className="text-lg font-bold tracking-tight text-slate-900">
-                    Homework<span className="text-indigo-600">Lab</span>
+                    Homework<span className="text-[var(--hw-primary)]">Lab</span>
                 </Link>
 
                 <div className="hidden md:flex items-center gap-6 text-sm">
-                    <Link href="/admin" className="text-indigo-600 font-semibold border-b-2 border-indigo-600 pb-0.5">
+                    <Link href="/admin" className="text-[var(--hw-primary)] font-semibold border-b-2 border-[var(--hw-primary)] pb-0.5">
                         Dashboard
                     </Link>
                     <Link href="#" className="text-slate-500 hover:text-slate-900 transition-colors">
@@ -54,7 +54,7 @@ export function AdminTopNav({ user }: { user: { name?: string | null, email?: st
                             className="rounded-full border border-slate-200"
                         />
                     ) : (
-                        <div className="w-7 h-7 bg-indigo-100 text-indigo-700 rounded-full flex items-center justify-center font-bold text-xs">
+                        <div className="w-7 h-7 bg-[var(--hw-primary-fixed-dim)] text-[var(--hw-primary)] rounded-full flex items-center justify-center font-bold text-xs">
                             {user.name?.[0] ?? "A"}
                         </div>
                     )}

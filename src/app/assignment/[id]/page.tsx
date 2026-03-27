@@ -76,7 +76,7 @@ export default async function AssignmentPage({ params }: AssignmentPageProps) {
                 <aside className="fixed left-0 h-[calc(100vh-64px)] w-56 bg-slate-50 flex-col p-4 text-sm hidden md:flex border-r border-slate-100">
                     <div className="mb-6 px-2">
                         <div className="flex items-center gap-2 mb-1">
-                            <div className="w-6 h-6 bg-indigo-600 rounded-md flex items-center justify-center text-white">
+                            <div className="w-6 h-6 bg-[var(--hw-primary)] rounded-md flex items-center justify-center text-white">
                                 <span className="material-symbols-outlined text-[14px]">school</span>
                             </div>
                             <h2 className="text-sm font-semibold text-slate-900 tracking-tight">HIT AI/DATA</h2>
@@ -88,17 +88,17 @@ export default async function AssignmentPage({ params }: AssignmentPageProps) {
                             <span className="material-symbols-outlined text-lg">arrow_back</span>
                             Back to Dashboard
                         </Link>
-                        <span className="flex items-center gap-2 px-3 py-2 bg-indigo-50 text-indigo-700 shadow-sm rounded-lg font-semibold border border-indigo-100/50">
+                        <span className="flex items-center gap-2 px-3 py-2 bg-[var(--hw-primary-fixed)] text-[var(--hw-primary)] shadow-sm rounded-lg font-semibold border border-[var(--hw-primary-fixed-dim)]/50">
                             <span className="material-symbols-outlined text-lg">{isSubmitted ? "check_circle" : "assignment"}</span>
                             {isSubmitted ? "Submitted" : "Not Submitted"}
                         </span>
                     </nav>
 
                     <div className="mt-auto px-2 pb-4">
-                        <div className="p-4 bg-indigo-50/50 rounded-xl border border-indigo-100 relative overflow-hidden group">
+                        <div className="p-4 bg-[var(--hw-primary-fixed)]/50 rounded-xl border border-[var(--hw-primary-fixed-dim)] relative overflow-hidden group">
                             <div className="absolute top-0 right-0 w-12 h-12 bg-indigo-200 rounded-full blur-xl opacity-30 -mr-6 -mt-6" />
                             <p className="text-[10px] font-bold text-indigo-800 uppercase mb-1 relative z-10">Performance</p>
-                            <p className="text-xs text-indigo-600 font-medium relative z-10">
+                            <p className="text-xs text-[var(--hw-primary)] font-medium relative z-10">
                                 {isSubmitted ? "Check your grades on the dashboard." : "Complete this task to improve your score."}
                             </p>
                         </div>
@@ -150,7 +150,7 @@ export default async function AssignmentPage({ params }: AssignmentPageProps) {
                         {role === "admin" && (
                             <Link
                                 href={`/admin/assignments/${id}`}
-                                className="ml-auto flex items-center gap-1.5 text-xs font-bold text-indigo-600 hover:text-indigo-800 transition-colors bg-indigo-50 px-3 py-1.5 rounded-lg border border-indigo-100"
+                                className="ml-auto flex items-center gap-1.5 text-xs font-bold text-[var(--hw-primary)] hover:text-[var(--hw-on-primary-fixed)] transition-colors bg-[var(--hw-primary-fixed)] px-3 py-1.5 rounded-lg border border-[var(--hw-primary-fixed-dim)]"
                             >
                                 <span className="material-symbols-outlined text-[16px]">grading</span>
                                 Grade this Assignment

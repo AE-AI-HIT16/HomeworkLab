@@ -78,7 +78,7 @@ export function AdminSubmissionTable({ assignmentId, rows }: AdminSubmissionTabl
                                             ) : (
                                                 <div className="space-y-2">
                                                     {submission.type === "file" ? (
-                                                        <div className="flex items-center gap-2 text-indigo-600 font-medium">
+                                                        <div className="flex items-center gap-2 text-[var(--hw-primary)] font-medium">
                                                             <span className="material-symbols-outlined text-lg">description</span>
                                                             <span className="truncate max-w-[200px]">{submission.file?.name}</span>
                                                         </div>
@@ -87,7 +87,7 @@ export function AdminSubmissionTable({ assignmentId, rows }: AdminSubmissionTabl
                                                             href={submission.repoUrl}
                                                             target="_blank"
                                                             rel="noopener noreferrer"
-                                                            className="flex items-center gap-2 text-indigo-600 hover:underline font-medium"
+                                                            className="flex items-center gap-2 text-[var(--hw-primary)] hover:underline font-medium"
                                                         >
                                                             <span className="material-symbols-outlined text-lg">link</span>
                                                             <span className="truncate max-w-[200px]">GitHub Repository</span>
@@ -112,7 +112,7 @@ export function AdminSubmissionTable({ assignmentId, rows }: AdminSubmissionTabl
                                             {isSubmitted && (
                                                 <button
                                                     onClick={() => setGradingRow(row)}
-                                                    className="flex items-center gap-1 ml-auto text-indigo-600 hover:text-indigo-800 font-bold text-xs uppercase tracking-wider transition-colors"
+                                                    className="flex items-center gap-1 ml-auto text-[var(--hw-primary)] hover:text-[var(--hw-on-primary-fixed)] font-bold text-xs uppercase tracking-wider transition-colors"
                                                 >
                                                     <span className="material-symbols-outlined text-[16px]">
                                                         {submission.grade !== undefined ? "edit" : "grading"}

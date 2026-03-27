@@ -25,12 +25,17 @@ export default async function AdminStudentsPage() {
                     { githubUsername: s.githubUsername, name: s.studentName, active: true },
                 ])
             ).values()
-          );
+        );
 
     const publishedAssignments = assignments.filter((a) => a.published);
     const total = publishedAssignments.length;
 
     // Build per-student stats
+    const now = new Date();
+    const overdueAssignments = publishedAssignments.filter(
+        (a) => a.dueAt && new Date(a.dueAt) < now
+    );
+
     const studentStats = students.map((student) => {
         const studentSubs = submissions.filter(
             (s) => s.githubUsername.toLowerCase() === student.githubUsername.toLowerCase()
@@ -46,10 +51,15 @@ export default async function AdminStudentsPage() {
                 : null;
         const completionPct = total > 0 ? Math.round((submitted / total) * 100) : 0;
 
-        return { student, submitted, late, avgGrade, completionPct };
+        // Count overdue assignments this student hasn't submitted
+        const missedOverdue = overdueAssignments.filter(
+            (a) => !studentSubs.some((s) => s.assignmentId === a.id)
+        ).length;
+
+        return { student, submitted, late, avgGrade, completionPct, missedOverdue };
     });
 
-    const missing = studentStats.filter((s) => s.submitted === 0).length;
+    const missing = studentStats.filter((s) => s.submitted === 0 && s.missedOverdue > 0).length;
     const fullySubmitted = studentStats.filter((s) => s.submitted === total && total > 0).length;
 
     return (
@@ -57,7 +67,7 @@ export default async function AdminStudentsPage() {
             {/* Header */}
             <div className="mb-8">
                 <div className="flex items-center gap-2 text-xs text-slate-400 font-medium mb-3">
-                    <Link href="/admin" className="hover:text-indigo-600 transition-colors">Analytics</Link>
+                    <Link href="/admin" className="hover:text-[var(--hw-primary)] transition-colors">Analytics</Link>
                     <span>/</span>
                     <span className="text-slate-700">Students</span>
                 </div>
@@ -76,12 +86,12 @@ export default async function AdminStudentsPage() {
                     <p className="text-2xl font-bold text-emerald-700">{fullySubmitted}</p>
                 </div>
                 <div className="bg-red-50 border border-red-100 rounded-xl p-4 shadow-sm">
-                    <p className="text-xs text-red-500 font-medium mb-1">No Submissions</p>
+                    <p className="text-xs text-red-500 font-medium mb-1">Missing (Overdue)</p>
                     <p className="text-2xl font-bold text-red-600">{missing}</p>
                 </div>
-                <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-4 shadow-sm">
-                    <p className="text-xs text-indigo-600 font-medium mb-1">Assignments</p>
-                    <p className="text-2xl font-bold text-indigo-700">{total}</p>
+                <div className="bg-[var(--hw-primary-fixed)] border border-[var(--hw-primary-fixed-dim)] rounded-xl p-4 shadow-sm">
+                    <p className="text-xs text-[var(--hw-primary)] font-medium mb-1">Assignments</p>
+                    <p className="text-2xl font-bold text-[var(--hw-primary)]">{total}</p>
                 </div>
             </div>
 
@@ -110,11 +120,11 @@ export default async function AdminStudentsPage() {
                                     </td>
                                 </tr>
                             ) : (
-                                studentStats.map(({ student, submitted, late, avgGrade, completionPct }) => (
+                                studentStats.map(({ student, submitted, late, avgGrade, completionPct, missedOverdue }) => (
                                     <tr key={student.githubUsername} className="hover:bg-slate-50 transition-colors">
                                         <td className="px-5 py-4">
                                             <div className="flex items-center gap-3">
-                                                <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-xs flex-shrink-0">
+                                                <div className="w-8 h-8 rounded-full bg-[var(--hw-primary-fixed-dim)] text-[var(--hw-primary)] flex items-center justify-center font-bold text-xs flex-shrink-0">
                                                     {student.name?.[0]?.toUpperCase() ?? "?"}
                                                 </div>
                                                 <div>
@@ -127,7 +137,7 @@ export default async function AdminStudentsPage() {
                                             <div className="flex items-center gap-2">
                                                 <div className="w-24 h-1.5 bg-slate-100 rounded-full overflow-hidden">
                                                     <div
-                                                        className="h-full bg-indigo-500 rounded-full"
+                                                        className="h-full bg-[var(--hw-primary-fixed)]0 rounded-full"
                                                         style={{ width: `${completionPct}%` }}
                                                     />
                                                 </div>
@@ -157,12 +167,14 @@ export default async function AdminStudentsPage() {
                                             )}
                                         </td>
                                         <td className="px-5 py-4">
-                                            {submitted === 0 ? (
-                                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-50 text-red-600 border border-red-100">Missing</span>
-                                            ) : submitted === total ? (
+                                            {submitted === total && total > 0 ? (
                                                 <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-100">Complete</span>
+                                            ) : submitted > 0 ? (
+                                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-[var(--hw-primary-fixed)] text-[var(--hw-primary)] border border-[var(--hw-primary-fixed-dim)]">In Progress</span>
+                                            ) : missedOverdue > 0 ? (
+                                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-50 text-red-600 border border-red-100">Missing</span>
                                             ) : (
-                                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-50 text-indigo-600 border border-indigo-100">In Progress</span>
+                                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-50 text-slate-500 border border-slate-200">Not Started</span>
                                             )}
                                         </td>
                                     </tr>

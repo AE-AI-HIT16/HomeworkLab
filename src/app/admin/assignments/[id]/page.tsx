@@ -41,7 +41,7 @@ export default async function AdminAssignmentDetailPage({ params }: AdminAssignm
         <main className="max-w-5xl mx-auto p-6 md:p-8">
             <Link
                 href="/admin"
-                className="text-sm text-indigo-600 hover:text-indigo-500 font-medium mb-6 inline-flex items-center gap-1"
+                className="text-sm text-[var(--hw-primary)] hover:text-[var(--hw-primary)] font-medium mb-6 inline-flex items-center gap-1"
             >
                 ← Back to Analytics
             </Link>

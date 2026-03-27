@@ -266,9 +266,9 @@ export function SubmissionForm({ assignmentId, existingSubmission, isPastDue }: 
             {/* UPLOADING STATE */}
             {view === "uploading" && (
                 <div className="bg-white rounded-xl shadow-sm border border-indigo-200 overflow-hidden">
-                    <div className="p-5 flex items-center justify-between bg-indigo-50/50">
+                    <div className="p-5 flex items-center justify-between bg-[var(--hw-primary-fixed)]/50">
                         <span className="font-semibold text-slate-900 text-sm">Active Upload</span>
-                        <span className="px-2 py-0.5 rounded text-[10px] uppercase font-bold tracking-wider bg-indigo-100 text-indigo-700">PROCESSING</span>
+                        <span className="px-2 py-0.5 rounded text-[10px] uppercase font-bold tracking-wider bg-[var(--hw-primary-fixed-dim)] text-[var(--hw-primary)]">PROCESSING</span>
                     </div>
                     <div className="p-5">
                         <div className="flex items-center gap-3 mb-3">
@@ -335,7 +335,7 @@ export function SubmissionForm({ assignmentId, existingSubmission, isPastDue }: 
                         {/* File Upload Zone */}
                         {type === "file" && (
                             <div
-                                className={`border-2 border-dashed rounded-xl p-8 text-center transition-colors relative ${view === "error" ? "border-red-300 bg-red-50/30" : "border-slate-200 hover:border-indigo-300 hover:bg-indigo-50/30"}`}
+                                className={`border-2 border-dashed rounded-xl p-8 text-center transition-colors relative ${view === "error" ? "border-red-300 bg-red-50/30" : "border-slate-200 hover:border-indigo-300 hover:bg-[var(--hw-primary-fixed)]/30"}`}
                                 onDragOver={(e) => { e.preventDefault(); }}
                                 onDrop={handleDrop}
                             >
@@ -349,7 +349,7 @@ export function SubmissionForm({ assignmentId, existingSubmission, isPastDue }: 
 
                                 {fileName ? (
                                     <div className="flex flex-col items-center">
-                                        <div className="w-12 h-12 rounded bg-indigo-100 text-indigo-600 flex items-center justify-center mb-3">
+                                        <div className="w-12 h-12 rounded bg-[var(--hw-primary-fixed-dim)] text-[var(--hw-primary)] flex items-center justify-center mb-3">
                                             <span className="material-symbols-outlined text-xl">draft</span>
                                         </div>
                                         <p className="text-sm font-medium text-slate-900">{fileName}</p>

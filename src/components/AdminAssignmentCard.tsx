@@ -47,7 +47,7 @@ export function AdminAssignmentCard({
                         <span className="material-symbols-outlined text-[14px]">schedule</span>
                         Last edited recently
                     </span>
-                    <Link href={`/admin/assignments/${assignment.id}`} className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 transition-colors flex items-center gap-1">
+                    <Link href={`/admin/assignments/${assignment.id}`} className="text-xs font-semibold text-[var(--hw-primary)] hover:text-[var(--hw-on-primary-fixed)] transition-colors flex items-center gap-1">
                         Resume <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
                     </Link>
                 </div>
@@ -108,7 +108,7 @@ export function AdminAssignmentCard({
                 </span>
             </div>
 
-            <Link href={`/admin/assignments/${assignment.id}`} className="font-semibold text-[15px] text-slate-900 leading-snug hover:text-indigo-600 transition-colors mb-2 block min-h-[44px]">
+            <Link href={`/admin/assignments/${assignment.id}`} className="font-semibold text-[15px] text-slate-900 leading-snug hover:text-[var(--hw-primary)] transition-colors mb-2 block min-h-[44px]">
                 {assignment.title}
             </Link>
 
@@ -125,7 +125,7 @@ export function AdminAssignmentCard({
 
                 <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden mb-4">
                     <div
-                        className={`h-full rounded-full transition-all ${progressPercent === 100 ? 'bg-emerald-500' : 'bg-indigo-600'}`}
+                        className={`h-full rounded-full transition-all ${progressPercent === 100 ? 'bg-emerald-500' : 'bg-[var(--hw-primary)]'}`}
                         style={{ width: `${progressPercent}%` }}
                     />
                 </div>
@@ -134,7 +134,7 @@ export function AdminAssignmentCard({
                     <span className={`text-[10px] font-bold uppercase tracking-widest ${progressPercent === 100 ? 'text-emerald-600' : 'text-slate-400'}`}>
                         {progressPercent === 100 ? 'COMPLETED' : isPastDue ? 'GRADING IN PROGRESS' : 'ACTIVE'}
                     </span>
-                    <Link href={`/admin/assignments/${assignment.id}`} className="text-[11px] font-bold text-indigo-600 hover:text-indigo-800 transition-colors">
+                    <Link href={`/admin/assignments/${assignment.id}`} className="text-[11px] font-bold text-[var(--hw-primary)] hover:text-[var(--hw-on-primary-fixed)] transition-colors">
                         View All
                     </Link>
                 </div>

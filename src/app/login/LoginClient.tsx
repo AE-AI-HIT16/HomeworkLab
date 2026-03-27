@@ -47,8 +47,8 @@ export default function LoginClient({ accessDenied, deniedUser }: LoginClientPro
             <main className="flex-grow flex items-center justify-center px-6 py-24 relative z-10">
                 <div className="relative w-full max-w-md">
                     {/* Decorative Blurs */}
-                    <div className="absolute -top-12 -left-12 w-24 h-24 bg-[var(--hw-primary)]/5 rounded-full blur-3xl" />
-                    <div className="absolute -bottom-12 -right-12 w-32 h-32 bg-[var(--hw-secondary-container)]/20 rounded-full blur-3xl" />
+                    <div className="absolute -top-12 -left-12 w-24 h-24 bg-[var(--hw-primary)]/5 rounded-full blur-3xl pointer-events-none" />
+                    <div className="absolute -bottom-12 -right-12 w-32 h-32 bg-[var(--hw-secondary-container)]/20 rounded-full blur-3xl pointer-events-none" />
 
                     {/* ═══ STATE: DEFAULT ═══ */}
                     {state === "default" && (

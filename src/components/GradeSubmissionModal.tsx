@@ -121,7 +121,7 @@ export default function GradeSubmissionModal({
                         </button>
                         <button
                             type="submit"
-                            className="flex-[2] py-2.5 px-4 rounded-xl bg-indigo-600 text-white font-semibold text-sm hover:brightness-110 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/20 disabled:opacity-70"
+                            className="flex-[2] py-2.5 px-4 rounded-xl bg-[var(--hw-primary)] text-white font-semibold text-sm hover:brightness-110 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/20 disabled:opacity-70"
                             disabled={isPending}
                         >
                             {isPending ? (

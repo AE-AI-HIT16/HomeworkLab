@@ -331,10 +331,8 @@ export default function CreateAssignmentPage() {
                                             </label>
                                             <input
                                                 name="week"
-                                                type="number"
-                                                min={1}
-                                                defaultValue={1}
-                                                placeholder="e.g. 1"
+                                                type="text"
+                                                placeholder="e.g. 2 - Machine Learning"
                                                 required
                                                 className="w-full bg-[var(--hw-surface-container-low)] border-none rounded-lg p-4 text-[var(--hw-on-surface)] focus:ring-2 focus:ring-[var(--hw-primary)]/10 transition-all placeholder:text-[var(--hw-on-surface-variant)]/40"
                                             />
@@ -345,10 +343,8 @@ export default function CreateAssignmentPage() {
                                             </label>
                                             <input
                                                 name="lesson"
-                                                type="number"
-                                                min={1}
-                                                defaultValue={1}
-                                                placeholder="e.g. 1"
+                                                type="text"
+                                                placeholder="e.g. 1 - Regression"
                                                 required
                                                 className="w-full bg-[var(--hw-surface-container-low)] border-none rounded-lg p-4 text-[var(--hw-on-surface)] focus:ring-2 focus:ring-[var(--hw-primary)]/10 transition-all placeholder:text-[var(--hw-on-surface-variant)]/40"
                                             />
