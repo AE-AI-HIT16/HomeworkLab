@@ -3,7 +3,20 @@ import Link from "next/link";
 
 export default function LandingPage() {
   return (
-    <div className="bg-[#f7f9fb] font-[Inter,sans-serif] text-[#191c1e] antialiased">
+    <div className="bg-[#f7f9fb] font-[Inter,sans-serif] text-[#191c1e] antialiased overflow-x-hidden">
+      {/* Global Animated Background Styles */}
+      <style>{`
+        @keyframes float1 { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(30px,-40px) scale(1.1); } }
+        @keyframes float2 { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(-20px,30px) scale(0.95); } }
+        @keyframes float3 { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(40px,20px) scale(1.05); } }
+        .orb-1 { animation: float1 8s ease-in-out infinite; }
+        .orb-2 { animation: float2 10s ease-in-out infinite; }
+        .orb-3 { animation: float3 12s ease-in-out infinite; }
+        .dot-grid {
+          background-image: radial-gradient(circle, #c7c4d7 0.8px, transparent 0.8px);
+          background-size: 32px 32px;
+        }
+      `}</style>
       {/* Top Navigation */}
       <nav className="fixed top-0 w-full z-50 bg-white/70 backdrop-blur-[20px]">
         <div className="max-w-7xl mx-auto px-6 h-16 flex justify-between items-center">
@@ -24,7 +37,14 @@ export default function LandingPage() {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative pt-32 pb-20 md:pt-48 md:pb-32 overflow-hidden" style={{ background: "radial-gradient(circle at top right, rgba(70,72,212,0.08), transparent 40%), radial-gradient(circle at bottom left, rgba(96,99,238,0.05), transparent 40%)" }}>
+      <section className="relative pt-32 pb-20 md:pt-48 md:pb-32 overflow-hidden">
+        {/* Animated Background Orbs */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="orb-1 absolute -top-20 -right-20 w-[500px] h-[500px] rounded-full bg-[#4648d4]/[0.07] blur-[80px]" />
+          <div className="orb-2 absolute top-1/2 -left-32 w-[400px] h-[400px] rounded-full bg-[#6063ee]/[0.06] blur-[60px]" />
+          <div className="orb-3 absolute bottom-10 right-1/4 w-[300px] h-[300px] rounded-full bg-[#ffdcc5]/30 blur-[70px]" />
+          <div className="absolute inset-0 dot-grid opacity-[0.06]" />
+        </div>
         <div className="max-w-7xl mx-auto px-6 relative z-10">
           <div className="text-center max-w-4xl mx-auto mb-16">
             <span className="text-[#4648d4] text-[0.75rem] font-bold tracking-[0.05em] uppercase mb-4 block">Future-Ready Education</span>
@@ -69,7 +89,8 @@ export default function LandingPage() {
       </section>
 
       {/* Problem Section */}
-      <section className="py-24 bg-[#f2f4f6]">
+      <section className="py-24 bg-[#f2f4f6] relative">
+        <div className="absolute inset-0 dot-grid opacity-[0.04] pointer-events-none" />
         <div className="max-w-7xl mx-auto px-6">
           <div className="mb-16">
             <span className="text-[#4648d4] text-[0.75rem] font-bold tracking-[0.05em] uppercase mb-4 block">The Friction</span>
@@ -95,6 +116,10 @@ export default function LandingPage() {
 
       {/* Solution Section */}
       <section id="features" className="py-32 relative overflow-hidden bg-[#f7f9fb]">
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="orb-2 absolute top-20 right-10 w-[350px] h-[350px] rounded-full bg-[#e1e0ff]/40 blur-[80px]" />
+          <div className="orb-3 absolute bottom-20 left-10 w-[250px] h-[250px] rounded-full bg-[#ffdcc5]/20 blur-[60px]" />
+        </div>
         <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-20 items-center">
           <div>
             <span className="text-[#4648d4] text-[0.75rem] font-bold tracking-[0.05em] uppercase mb-4 block">The Solution</span>
@@ -180,7 +205,10 @@ export default function LandingPage() {
       </section>
 
       {/* Course Tracks */}
-      <section className="py-24 bg-[#f7f9fb]">
+      <section className="py-24 bg-[#f7f9fb] relative">
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="orb-1 absolute top-0 left-1/3 w-[400px] h-[400px] rounded-full bg-[#4648d4]/[0.04] blur-[80px]" />
+        </div>
         <div className="max-w-7xl mx-auto px-6">
           <div className="mb-16 flex justify-between items-end">
             <div>
@@ -214,7 +242,8 @@ export default function LandingPage() {
       </section>
 
       {/* Workflow Section */}
-      <section className="py-24 bg-[#eceef0]">
+      <section className="py-24 relative" style={{ background: "linear-gradient(135deg, #eceef0 0%, #e6e8ea 50%, #eceef0 100%)" }}>
+        <div className="absolute inset-0 dot-grid opacity-[0.05] pointer-events-none" />
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-20">
             <span className="text-[#4648d4] text-[0.75rem] font-bold tracking-[0.05em] uppercase mb-4 block">The Workflow</span>
