@@ -90,7 +90,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
                         <span className="material-symbols-outlined">dashboard</span>
                         Dashboard
                     </Link>
-                    <Link href="#" className="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-100 rounded-lg hover:translate-x-1 transition-transform">
+                    <Link href="/courses" className="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-100 rounded-lg hover:translate-x-1 transition-transform">
                         <span className="material-symbols-outlined">auto_stories</span>
                         Courses
                     </Link>

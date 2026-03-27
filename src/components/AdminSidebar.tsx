@@ -30,10 +30,6 @@ export function AdminSidebar() {
                     <span className="material-symbols-outlined text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>monitoring</span>
                     Analytics
                 </Link>
-                <Link href="/admin/courses" className={navClass("/admin/courses")}>
-                    <span className="material-symbols-outlined text-[18px]">school</span>
-                    Courses
-                </Link>
                 <Link href="/admin/students" className={navClass("/admin/students")}>
                     <span className="material-symbols-outlined text-[18px]">group</span>
                     Students
