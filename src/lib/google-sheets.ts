@@ -195,6 +195,83 @@ export async function saveMaterial(material: Material): Promise<void> {
     }
 }
 
+export async function deleteAssignment(assignmentId: string): Promise<void> {
+    const sheets = getSheetsApi();
+    if (!sheets) throw new Error("Google Sheets credentials missing.");
+
+    try {
+        const res = await sheets.spreadsheets.values.get({
+            spreadsheetId: GOOGLE_SHEET_ID,
+            range: "Assignments!A:A",
+        });
+        const rows = res.data.values || [];
+        const rowIndex = rows.findIndex((row) => row[0] === assignmentId);
+        if (rowIndex === -1) throw new Error(`Assignment ${assignmentId} not found.`);
+
+        // Get sheet ID for Assignments tab
+        const sheetMeta = await sheets.spreadsheets.get({ spreadsheetId: GOOGLE_SHEET_ID });
+        const assignmentsSheet = sheetMeta.data.sheets?.find(s => s.properties?.title === "Assignments");
+        if (!assignmentsSheet?.properties?.sheetId && assignmentsSheet?.properties?.sheetId !== 0) throw new Error("Assignments sheet not found.");
+
+        await sheets.spreadsheets.batchUpdate({
+            spreadsheetId: GOOGLE_SHEET_ID,
+            requestBody: {
+                requests: [{
+                    deleteDimension: {
+                        range: {
+                            sheetId: assignmentsSheet.properties!.sheetId!,
+                            dimension: "ROWS",
+                            startIndex: rowIndex,
+                            endIndex: rowIndex + 1,
+                        },
+                    },
+                }],
+            },
+        });
+    } catch (e) {
+        console.error("Failed to delete assignment from Google Sheets", e);
+        throw e;
+    }
+}
+
+export async function deleteMaterial(materialId: string): Promise<void> {
+    const sheets = getSheetsApi();
+    if (!sheets) throw new Error("Google Sheets credentials missing.");
+
+    try {
+        const res = await sheets.spreadsheets.values.get({
+            spreadsheetId: GOOGLE_SHEET_ID,
+            range: "Materials!A:A",
+        });
+        const rows = res.data.values || [];
+        const rowIndex = rows.findIndex((row) => row[0] === materialId);
+        if (rowIndex === -1) throw new Error(`Material ${materialId} not found.`);
+
+        const sheetMeta = await sheets.spreadsheets.get({ spreadsheetId: GOOGLE_SHEET_ID });
+        const materialsSheet = sheetMeta.data.sheets?.find(s => s.properties?.title === "Materials");
+        if (!materialsSheet?.properties?.sheetId && materialsSheet?.properties?.sheetId !== 0) throw new Error("Materials sheet not found.");
+
+        await sheets.spreadsheets.batchUpdate({
+            spreadsheetId: GOOGLE_SHEET_ID,
+            requestBody: {
+                requests: [{
+                    deleteDimension: {
+                        range: {
+                            sheetId: materialsSheet.properties!.sheetId!,
+                            dimension: "ROWS",
+                            startIndex: rowIndex,
+                            endIndex: rowIndex + 1,
+                        },
+                    },
+                }],
+            },
+        });
+    } catch (e) {
+        console.error("Failed to delete material from Google Sheets", e);
+        throw e;
+    }
+}
+
 // ─── Submissions ──────────────────────────────────────────────────────────
 
 export async function getSubmissions(): Promise<Submission[]> {
