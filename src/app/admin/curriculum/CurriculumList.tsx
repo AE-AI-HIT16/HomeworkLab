@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { deleteAssignmentAction, deleteMaterialAction } from "./actions";
+import { useState, useTransition, useRef } from "react";
+import { deleteAssignmentAction, deleteMaterialAction, renameMaterialAction } from "./actions";
 import type { Assignment, Material } from "@/types";
 
 interface DeleteButtonProps {
@@ -59,6 +59,74 @@ function DeleteButton({ id, type, title, onDeleted }: DeleteButtonProps) {
         >
             <span className="material-symbols-outlined text-[18px]">delete</span>
         </button>
+    );
+}
+
+interface EditTitleButtonProps {
+    id: string;
+    currentTitle: string;
+    onRenamed: (newTitle: string) => void;
+}
+
+function EditTitleButton({ id, currentTitle, onRenamed }: EditTitleButtonProps) {
+    const [isEditing, setIsEditing] = useState(false);
+    const [value, setValue] = useState(currentTitle);
+    const [isPending, startTransition] = useTransition();
+    const inputRef = useRef<HTMLInputElement>(null);
+
+    const handleSave = () => {
+        if (!value.trim() || value.trim() === currentTitle) {
+            setIsEditing(false);
+            setValue(currentTitle);
+            return;
+        }
+        startTransition(async () => {
+            const result = await renameMaterialAction(id, value.trim());
+            if (result.success) {
+                onRenamed(value.trim());
+            } else {
+                alert(`Lỗi: ${result.error}`);
+                setValue(currentTitle);
+            }
+            setIsEditing(false);
+        });
+    };
+
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === "Enter") handleSave();
+        if (e.key === "Escape") {
+            setIsEditing(false);
+            setValue(currentTitle);
+        }
+    };
+
+    if (isEditing) {
+        return (
+            <div className="flex items-center gap-2 flex-1 min-w-0">
+                <input
+                    ref={inputRef}
+                    value={value}
+                    onChange={(e) => setValue(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    onBlur={handleSave}
+                    autoFocus
+                    disabled={isPending}
+                    className="flex-1 min-w-0 text-sm font-semibold text-slate-800 bg-white border border-indigo-300 rounded-lg px-2 py-1 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none"
+                />
+                {isPending && <span className="material-symbols-outlined text-[16px] text-indigo-500 animate-spin">progress_activity</span>}
+            </div>
+        );
+    }
+
+    return (
+        <h4
+            className="text-sm font-semibold text-slate-800 cursor-pointer hover:text-indigo-600 transition-colors group/edit inline-flex items-center gap-1"
+            onClick={() => setIsEditing(true)}
+            title="Click to edit title"
+        >
+            {currentTitle}
+            <span className="material-symbols-outlined text-[14px] text-slate-300 opacity-0 group-hover/edit:opacity-100 transition-opacity">edit</span>
+        </h4>
     );
 }
 
@@ -126,7 +194,11 @@ export function CurriculumList({ assignments: initialAssignments, materials: ini
                                                         <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 bg-amber-100 text-amber-700 rounded">Draft</span>
                                                     )}
                                                 </div>
-                                                <h4 className="text-sm font-semibold text-slate-800">{m.title}</h4>
+                                                <EditTitleButton
+                                                    id={m.id}
+                                                    currentTitle={m.title}
+                                                    onRenamed={(newTitle) => setMaterials(prev => prev.map(x => x.id === m.id ? { ...x, title: newTitle } : x))}
+                                                />
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-2">

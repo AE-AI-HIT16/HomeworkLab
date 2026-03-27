@@ -272,6 +272,32 @@ export async function deleteMaterial(materialId: string): Promise<void> {
     }
 }
 
+export async function updateMaterialTitle(materialId: string, newTitle: string): Promise<void> {
+    const sheets = getSheetsApi();
+    if (!sheets) throw new Error("Google Sheets credentials missing.");
+
+    try {
+        const res = await sheets.spreadsheets.values.get({
+            spreadsheetId: GOOGLE_SHEET_ID,
+            range: "Materials!A:C",
+        });
+        const rows = res.data.values || [];
+        const rowIndex = rows.findIndex((row) => row[0] === materialId);
+        if (rowIndex === -1) throw new Error(`Material ${materialId} not found.`);
+
+        // Update the title cell (column C = index 2, row is 1-based in A1 notation)
+        await sheets.spreadsheets.values.update({
+            spreadsheetId: GOOGLE_SHEET_ID,
+            range: `Materials!C${rowIndex + 1}`,
+            valueInputOption: "USER_ENTERED",
+            requestBody: { values: [[newTitle]] },
+        });
+    } catch (e) {
+        console.error("Failed to update material title in Google Sheets", e);
+        throw e;
+    }
+}
+
 // ─── Submissions ──────────────────────────────────────────────────────────
 
 export async function getSubmissions(): Promise<Submission[]> {
