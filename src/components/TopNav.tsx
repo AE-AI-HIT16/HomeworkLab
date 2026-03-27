@@ -81,10 +81,12 @@ export function TopNav({ user, role, showSearch = false }: TopNavProps) {
                                 {role}
                             </div>
                         </div>
-                        <Link href="/admin/settings" className="flex items-center gap-2 px-3 py-2 text-sm text-slate-600 hover:bg-slate-50 rounded-lg transition-colors">
-                            <span className="material-symbols-outlined text-[16px]">settings</span>
-                            Settings
-                        </Link>
+                        {role === "admin" && (
+                            <Link href="/admin/settings" className="flex items-center gap-2 px-3 py-2 text-sm text-slate-600 hover:bg-slate-50 rounded-lg transition-colors">
+                                <span className="material-symbols-outlined text-[16px]">settings</span>
+                                Settings
+                            </Link>
+                        )}
                         <LogoutButton />
                     </div>
                 </div>
