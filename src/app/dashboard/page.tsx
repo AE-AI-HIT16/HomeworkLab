@@ -208,7 +208,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
                                                             </Link>
                                                         ) : status.type === "due-soon" ? (
                                                             <Link href={`/assignment/${a.id}`} className="bg-[var(--hw-primary)] text-white px-4 py-1.5 rounded-lg text-xs font-semibold hover:brightness-110">
-                                                                Start Work
+                                                                Nộp bài
                                                             </Link>
                                                         ) : (
                                                             <Link href={`/assignment/${a.id}`} className="text-[var(--hw-primary)] font-medium hover:underline">
@@ -245,18 +245,6 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
                     </div>
 
                     <div className="space-y-6">
-                        {/* AI Tutor Suggestion */}
-                        <div className="p-4 bg-[var(--hw-surface-container-low)] rounded-lg">
-                            <div className="flex items-center gap-3 mb-2">
-                                <span className="material-symbols-outlined text-[var(--hw-primary)] text-xl">auto_awesome</span>
-                                <span className="font-medium text-sm">AI Tutor Suggestion</span>
-                            </div>
-                            <p className="text-xs text-[var(--hw-on-surface-variant)] leading-relaxed">
-                                {submittedCount === 0
-                                    ? "Get started by submitting your first assignment to receive personalized learning recommendations."
-                                    : `Great progress! You've completed ${submittedCount} assignment${submittedCount > 1 ? "s" : ""}. Keep up the momentum!`}
-                            </p>
-                        </div>
 
                         {/* Quick Stats */}
                         <div className="p-4 bg-[var(--hw-primary)]/5 rounded-lg border border-[var(--hw-primary)]/10">
