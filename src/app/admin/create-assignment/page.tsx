@@ -329,31 +329,29 @@ export default function CreateAssignmentPage() {
                                             <label className="block text-xs font-bold text-[var(--hw-on-surface-variant)] uppercase tracking-wider mb-2">
                                                 Week / Module
                                             </label>
-                                            <select
+                                            <input
                                                 name="week"
-                                                className="w-full bg-[var(--hw-surface-container-low)] border-none rounded-lg p-4 text-[var(--hw-on-surface)] focus:ring-2 focus:ring-[var(--hw-primary)]/10 transition-all"
-                                            >
-                                                <option>Week 1: Fundamentals</option>
-                                                <option>Week 2: Advanced Logic</option>
-                                                <option>Week 3: Data Structures</option>
-                                                <option>Week 4: Algorithms</option>
-                                                <option>Week 5: Projects</option>
-                                            </select>
+                                                type="number"
+                                                min={1}
+                                                defaultValue={1}
+                                                placeholder="e.g. 1"
+                                                required
+                                                className="w-full bg-[var(--hw-surface-container-low)] border-none rounded-lg p-4 text-[var(--hw-on-surface)] focus:ring-2 focus:ring-[var(--hw-primary)]/10 transition-all placeholder:text-[var(--hw-on-surface-variant)]/40"
+                                            />
                                         </div>
                                         <div>
                                             <label className="block text-xs font-bold text-[var(--hw-on-surface-variant)] uppercase tracking-wider mb-2">
                                                 Lesson Context
                                             </label>
-                                            <select
+                                            <input
                                                 name="lesson"
-                                                className="w-full bg-[var(--hw-surface-container-low)] border-none rounded-lg p-4 text-[var(--hw-on-surface)] focus:ring-2 focus:ring-[var(--hw-primary)]/10 transition-all"
-                                            >
-                                                <option>Lecture 01: Setup</option>
-                                                <option>Lecture 02: Syntax</option>
-                                                <option>Lecture 03: Functions</option>
-                                                <option>Practical 01: Debugging</option>
-                                                <option>Practical 02: Testing</option>
-                                            </select>
+                                                type="number"
+                                                min={1}
+                                                defaultValue={1}
+                                                placeholder="e.g. 1"
+                                                required
+                                                className="w-full bg-[var(--hw-surface-container-low)] border-none rounded-lg p-4 text-[var(--hw-on-surface)] focus:ring-2 focus:ring-[var(--hw-primary)]/10 transition-all placeholder:text-[var(--hw-on-surface-variant)]/40"
+                                            />
                                         </div>
                                     </div>
                                 </div>
