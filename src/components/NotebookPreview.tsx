@@ -5,6 +5,8 @@ import hljs from "highlight.js/lib/core";
 import python from "highlight.js/lib/languages/python";
 import "highlight.js/styles/github.css";
 import { marked } from "marked";
+import katex from "katex";
+import "katex/dist/katex.min.css";
 
 hljs.registerLanguage("python", python);
 
@@ -46,8 +48,35 @@ function getOutputText(output: NotebookOutput): string {
     return "";
 }
 
+/**
+ * Pre-process LaTeX math in markdown source before passing to `marked`.
+ * Handles $$...$$ (display) and $...$ (inline) blocks.
+ */
+function renderMathInMarkdown(source: string): string {
+    // Step 1: Replace display math $$...$$
+    let result = source.replace(/\$\$([\s\S]+?)\$\$/g, (_match, tex: string) => {
+        try {
+            return katex.renderToString(tex.trim(), { displayMode: true, throwOnError: false });
+        } catch {
+            return _match;
+        }
+    });
+
+    // Step 2: Replace inline math $...$  (but not $$)
+    result = result.replace(/(?<!\$)\$(?!\$)(.+?)(?<!\$)\$(?!\$)/g, (_match, tex: string) => {
+        try {
+            return katex.renderToString(tex.trim(), { displayMode: false, throwOnError: false });
+        } catch {
+            return _match;
+        }
+    });
+
+    return result;
+}
+
 function MarkdownCell({ source }: { source: string }) {
-    const html = marked.parse(source, { async: false }) as string;
+    const preprocessed = renderMathInMarkdown(source);
+    const html = marked.parse(preprocessed, { async: false }) as string;
     return (
         <div
             className="prose prose-sm max-w-none text-[var(--hw-on-surface)] px-5 py-4

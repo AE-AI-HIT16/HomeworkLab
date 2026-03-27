@@ -9,8 +9,10 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@types/katex": "^0.16.8",
     "googleapis": "^171.4.0",
     "highlight.js": "^11.11.1",
+    "katex": "^0.16.43",
     "marked": "^17.0.5",
     "next": "16.2.1",
     "next-auth": "^5.0.0-beta.30",
