@@ -13,7 +13,7 @@ Trước khi deploy, bạn cần thiết lập 3 dịch vụ sau và lấy các 
 1. Truy cập [GitHub Developer Settings](https://github.com/settings/developers).
 2. Chọn **New OAuth App**.
 3. Điền thông tin:
-   - **Application name**: Hệ thống nộp bài (HomeworkLab)
+   - **Application name**: Hệ thống View Details (HomeworkLab)
    - **Homepage URL**: `https://<ten-mien-vercel-cua-ban>.vercel.app`
    - **Authorization callback URL**: `https://<ten-mien-vercel-cua-ban>.vercel.app/api/auth/callback/github`
 4. Lưu lại **Client ID** (`AUTH_GITHUB_ID`) và tạo một **Client Secret** (`AUTH_GITHUB_SECRET`).
@@ -39,7 +39,7 @@ Hệ thống lưu file lên Drive và ghi data lên Sheets. Bạn cần một Se
    - Bấm Share góc trên bên phải, chia sẻ quyền **Editor** cho email Service Account (VD: `homework@my-project.iam.gserviceaccount.com`).
    - Lấy ID của File Sheets trên URL dán vào biến `GOOGLE_SHEET_ID`.
 2. **Google Drive**:
-   - Tạo 1 Thư mục gốc trên Drive của bạn để lớp nộp bài.
+   - Tạo 1 Thư mục gốc trên Drive của bạn để lớp View Details.
    - Chia sẻ quyền **Editor** cho email Service Account (giống hệt bên Sheets).
    - Lấy ID của thư mục dán vào `GOOGLE_DRIVE_ROOT_FOLDER_ID`.
 

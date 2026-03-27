@@ -208,7 +208,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
                                                             </Link>
                                                         ) : status.type === "due-soon" ? (
                                                             <Link href={`/assignment/${a.id}`} className="bg-[var(--hw-primary)] text-white px-4 py-1.5 rounded-lg text-xs font-semibold hover:brightness-110">
-                                                                Nộp bài
+                                                                View Details
                                                             </Link>
                                                         ) : (
                                                             <Link href={`/assignment/${a.id}`} className="text-[var(--hw-primary)] font-medium hover:underline">
