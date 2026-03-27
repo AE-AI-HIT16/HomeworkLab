@@ -1,5 +1,5 @@
 import { google } from "googleapis";
-import type { Student, Assignment, Submission, PromptFile, SubmissionFile, SubmissionType } from "@/types";
+import type { Student, Assignment, Submission, PromptFile, SubmissionFile, SubmissionType, Material } from "@/types";
 
 // Auth scopes for Google Sheets
 const SCOPES = ["https://www.googleapis.com/auth/spreadsheets"];
@@ -133,6 +133,64 @@ export async function saveAssignment(assignment: Assignment): Promise<void> {
         });
     } catch (e) {
         console.error("Failed to save assignment to Google Sheets", e);
+        throw e;
+    }
+}
+
+// ─── Materials ────────────────────────────────────────────────────────────
+
+export async function getMaterials(): Promise<Material[]> {
+    const sheets = getSheetsApi();
+    if (!sheets) return []; // Fallback
+
+    try {
+        const res = await sheets.spreadsheets.values.get({
+            spreadsheetId: GOOGLE_SHEET_ID,
+            range: "Materials!A2:F",
+        });
+
+        const rows = res.data.values || [];
+        return rows.map((row) => {
+            return {
+                id: row[0] ?? "",
+                week: Number(row[1]) || 1,
+                title: row[2] ?? "",
+                url: row[3] ?? "",
+                type: (row[4] as "theory" | "video" | "slides" | "other") || "other",
+                published: String(row[5]).trim().toLowerCase() === "true",
+            };
+        }).filter((m) => m.id);
+    } catch (e) {
+        console.error("Failed to get materials from Google Sheets", e);
+        return [];
+    }
+}
+
+export async function saveMaterial(material: Material): Promise<void> {
+    const sheets = getSheetsApi();
+    if (!sheets) {
+        console.warn("[MOCK MODE] Google Sheets credentials missing — material NOT saved:", material.id);
+        throw new Error("Google Sheets credentials missing. Cannot save material.");
+    }
+
+    const row = [
+        material.id,
+        material.week,
+        material.title,
+        material.url,
+        material.type,
+        material.published ? "TRUE" : "FALSE",
+    ];
+
+    try {
+        await sheets.spreadsheets.values.append({
+            spreadsheetId: GOOGLE_SHEET_ID,
+            range: "Materials!A:F",
+            valueInputOption: "USER_ENTERED",
+            requestBody: { values: [row] },
+        });
+    } catch (e) {
+        console.error("Failed to save material to Google Sheets", e);
         throw e;
     }
 }

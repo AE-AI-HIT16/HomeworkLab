@@ -39,6 +39,18 @@ export function AdminSidebar() {
                     Grading
                 </Link>
 
+                <div className="pt-3 mt-3 border-t border-slate-200/50">
+                    <p className="text-[10px] uppercase tracking-widest text-slate-400 font-bold mb-2 px-3">Content</p>
+                    <Link href="/admin/create-assignment" className={navClass("/admin/create-assignment")}>
+                        <span className="material-symbols-outlined text-[18px]">add_task</span>
+                        Add Assignment
+                    </Link>
+                    <Link href="/admin/materials/new" className={navClass("/admin/materials/new")}>
+                        <span className="material-symbols-outlined text-[18px]">post_add</span>
+                        Add Material
+                    </Link>
+                </div>
+
             </nav>
 
 

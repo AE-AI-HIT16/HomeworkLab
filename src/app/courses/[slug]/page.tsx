@@ -3,9 +3,9 @@ import Link from "next/link";
 import { getCourseById } from "@/lib/courses";
 import { requireSession } from "@/lib/auth";
 import { getCurrentUserRole } from "@/lib/roles";
-import { getAssignments, getSubmissionsByStudent } from "@/lib/google-sheets";
+import { getAssignments, getSubmissionsByStudent, getMaterials } from "@/lib/google-sheets";
 import { TopNav } from "@/components/TopNav";
-import type { Assignment, Submission } from "@/types";
+import type { Assignment, Submission, Material } from "@/types";
 
 export const dynamic = "force-dynamic";
 
@@ -51,20 +51,45 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
     const publishedAssignments = allAssignments.filter((a) => a.published);
     const userSubmissions = course.id === "ai-core" ? await getSubmissionsByStudent(user.githubUsername) : [];
 
+    const allMaterials = course.id === "ai-core" ? await getMaterials() : [];
+    const publishedMaterials = allMaterials.filter((m) => m.published);
+
     const submissionMap = new Map<string, Submission>(
         userSubmissions.map((s) => [s.assignmentId, s])
     );
 
-    // Group assignments into Modules (Weeks)
-    const weekMap = new Map<number, { title: string; assignments: Assignment[] }>();
+    // Group assignments and materials into Modules (Weeks)
+    type ModuleItem = { kind: "assignment"; data: Assignment } | { kind: "material"; data: Material };
+    const weekMap = new Map<number, { title: string; items: ModuleItem[] }>();
+
+    for (const m of publishedMaterials) {
+        const existing = weekMap.get(m.week);
+        if (existing) {
+            existing.items.push({ kind: "material", data: m });
+        } else {
+            weekMap.set(m.week, { title: `Module ${m.week}: Week ${m.week}`, items: [{ kind: "material", data: m }] });
+        }
+    }
+
     for (const a of publishedAssignments) {
         const existing = weekMap.get(a.week);
         if (existing) {
-            existing.assignments.push(a);
+            existing.items.push({ kind: "assignment", data: a });
         } else {
-            weekMap.set(a.week, { title: `Module ${a.week}: Week ${a.week}`, assignments: [a] });
+            weekMap.set(a.week, { title: `Module ${a.week}: Week ${a.week}`, items: [{ kind: "assignment", data: a }] });
         }
     }
+
+    // Sort items: Materials first, Assignments second ordered by lesson
+    for (const [_, module] of weekMap) {
+        module.items.sort((a, b) => {
+            if (a.kind === "material" && b.kind === "assignment") return -1;
+            if (a.kind === "assignment" && b.kind === "material") return 1;
+            if (a.kind === "assignment" && b.kind === "assignment") return a.data.lesson - b.data.lesson;
+            return 0; // Maintain original sheet order for materials
+        });
+    }
+
     const modules = Array.from(weekMap.entries()).sort(([a], [b]) => a - b);
 
     // Calculate Progress dynamically if data exists
@@ -172,10 +197,11 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
                             </div>
                         ) : (
                             <div className="space-y-4">
-                                {modules.map(([weekNum, { title, assignments: moduleAssignments }]) => {
-                                    // Calculate module progress
+                                {modules.map(([weekNum, { title, items }]) => {
+                                    // Calculate module progress (only assignments count towards completion)
+                                    const moduleAssignments = items.filter((i) => i.kind === "assignment");
                                     const moduleTotal = moduleAssignments.length;
-                                    const moduleCompleted = moduleAssignments.filter(a => submissionMap.has(a.id)).length;
+                                    const moduleCompleted = moduleAssignments.filter(i => i.kind === "assignment" && submissionMap.has(i.data.id)).length;
                                     const isModuleDone = moduleTotal > 0 && moduleCompleted === moduleTotal;
 
                                     return (
@@ -196,61 +222,89 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
                                                         <h3 className="text-lg font-bold text-slate-900">{title}</h3>
                                                     </div>
                                                     <p className="text-sm text-slate-500 ml-9">
-                                                        {moduleCompleted}/{moduleTotal} lessons completed
+                                                        {moduleCompleted}/{moduleTotal} assignments completed
                                                     </p>
                                                 </div>
                                             </div>
 
-                                            {/* Module Content (Lessons) */}
+                                            {/* Module Content (Lessons & Materials) */}
                                             <div className="divide-y divide-slate-100">
-                                                {moduleAssignments.map((a) => {
-                                                    const sub = submissionMap.get(a.id);
-                                                    const status = getSubmissionStatus(a, sub);
+                                                {items.map((item, idx) => {
+                                                    if (item.kind === "material") {
+                                                        const m = item.data;
+                                                        let iconName = "article";
+                                                        if (m.type === "video") iconName = "play_circle";
+                                                        if (m.type === "slides") iconName = "slideshow";
 
-                                                    // Styling based on status
-                                                    let statusColor = "text-slate-400 bg-slate-50 border-slate-200";
-                                                    if (status.type === "completed") statusColor = "text-emerald-700 bg-emerald-50 border-emerald-100";
-                                                    if (status.type === "due-soon") statusColor = "text-amber-700 bg-amber-50 border-amber-100";
-                                                    if (status.type === "overdue") statusColor = "text-red-700 bg-red-50 border-red-100";
-                                                    if (status.type === "pending" && a.id === nextUp?.id) statusColor = "text-indigo-700 bg-indigo-50 border-indigo-100 ring-1 ring-indigo-500/20"; // Active highlight
-
-                                                    return (
-                                                        <Link href={`/assignment/${a.id}`} key={a.id} className="group flex items-start sm:items-center justify-between p-4 md:px-6 hover:bg-slate-50 transition-colors gap-4">
-                                                            <div className="flex items-start sm:items-center gap-4">
-                                                                {/* Icon */}
-                                                                <div className={`shrink-0 w-10 h-10 rounded-xl border flex items-center justify-center ${statusColor}`}>
-                                                                    <span className="material-symbols-outlined text-[20px]" style={{ fontVariationSettings: status.type === 'completed' ? "'FILL' 1" : "" }}>
-                                                                        {status.icon}
-                                                                    </span>
-                                                                </div>
-
-                                                                {/* Lesson Details */}
-                                                                <div>
-                                                                    <div className="flex items-center gap-2 mb-1">
-                                                                        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Lesson {a.lesson}</span>
-                                                                        {a.id === nextUp?.id && (
-                                                                            <span className="px-1.5 py-0.5 bg-indigo-100 text-indigo-700 text-[9px] font-bold uppercase tracking-wider rounded">Next Up</span>
-                                                                        )}
+                                                        return (
+                                                            <a href={m.url} target="_blank" rel="noopener noreferrer" key={`mat-${m.id}-${idx}`} className="group flex items-start sm:items-center justify-between p-4 md:px-6 hover:bg-slate-50 transition-colors gap-4">
+                                                                <div className="flex items-start sm:items-center gap-4">
+                                                                    <div className="shrink-0 w-10 h-10 rounded-xl border flex items-center justify-center text-slate-500 bg-slate-50 border-slate-200">
+                                                                        <span className="material-symbols-outlined text-[20px]">{iconName}</span>
                                                                     </div>
-                                                                    <h4 className="font-semibold text-slate-900 group-hover:text-indigo-600 transition-colors">
-                                                                        {a.title}
-                                                                    </h4>
+                                                                    <div>
+                                                                        <div className="flex items-center gap-2 mb-1">
+                                                                            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 capitalize">{m.type}</span>
+                                                                        </div>
+                                                                        <h4 className="font-semibold text-slate-900 group-hover:text-indigo-600 transition-colors">
+                                                                            {m.title}
+                                                                        </h4>
+                                                                    </div>
                                                                 </div>
-                                                            </div>
+                                                                <div className="hidden sm:flex flex-col items-end gap-1">
+                                                                    <span className="material-symbols-outlined text-slate-300 group-hover:text-indigo-400">open_in_new</span>
+                                                                </div>
+                                                            </a>
+                                                        );
+                                                    } else {
+                                                        const a = item.data;
+                                                        const sub = submissionMap.get(a.id);
+                                                        const status = getSubmissionStatus(a, sub);
 
-                                                            {/* Right Side Status */}
-                                                            <div className="hidden sm:flex flex-col items-end gap-1">
-                                                                <span className={`text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full ${statusColor.replace('border', '')}`}>
-                                                                    {status.label}
-                                                                </span>
-                                                                {a.dueAt && status.type !== "completed" && (
-                                                                    <span className="text-xs text-slate-400 font-medium">
-                                                                        Due {formatDueDate(a.dueAt)}
+                                                        let statusColor = "text-slate-400 bg-slate-50 border-slate-200";
+                                                        if (status.type === "completed") statusColor = "text-emerald-700 bg-emerald-50 border-emerald-100";
+                                                        if (status.type === "due-soon") statusColor = "text-amber-700 bg-amber-50 border-amber-100";
+                                                        if (status.type === "overdue") statusColor = "text-red-700 bg-red-50 border-red-100";
+                                                        if (status.type === "pending" && a.id === nextUp?.id) statusColor = "text-indigo-700 bg-indigo-50 border-indigo-100 ring-1 ring-indigo-500/20"; // Active highlight
+
+                                                        return (
+                                                            <Link href={`/assignment/${a.id}`} key={`ast-${a.id}`} className="group flex items-start sm:items-center justify-between p-4 md:px-6 hover:bg-slate-50 transition-colors gap-4">
+                                                                <div className="flex items-start sm:items-center gap-4">
+                                                                    {/* Icon */}
+                                                                    <div className={`shrink-0 w-10 h-10 rounded-xl border flex items-center justify-center ${statusColor}`}>
+                                                                        <span className="material-symbols-outlined text-[20px]" style={{ fontVariationSettings: status.type === 'completed' ? "'FILL' 1" : "" }}>
+                                                                            {status.icon}
+                                                                        </span>
+                                                                    </div>
+
+                                                                    {/* Lesson Details */}
+                                                                    <div>
+                                                                        <div className="flex items-center gap-2 mb-1">
+                                                                            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Lesson {a.lesson}</span>
+                                                                            {a.id === nextUp?.id && (
+                                                                                <span className="px-1.5 py-0.5 bg-indigo-100 text-indigo-700 text-[9px] font-bold uppercase tracking-wider rounded">Next Up</span>
+                                                                            )}
+                                                                        </div>
+                                                                        <h4 className="font-semibold text-slate-900 group-hover:text-indigo-600 transition-colors">
+                                                                            {a.title}
+                                                                        </h4>
+                                                                    </div>
+                                                                </div>
+
+                                                                {/* Right Side Status */}
+                                                                <div className="hidden sm:flex flex-col items-end gap-1">
+                                                                    <span className={`text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full ${statusColor.replace('border', '')}`}>
+                                                                        {status.label}
                                                                     </span>
-                                                                )}
-                                                            </div>
-                                                        </Link>
-                                                    );
+                                                                    {a.dueAt && status.type !== "completed" && (
+                                                                        <span className="text-xs text-slate-400 font-medium">
+                                                                            Due {formatDueDate(a.dueAt)}
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+                                                            </Link>
+                                                        );
+                                                    }
                                                 })}
                                             </div>
                                         </div>

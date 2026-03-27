@@ -56,6 +56,19 @@ export interface Assignment {
     updatedAt: string;
 }
 
+// ─── Materials ──────────────────────────────────────────
+
+export interface Material {
+    id: string;
+    /** Week number (1-based) */
+    week: number;
+    title: string;
+    url: string;
+    type: "theory" | "video" | "slides" | "other";
+    /** Whether it has been published to students */
+    published: boolean;
+}
+
 // ─── Submissions ────────────────────────────────────────
 
 /** Submission type */
