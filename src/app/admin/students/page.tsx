@@ -137,7 +137,7 @@ export default async function AdminStudentsPage() {
                                             <div className="flex items-center gap-2">
                                                 <div className="w-24 h-1.5 bg-slate-100 rounded-full overflow-hidden">
                                                     <div
-                                                        className="h-full bg-[var(--hw-primary-fixed)]0 rounded-full"
+                                                        className="h-full bg-[var(--hw-primary)] rounded-full transition-all"
                                                         style={{ width: `${completionPct}%` }}
                                                     />
                                                 </div>
