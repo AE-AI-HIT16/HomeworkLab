@@ -27,8 +27,8 @@ export function AdminSidebar() {
 
             <nav className="flex-1 space-y-1">
                 <Link href="/admin" className={navClass("/admin")}>
-                    <span className="material-symbols-outlined text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>monitoring</span>
-                    Analytics
+                    <span className="material-symbols-outlined text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>dashboard</span>
+                    Dashboard
                 </Link>
                 <Link href="/admin/students" className={navClass("/admin/students")}>
                     <span className="material-symbols-outlined text-[18px]">group</span>
