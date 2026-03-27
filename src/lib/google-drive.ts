@@ -162,8 +162,8 @@ export async function uploadSubmissionFile(
 ): Promise<{ fileId: string; sizeBytes: number } | undefined> {
     const drive = getDriveApi();
     if (!drive) {
-        console.log("[Mock] Upload file to Drive:", fileName, "-> folder", folderId);
-        return { fileId: `mock-file-${Date.now()}`, sizeBytes: fileBuffer.length };
+        console.warn("[MOCK MODE] Google Drive credentials missing — file NOT uploaded:", fileName);
+        throw new Error("Google Drive credentials missing. Cannot upload submission file.");
     }
 
     try {
@@ -208,14 +208,8 @@ export async function uploadPromptFile(
     const drive = getDriveApi();
 
     if (!drive) {
-        // Mock mode when credentials are missing
-        console.log("[Mock] Upload prompt file:", originalFileName, "-> folder", folderId);
-        return {
-            name: originalFileName,
-            driveFileId: `mock-prompt-${Date.now()}`,
-            mimeType,
-            sizeBytes: fileBuffer.length,
-        };
+        console.warn("[MOCK MODE] Google Drive credentials missing — prompt file NOT uploaded:", originalFileName);
+        throw new Error("Google Drive credentials missing. Cannot upload prompt file.");
     }
 
     try {

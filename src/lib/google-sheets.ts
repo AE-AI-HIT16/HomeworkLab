@@ -106,8 +106,8 @@ export async function getAssignmentById(id: string): Promise<Assignment | undefi
 export async function saveAssignment(assignment: Assignment): Promise<void> {
     const sheets = getSheetsApi();
     if (!sheets) {
-        console.log("[Mock Save Assignment]:", assignment);
-        return;
+        console.warn("[MOCK MODE] Google Sheets credentials missing — assignment NOT saved:", assignment.id);
+        throw new Error("Google Sheets credentials missing. Cannot save assignment.");
     }
 
     const row = [
@@ -200,8 +200,8 @@ export async function getSubmission(assignmentId: string, githubUsername: string
 export async function saveSubmission(submission: Submission): Promise<void> {
     const sheets = getSheetsApi();
     if (!sheets) {
-        console.log("[Mock Save Submission]:", submission);
-        return;
+        console.warn("[MOCK MODE] Google Sheets credentials missing — submission NOT saved:", submission.id);
+        throw new Error("Google Sheets credentials missing. Cannot save submission.");
     }
 
     try {
@@ -310,7 +310,7 @@ export async function getAssignmentDetailsWithSubmissions(assignmentId: string):
     // Add extra rows for submissions from users not in the active student list
     const studentUsernames = new Set(activeStudents.map(s => s.githubUsername.toLowerCase()));
     const extraSubmissions = allSubmissions.filter(s => !studentUsernames.has(s.githubUsername.toLowerCase()));
-    
+
     for (const sub of extraSubmissions) {
         rows.push({
             student: {

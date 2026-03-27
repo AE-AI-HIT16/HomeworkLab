@@ -59,8 +59,7 @@ export const authConfig: NextAuthConfig = {
             const isPublic =
                 nextUrl.pathname === "/" ||
                 nextUrl.pathname === "/unauthorized" ||
-                nextUrl.pathname.startsWith("/api/auth") ||
-                nextUrl.pathname.startsWith("/api/debug");
+                nextUrl.pathname.startsWith("/api/auth");
 
             // Allow public pages
             if (isPublic || isOnLogin) return true;

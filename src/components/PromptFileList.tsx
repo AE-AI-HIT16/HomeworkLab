@@ -27,7 +27,6 @@ export function PromptFileList({ files }: PromptFileListProps) {
             {files.map((file) => {
                 const icon = mimeIcons[file.mimeType] ?? "📄";
                 const size = formatFileSize(file.sizeBytes);
-                // TODO: Thay bằng link Google Drive thật
                 const driveUrl = `https://drive.google.com/file/d/${file.driveFileId}/view`;
 
                 return (
