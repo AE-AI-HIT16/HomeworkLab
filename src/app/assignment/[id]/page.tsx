@@ -95,18 +95,18 @@ export default async function AssignmentPage({ params }: AssignmentPageProps) {
                     </nav>
 
                     <div className="mt-auto px-2 pb-4">
-                         <div className="p-4 bg-indigo-50/50 rounded-xl border border-indigo-100 relative overflow-hidden group">
+                        <div className="p-4 bg-indigo-50/50 rounded-xl border border-indigo-100 relative overflow-hidden group">
                             <div className="absolute top-0 right-0 w-12 h-12 bg-indigo-200 rounded-full blur-xl opacity-30 -mr-6 -mt-6" />
                             <p className="text-[10px] font-bold text-indigo-800 uppercase mb-1 relative z-10">Performance</p>
                             <p className="text-xs text-indigo-600 font-medium relative z-10">
                                 {isSubmitted ? "Check your grades on the dashboard." : "Complete this task to improve your score."}
                             </p>
-                         </div>
+                        </div>
                     </div>
                 </aside>
 
                 {/* ═══ MAIN CONTENT ═══ */}
-                <main className="ml-0 md:ml-56 w-full p-4 sm:p-6 md:p-8 min-h-screen bg-[var(--hw-surface)] xl:mr-80 pb-32 md:pb-8">
+                <main className="ml-0 md:ml-56 w-full min-w-0 overflow-hidden p-4 sm:p-6 md:p-8 min-h-screen bg-[var(--hw-surface)] xl:mr-80 pb-32 md:pb-8">
                     {/* Breadcrumb */}
                     <div className="text-[10px] font-bold uppercase tracking-[0.15em] text-[var(--hw-outline)] mb-4">
                         Week {assignment.week} → Lesson {assignment.lesson}
@@ -148,7 +148,7 @@ export default async function AssignmentPage({ params }: AssignmentPageProps) {
                             </span>
                         )}
                         {role === "admin" && (
-                            <Link 
+                            <Link
                                 href={`/admin/assignments/${id}`}
                                 className="ml-auto flex items-center gap-1.5 text-xs font-bold text-indigo-600 hover:text-indigo-800 transition-colors bg-indigo-50 px-3 py-1.5 rounded-lg border border-indigo-100"
                             >

@@ -79,7 +79,7 @@ function MarkdownCell({ source }: { source: string }) {
     const html = marked.parse(preprocessed, { async: false }) as string;
     return (
         <div
-            className="prose prose-sm max-w-none text-[var(--hw-on-surface)] px-5 py-4
+            className="prose prose-sm max-w-none text-[var(--hw-on-surface)] px-5 py-4 overflow-hidden break-words
                 prose-headings:font-semibold prose-headings:text-[var(--hw-on-surface)]
                 prose-code:bg-slate-100 prose-code:text-orange-700 prose-code:px-1 prose-code:rounded
                 prose-pre:bg-slate-100 prose-pre:text-slate-800
