@@ -219,9 +219,9 @@ export default function LandingPage() {
           </div>
           <div className="grid md:grid-cols-3 gap-8">
             {[
-              { img: "/landing/ai-track.jpg", title: "AI Core", desc: "Fundamental architectures and mathematics for deep learning foundations.", modules: 12, slug: "ai-core" },
-              { img: "/landing/ml-engineer.jpg", title: "AI/ML Engineer", desc: "Production-ready ML pipelines, model deployment, and MLOps workflows.", modules: 24, slug: "ai-ml-engineer" },
-              { img: "/landing/data-engineer.jpg", title: "Data Engineer", desc: "Scaling data storage, processing pipelines, and architecture for big data systems.", modules: 18, slug: "data-engineer" },
+              { img: "/landing/ai-track.png", title: "AI Core", desc: "Fundamental architectures and mathematics for deep learning foundations.", modules: 12, slug: "ai-core" },
+              { img: "/landing/ml-engineer.png", title: "AI/ML Engineer", desc: "Production-ready ML pipelines, model deployment, and MLOps workflows.", modules: 24, slug: "ai-ml-engineer" },
+              { img: "/landing/data-engineer.png", title: "Data Engineer", desc: "Scaling data storage, processing pipelines, and architecture for big data systems.", modules: 18, slug: "data-engineer" },
             ].map((course) => (
               <Link href={`/courses/${course.slug}`} key={course.slug} className="bg-[#f2f4f6] p-2 rounded-2xl hover:scale-[1.02] transition-transform block">
                 <div className="aspect-[4/3] rounded-xl overflow-hidden mb-6 relative">
@@ -353,7 +353,7 @@ export default function LandingPage() {
             </div>
           </div>
           <div className="pt-8 border-t border-[#c7c4d7]/10 flex flex-col md:flex-row justify-between items-center gap-4">
-            <div className="text-[#464554] text-sm">© 2025 HIT - AI/DATA. Built for the modern mind.</div>
+            <div className="text-[#464554] text-sm">© 2026 HIT - AI/DATA. Built for the modern mind.</div>
             <div className="flex gap-6">
               <span className="material-symbols-outlined text-[#464554] cursor-pointer hover:text-[#4648d4]">language</span>
               <span className="material-symbols-outlined text-[#464554] cursor-pointer hover:text-[#4648d4]">terminal</span>
