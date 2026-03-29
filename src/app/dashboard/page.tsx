@@ -336,6 +336,10 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
                     <span className="material-symbols-outlined text-[20px]">auto_stories</span>
                     <span className="text-[9px] font-bold tracking-wider uppercase">Courses</span>
                 </Link>
+                <Link href="/leaderboard" className="flex flex-col items-center justify-center text-[var(--hw-outline)] gap-1 w-[30%] pb-2">
+                    <span className="material-symbols-outlined text-[20px]">emoji_events</span>
+                    <span className="text-[9px] font-bold tracking-wider uppercase">Leaderboard</span>
+                </Link>
             </nav>
         </div>
     );

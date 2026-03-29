@@ -29,6 +29,10 @@ export function StudentSidebar({ role }: StudentSidebarProps) {
                 <span className="material-symbols-outlined">auto_stories</span>
                 Courses
             </Link>
+            <Link href="/leaderboard" className={linkClass("/leaderboard")}>
+                <span className="material-symbols-outlined">emoji_events</span>
+                Leaderboard
+            </Link>
 
             {role === "admin" && (
                 <div className="mt-8 px-2">
