@@ -89,7 +89,7 @@ export default async function LeaderboardPage() {
                                         <span className="material-symbols-outlined text-[32px] text-amber-500" style={{ fontVariationSettings: "'FILL' 1" }}>social_leaderboard</span>
                                     </div>
                                     <h2 className="text-2xl font-extrabold tracking-tight text-slate-800 mb-2">Hall of Fame</h2>
-                                    <p className="text-sm text-slate-500 text-center max-w-[280px] font-medium leading-relaxed">Top 3 performers of the active session. Submit assignments early to climb the ranks!</p>
+                                    <p className="text-sm text-slate-500 text-center max-w-[280px] font-medium leading-relaxed mb-8">Top 3 performers of the active session. Submit assignments early to climb the ranks!</p>
                                 </div>
 
                                 {/* Podium Container */}
@@ -118,7 +118,7 @@ export default async function LeaderboardPage() {
                                             <div className="flex flex-col items-center flex-[1.2] sm:flex-[1.3] z-30 shadow-[0_-10px_40px_rgba(251,191,36,0.1)] rounded-t-2xl xl:rounded-t-[2.5rem] relative">
                                                 <div className="absolute -top-16 left-1/2 -translate-x-1/2 w-[200%] h-[200%] bg-amber-400/20 blur-3xl rounded-t-full opacity-0 xl:opacity-100 pointer-events-none" />
                                                 <div className="relative mb-3 sm:mb-4 group pt-4 xl:pt-6">
-                                                    <div className="absolute -top-8 xl:-top-10 left-1/2 -translate-x-1/2 w-10 sm:w-12 xl:w-14 animate-bounce text-amber-400 drop-shadow-md z-10 flex justify-center">
+                                                    <div className="absolute -top-4 xl:-top-6 left-1/2 -translate-x-1/2 w-10 sm:w-12 xl:w-14 animate-bounce text-amber-400 drop-shadow-md z-10 flex justify-center">
                                                         <span className="material-symbols-outlined text-[36px] xl:text-[42px]" style={{ fontVariationSettings: "'FILL' 1" }}>crown</span>
                                                     </div>
                                                     <div className="absolute inset-0 bg-amber-400 rounded-full blur-xl opacity-60 group-hover:opacity-100 transition-opacity animate-pulse" />
