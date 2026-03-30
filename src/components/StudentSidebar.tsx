@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 interface StudentSidebarProps {
-    role: "admin" | "student";
+    role: "admin" | "student" | "guest";
 }
 
 export function StudentSidebar({ role }: StudentSidebarProps) {

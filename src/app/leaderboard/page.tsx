@@ -13,7 +13,7 @@ export default async function LeaderboardPage() {
     const user = session.user;
 
     const allStudents = await getStudents();
-    const activeStudents = allStudents.filter(s => s.active);
+    const activeStudents = allStudents.filter(s => s.active && s.role !== "guest");
     const allSubmissions = await getSubmissions();
 
     // Data Aggregation

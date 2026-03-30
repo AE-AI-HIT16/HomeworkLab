@@ -28,14 +28,14 @@ export async function getUserRole(githubUsername: string): Promise<UserRole> {
         return "admin";
     }
 
-    // Check allowed student via Google Sheets
+    // Check allowed student/guest via Google Sheets
     const students = await getStudents();
-    const isAllowedStudent = students.some(
+    const found = students.find(
         (s) => s.githubUsername.toLowerCase() === lower && s.active
     );
 
-    if (isAllowedStudent) {
-        return "student";
+    if (found) {
+        return found.role === "guest" ? "guest" : "student";
     }
 
     return "unauthorized";

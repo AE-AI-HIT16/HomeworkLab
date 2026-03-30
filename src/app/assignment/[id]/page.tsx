@@ -184,11 +184,26 @@ export default async function AssignmentPage({ params }: AssignmentPageProps) {
                         <h2 className="text-lg font-medium text-[var(--hw-on-surface)] mb-4">
                             Assignment Submission
                         </h2>
-                        <SubmissionForm
-                            assignmentId={assignment.id}
-                            existingSubmission={submission ?? undefined}
-                            isPastDue={isPastDue}
-                        />
+                        {role === "guest" ? (
+                            <div className="bg-white rounded-xl shadow-sm border border-teal-200 p-6 flex items-start gap-4">
+                                <div className="w-10 h-10 rounded-lg bg-teal-50 text-teal-600 flex items-center justify-center shrink-0">
+                                    <span className="material-symbols-outlined">visibility</span>
+                                </div>
+                                <div>
+                                    <h3 className="font-semibold text-slate-900 text-sm mb-1">Chế độ Khách mời</h3>
+                                    <p className="text-sm text-slate-600 leading-relaxed">
+                                        Bạn đang xem bài tập với tư cách khách mời và không thể nộp bài. 
+                                        Liên hệ giảng viên để được nâng cấp lên quyền Học sinh.
+                                    </p>
+                                </div>
+                            </div>
+                        ) : (
+                            <SubmissionForm
+                                assignmentId={assignment.id}
+                                existingSubmission={submission ?? undefined}
+                                isPastDue={isPastDue}
+                            />
+                        )}
                     </section>
 
                     {/* Resources */}

@@ -14,21 +14,25 @@ export const allowedStudents: Student[] = [
         githubUsername: "student1",
         name: "Nguyễn Văn A",
         active: true,
+        role: "student",
     },
     {
         githubUsername: "student2",
         name: "Trần Thị B",
         active: true,
+        role: "student",
     },
     {
         githubUsername: "student3",
         name: "Lê Văn C",
         active: true,
+        role: "student",
     },
     {
         githubUsername: "student4",
         name: "Phạm Thị D",
         active: false, // Inactive — không được truy cập
+        role: "student",
     },
 ];
 

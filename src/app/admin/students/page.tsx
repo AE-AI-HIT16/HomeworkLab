@@ -2,6 +2,7 @@ import { getCurrentUserRole } from "@/lib/roles";
 import { redirect } from "next/navigation";
 import { getStudents, getAssignments, getSubmissions } from "@/lib/google-sheets";
 import Link from "next/link";
+import { RoleToggleButton } from "@/components/RoleToggleButton";
 
 export const dynamic = "force-dynamic";
 
@@ -22,7 +23,7 @@ export default async function AdminStudentsPage() {
             new Map(
                 submissions.map((s) => [
                     s.githubUsername.toLowerCase(),
-                    { githubUsername: s.githubUsername, name: s.studentName, active: true },
+                    { githubUsername: s.githubUsername, name: s.studentName, active: true, role: "student" as const },
                 ])
             ).values()
         );
@@ -105,6 +106,7 @@ export default async function AdminStudentsPage() {
                         <thead>
                             <tr className="bg-slate-50 border-b border-slate-100 text-xs font-bold uppercase tracking-wider text-slate-400">
                                 <th className="px-5 py-3 text-left">Student</th>
+                                <th className="px-5 py-3 text-left">Role</th>
                                 <th className="px-5 py-3 text-left">Completion</th>
                                 <th className="px-5 py-3 text-left">Submitted</th>
                                 <th className="px-5 py-3 text-left">Late</th>
@@ -115,7 +117,7 @@ export default async function AdminStudentsPage() {
                         <tbody className="divide-y divide-slate-50">
                             {studentStats.length === 0 ? (
                                 <tr>
-                                    <td colSpan={6} className="text-center py-12 text-slate-400 text-sm">
+                                    <td colSpan={7} className="text-center py-12 text-slate-400 text-sm">
                                         No students found.
                                     </td>
                                 </tr>
@@ -131,6 +133,21 @@ export default async function AdminStudentsPage() {
                                                     <p className="font-semibold text-slate-900">{student.name}</p>
                                                     <p className="text-xs text-slate-400">@{student.githubUsername}</p>
                                                 </div>
+                                            </div>
+                                        </td>
+                                        <td className="px-5 py-4">
+                                            <div className="flex flex-col gap-2">
+                                                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold w-fit ${
+                                                    student.role === "guest"
+                                                        ? "bg-teal-50 text-teal-700 border border-teal-200"
+                                                        : "bg-[var(--hw-primary-fixed)] text-[var(--hw-primary)] border border-[var(--hw-primary-fixed-dim)]"
+                                                }`}>
+                                                    <span className="material-symbols-outlined text-[10px]">
+                                                        {student.role === "guest" ? "visibility" : "school"}
+                                                    </span>
+                                                    {student.role === "guest" ? "Khách mời" : "Học sinh"}
+                                                </span>
+                                                <RoleToggleButton githubUsername={student.githubUsername} currentRole={student.role} />
                                             </div>
                                         </td>
                                         <td className="px-5 py-4">

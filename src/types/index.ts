@@ -1,7 +1,7 @@
 // ─── Roles ──────────────────────────────────────────────
 
 /** Roles within the system */
-export type UserRole = "admin" | "student" | "unauthorized";
+export type UserRole = "admin" | "student" | "guest" | "unauthorized";
 
 // ─── Users ──────────────────────────────────────────────
 
@@ -11,6 +11,8 @@ export interface Student {
     name: string;
     email?: string;
     active: boolean;
+    /** Role within the student list: "student" (default) or "guest" */
+    role: "student" | "guest";
 }
 
 /** Admin / Instructor — derived from ADMIN_GITHUB_USERNAMES env var */

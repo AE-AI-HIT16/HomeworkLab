@@ -41,7 +41,7 @@ export async function getStudents(): Promise<Student[]> {
     try {
         const res = await sheets.spreadsheets.values.get({
             spreadsheetId: GOOGLE_SHEET_ID,
-            range: "Students!A2:D", // Assuming A1:D1 are headers
+            range: "Students!A2:E", // A:username, B:name, C:email, D:active, E:role
         });
 
         const rows = res.data.values || [];
@@ -50,10 +50,44 @@ export async function getStudents(): Promise<Student[]> {
             name: row[1] ?? "",
             email: row[2] ?? undefined,
             active: String(row[3]).trim().toLowerCase() === "true",
+            role: (String(row[4] ?? "").trim().toLowerCase() === "guest" ? "guest" : "student") as "student" | "guest",
         })).filter((s) => s.githubUsername); // Only return rows with usernames
     } catch (e) {
         console.error("Failed to get students from Google Sheets", e);
         return [];
+    }
+}
+
+/**
+ * Update the role of a student in the Google Sheet (column E).
+ * @param githubUsername - The student's GitHub username
+ * @param newRole - The new role: "student" or "guest"
+ */
+export async function updateStudentRole(githubUsername: string, newRole: "student" | "guest"): Promise<void> {
+    const sheets = getSheetsApi();
+    if (!sheets) throw new Error("Google Sheets credentials missing.");
+
+    try {
+        const res = await sheets.spreadsheets.values.get({
+            spreadsheetId: GOOGLE_SHEET_ID,
+            range: "Students!A:A",
+        });
+        const rows = res.data.values || [];
+        const rowIndex = rows.findIndex(
+            (row) => (row[0] ?? "").toLowerCase() === githubUsername.toLowerCase()
+        );
+        if (rowIndex === -1) throw new Error(`Student ${githubUsername} not found.`);
+
+        // Update the role cell (column E = index 4, row 1-based in A1 notation)
+        await sheets.spreadsheets.values.update({
+            spreadsheetId: GOOGLE_SHEET_ID,
+            range: `Students!E${rowIndex + 1}`,
+            valueInputOption: "USER_ENTERED",
+            requestBody: { values: [[newRole]] },
+        });
+    } catch (e) {
+        console.error("Failed to update student role in Google Sheets", e);
+        throw e;
     }
 }
 
@@ -478,6 +512,7 @@ export async function getAssignmentDetailsWithSubmissions(assignmentId: string):
                 githubUsername: sub.githubUsername,
                 name: sub.studentName || sub.githubUsername,
                 active: false,
+                role: "student",
             },
             submission: sub
         });

@@ -93,6 +93,9 @@ export async function submitAssignment(formData: FormData): Promise<ActionResult
 
     // 1. Get current logged in student
     const { role, session } = await getCurrentUserRole();
+    if (role === "guest") {
+        return { success: false, error: "Khách mời không được nộp bài. Liên hệ giảng viên để nâng cấp quyền." };
+    }
     if (role !== "student" && role !== "admin") {
         return { success: false, error: "You do not have permission to submit assignments." };
     }
