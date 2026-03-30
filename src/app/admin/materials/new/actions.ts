@@ -4,7 +4,7 @@
 import { getCurrentUserRole } from "@/lib/roles";
 import { saveMaterial } from "@/lib/google-sheets";
 import { revalidatePath } from "next/cache";
-import type { Material } from "@/types";
+import type { Material, MaterialContentMode } from "@/types";
 
 export interface CreateMaterialFormState {
     success?: boolean;
@@ -26,13 +26,17 @@ export async function createMaterialAction(
         // Extract form data
         const title = formData.get("title")?.toString().trim();
         const weekStr = formData.get("week")?.toString().trim();
-        const url = formData.get("url")?.toString().trim();
         const typeStr = formData.get("type")?.toString().trim();
-        const publishedStr = formData.get("published")?.toString(); // from checkbox
+        const publishedStr = formData.get("published")?.toString();
+        const contentModeStr = (formData.get("contentMode")?.toString().trim() || "link") as string;
 
-        // Validate
-        if (!title || !weekStr || !url || !typeStr) {
-            return { error: "Vui lòng điền đầy đủ Tên tài liệu, Tuần, Link URL và Loại." };
+        // New fields
+        const url = formData.get("url")?.toString().trim() || "";
+        const postContent = formData.get("postContent")?.toString() || "";
+
+        // Validate common fields
+        if (!title || !weekStr || !typeStr) {
+            return { error: "Vui lòng điền đầy đủ Tên tài liệu, Tuần, và Loại." };
         }
 
         const week = parseInt(weekStr, 10);
@@ -43,6 +47,23 @@ export async function createMaterialAction(
         let type: "theory" | "video" | "slides" | "other" = "other";
         if (["theory", "video", "slides"].includes(typeStr)) {
             type = typeStr as "theory" | "video" | "slides";
+        }
+
+        // Validate content mode
+        let contentMode: MaterialContentMode = "link";
+        if (["link", "file", "post"].includes(contentModeStr)) {
+            contentMode = contentModeStr as MaterialContentMode;
+        }
+
+        // Mode-specific validation
+        if (contentMode === "link" && !url) {
+            return { error: "Vui lòng nhập URL link cho tài liệu." };
+        }
+        if (contentMode === "file" && !url) {
+            return { error: "Vui lòng nhập Google Drive URL để preview file." };
+        }
+        if (contentMode === "post" && !postContent.trim()) {
+            return { error: "Vui lòng viết nội dung bài post (Markdown)." };
         }
 
         const published = publishedStr === "on";
@@ -58,6 +79,8 @@ export async function createMaterialAction(
             url,
             type,
             published,
+            contentMode,
+            postContent: contentMode === "post" ? postContent : undefined,
         };
 
         // Save to Google Sheets

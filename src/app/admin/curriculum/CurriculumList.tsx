@@ -193,6 +193,15 @@ export function CurriculumList({ assignments: initialAssignments, materials: ini
                                                     {!m.published && (
                                                         <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 bg-amber-100 text-amber-700 rounded">Draft</span>
                                                     )}
+                                                    {m.contentMode && m.contentMode !== "link" && (
+                                                        <span className={`text-[9px] font-bold uppercase px-1.5 py-0.5 rounded ${
+                                                            m.contentMode === "post" 
+                                                                ? "bg-violet-100 text-violet-700" 
+                                                                : "bg-sky-100 text-sky-700"
+                                                        }`}>
+                                                            {m.contentMode === "post" ? "Post" : "File"}
+                                                        </span>
+                                                    )}
                                                 </div>
                                                 <EditTitleButton
                                                     id={m.id}

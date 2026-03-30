@@ -60,15 +60,23 @@ export interface Assignment {
 
 // ─── Materials ──────────────────────────────────────────
 
+/** Content delivery mode for materials */
+export type MaterialContentMode = "link" | "file" | "post";
+
 export interface Material {
     id: string;
     /** Week number (1-based) */
     week: number;
     title: string;
+    /** URL for link/file modes, optional for post mode */
     url: string;
     type: "theory" | "video" | "slides" | "other";
     /** Whether it has been published to students */
     published: boolean;
+    /** How this material is delivered to students */
+    contentMode: MaterialContentMode;
+    /** Markdown content — only used when contentMode = "post" */
+    postContent?: string;
 }
 
 // ─── Submissions ────────────────────────────────────────

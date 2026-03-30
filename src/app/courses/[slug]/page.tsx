@@ -236,8 +236,26 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
                                                         if (m.type === "video") iconName = "play_circle";
                                                         if (m.type === "slides") iconName = "slideshow";
 
+                                                        // Mode-specific icon & behavior
+                                                        let modeIcon = "open_in_new"; // link default
+                                                        let modeLabel = "";
+                                                        if (m.contentMode === "file") {
+                                                            modeIcon = "visibility";
+                                                            modeLabel = "Preview";
+                                                        } else if (m.contentMode === "post") {
+                                                            iconName = "edit_note";
+                                                            modeIcon = "arrow_forward";
+                                                            modeLabel = "Read";
+                                                        }
+
+                                                        // Post and File modes: navigate to internal page
+                                                        const isInternal = m.contentMode === "post" || m.contentMode === "file";
+                                                        const href = isInternal ? `/materials/${m.id}` : m.url;
+                                                        const Tag = isInternal ? Link : "a" as any;
+                                                        const extraProps = isInternal ? {} : { target: "_blank", rel: "noopener noreferrer" };
+
                                                         return (
-                                                            <a href={m.url} target="_blank" rel="noopener noreferrer" key={`mat-${m.id}-${idx}`} className="group flex items-start sm:items-center justify-between p-4 md:px-6 hover:bg-slate-50 transition-colors gap-4">
+                                                            <Tag href={href} key={`mat-${m.id}-${idx}`} className="group flex items-start sm:items-center justify-between p-4 md:px-6 hover:bg-slate-50 transition-colors gap-4" {...extraProps}>
                                                                 <div className="flex items-start sm:items-center gap-4">
                                                                     <div className="shrink-0 w-10 h-10 rounded-xl border flex items-center justify-center text-slate-500 bg-slate-50 border-slate-200">
                                                                         <span className="material-symbols-outlined text-[20px]">{iconName}</span>
@@ -245,6 +263,15 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
                                                                     <div>
                                                                         <div className="flex items-center gap-2 mb-1">
                                                                             <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 capitalize">{m.type}</span>
+                                                                            {m.contentMode !== "link" && (
+                                                                                <span className={`text-[9px] font-bold uppercase px-1.5 py-0.5 rounded ${
+                                                                                    m.contentMode === "post" 
+                                                                                        ? "bg-violet-100 text-violet-700" 
+                                                                                        : "bg-sky-100 text-sky-700"
+                                                                                }`}>
+                                                                                    {m.contentMode === "post" ? "Post" : "File"}
+                                                                                </span>
+                                                                            )}
                                                                         </div>
                                                                         <h4 className="font-semibold text-slate-900 group-hover:text-indigo-600 transition-colors">
                                                                             {m.title}
@@ -252,9 +279,12 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
                                                                     </div>
                                                                 </div>
                                                                 <div className="hidden sm:flex flex-col items-end gap-1">
-                                                                    <span className="material-symbols-outlined text-slate-300 group-hover:text-indigo-400">open_in_new</span>
+                                                                    {modeLabel && (
+                                                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{modeLabel}</span>
+                                                                    )}
+                                                                    <span className="material-symbols-outlined text-slate-300 group-hover:text-indigo-400">{modeIcon}</span>
                                                                 </div>
-                                                            </a>
+                                                            </Tag>
                                                         );
                                                     } else {
                                                         const a = item.data;

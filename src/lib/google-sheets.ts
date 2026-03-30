@@ -180,11 +180,17 @@ export async function getMaterials(): Promise<Material[]> {
     try {
         const res = await sheets.spreadsheets.values.get({
             spreadsheetId: GOOGLE_SHEET_ID,
-            range: "Materials!A2:F",
+            range: "Materials!A2:H",
         });
 
         const rows = res.data.values || [];
         return rows.map((row) => {
+            const rawContentMode = (row[6] ?? "").trim().toLowerCase();
+            const contentMode: "link" | "file" | "post" = 
+                ["link", "file", "post"].includes(rawContentMode) 
+                    ? (rawContentMode as "link" | "file" | "post") 
+                    : "link";
+
             return {
                 id: row[0] ?? "",
                 week: Number(row[1]) || 1,
@@ -192,6 +198,8 @@ export async function getMaterials(): Promise<Material[]> {
                 url: row[3] ?? "",
                 type: (row[4] as "theory" | "video" | "slides" | "other") || "other",
                 published: String(row[5]).trim().toLowerCase() === "true",
+                contentMode,
+                postContent: row[7] || undefined,
             };
         }).filter((m) => m.id);
     } catch (e) {
@@ -214,12 +222,14 @@ export async function saveMaterial(material: Material): Promise<void> {
         material.url,
         material.type,
         material.published ? "TRUE" : "FALSE",
+        material.contentMode || "link",
+        material.postContent ?? "",
     ];
 
     try {
         await sheets.spreadsheets.values.append({
             spreadsheetId: GOOGLE_SHEET_ID,
-            range: "Materials!A:F",
+            range: "Materials!A:H",
             valueInputOption: "USER_ENTERED",
             requestBody: { values: [row] },
         });
