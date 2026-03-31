@@ -315,8 +315,11 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
                                                                                 <span className="px-1.5 py-0.5 bg-indigo-100 text-indigo-700 text-[9px] font-bold uppercase tracking-wider rounded">Next Up</span>
                                                                             )}
                                                                         </div>
-                                                                        <h4 className="font-semibold text-slate-900 group-hover:text-indigo-600 transition-colors">
+                                                                        <h4 className="font-semibold text-slate-900 group-hover:text-indigo-600 transition-colors flex items-center gap-2">
                                                                             {a.title}
+                                                                            {a.assignmentType === "quiz" && (
+                                                                                <span className="px-1.5 py-0.5 bg-emerald-100 text-emerald-700 text-[9px] font-bold uppercase tracking-wider rounded flex-shrink-0">Quiz</span>
+                                                                            )}
                                                                         </h4>
                                                                     </div>
                                                                 </div>

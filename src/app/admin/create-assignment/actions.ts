@@ -5,7 +5,7 @@ import { getUserRole } from "@/lib/roles";
 import { saveAssignment } from "@/lib/google-sheets";
 import { createAssignmentFolders } from "@/lib/google-drive";
 import { redirect } from "next/navigation";
-import type { PromptFile } from "@/types";
+import type { PromptFile, QuizQuestion } from "@/types";
 
 export interface CreateAssignmentFormState {
     error?: string;
@@ -37,6 +37,8 @@ export async function createAssignmentAction(
     const timePart = formData.get("dueTimePart") as string;
     const promptFilesJson = formData.get("promptFilesJson") as string | null;
     const driveFolderLink = formData.get("driveFolderLink") as string;
+    const assignmentType = (formData.get("assignmentType") as string) || "standard";
+    const quizDataJson = formData.get("quizDataJson") as string | null;
 
     // Validation
     if (!title?.trim()) {
@@ -56,6 +58,31 @@ export async function createAssignmentAction(
             promptFiles = JSON.parse(promptFilesJson);
         } catch {
             console.warn("Could not parse promptFilesJson");
+        }
+    }
+
+    // Parse quiz data
+    let quizData: QuizQuestion[] | undefined;
+    if (assignmentType === "quiz" && quizDataJson) {
+        try {
+            quizData = JSON.parse(quizDataJson);
+            if (!quizData || quizData.length === 0) {
+                return { error: "Quiz phải có ít nhất 1 câu hỏi." };
+            }
+            for (const q of quizData) {
+                if (!q.question?.trim()) {
+                    return { error: "Mỗi câu hỏi phải có nội dung." };
+                }
+                const validOptions = q.options.filter((o: string) => o.trim());
+                if (validOptions.length < 2) {
+                    return { error: `Câu "${q.question.substring(0, 30)}..." phải có ít nhất 2 lựa chọn.` };
+                }
+                if (q.correctIndex < 0 || q.correctIndex >= q.options.length) {
+                    return { error: `Câu "${q.question.substring(0, 30)}..." chưa chọn đáp án đúng.` };
+                }
+            }
+        } catch {
+            return { error: "Dữ liệu quiz không hợp lệ." };
         }
     }
 
@@ -127,6 +154,8 @@ export async function createAssignmentAction(
             promptFiles,
             createdAt: now,
             updatedAt: now,
+            assignmentType: assignmentType === "quiz" ? "quiz" : "standard",
+            quizData,
         });
 
         redirect("/dashboard");

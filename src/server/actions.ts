@@ -74,6 +74,7 @@ export async function createAssignment(input: CreateAssignmentInput): Promise<Ac
         })),
         createdAt: now,
         updatedAt: now,
+        assignmentType: "standard",
     };
 
     // 3. Save to Google Sheets

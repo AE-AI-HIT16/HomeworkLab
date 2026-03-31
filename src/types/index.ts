@@ -23,6 +23,9 @@ export interface Admin {
 
 // ─── Assignments ────────────────────────────────────────
 
+/** Assignment type */
+export type AssignmentType = "standard" | "quiz";
+
 /** Attached prompt/resource files (stored on Google Drive) */
 export interface PromptFile {
     /** Display filename, e.g., "Assignment 1 - Linear Regression.pdf" */
@@ -33,6 +36,17 @@ export interface PromptFile {
     mimeType: string;
     /** File size (bytes) */
     sizeBytes?: number;
+}
+
+/** A single multiple-choice quiz question */
+export interface QuizQuestion {
+    id: string;
+    /** The question text */
+    question: string;
+    /** Answer options (typically 4) */
+    options: string[];
+    /** Index of the correct option (0-based) */
+    correctIndex: number;
 }
 
 /** Assignment */
@@ -56,6 +70,10 @@ export interface Assignment {
     createdAt: string;
     /** ISO 8601 */
     updatedAt: string;
+    /** Assignment type — 'standard' (file/link) or 'quiz' */
+    assignmentType: AssignmentType;
+    /** Quiz questions — only used when assignmentType = 'quiz' */
+    quizData?: QuizQuestion[];
 }
 
 // ─── Materials ──────────────────────────────────────────
@@ -82,7 +100,7 @@ export interface Material {
 // ─── Submissions ────────────────────────────────────────
 
 /** Submission type */
-export type SubmissionType = "file" | "repo_link";
+export type SubmissionType = "file" | "repo_link" | "quiz";
 
 /** Submission file details (when type = "file") */
 export interface SubmissionFile {
@@ -102,7 +120,7 @@ export interface Submission {
     studentName: string;
     /** ISO 8601 */
     submittedAt: string;
-    /** Submission type: file upload or GitHub repo link */
+    /** Submission type: file upload, GitHub repo link, or quiz */
     type: SubmissionType;
     /** File details — when type = "file" */
     file?: SubmissionFile;
@@ -114,6 +132,10 @@ export interface Submission {
     grade?: number;
     /** Instructor feedback */
     feedback?: string;
+    /** Quiz answers — array of selected option indices (type = "quiz") */
+    quizAnswers?: number[];
+    /** Auto-graded quiz score 0-100 (type = "quiz") */
+    quizScore?: number;
 }
 
 // ─── Legacy aliases (backward compat) ───────────────────

@@ -4,6 +4,7 @@ import { getAssignmentById, getSubmission } from "@/lib/google-sheets";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { SubmissionForm } from "@/components/SubmissionForm";
+import { QuizForm } from "@/components/QuizForm";
 import { NotebookPreview } from "@/components/NotebookPreview";
 import { TopNav } from "@/components/TopNav";
 
@@ -182,7 +183,7 @@ export default async function AssignmentPage({ params }: AssignmentPageProps) {
                     {/* Assignment Submission Module */}
                     <section className="mb-12">
                         <h2 className="text-lg font-medium text-[var(--hw-on-surface)] mb-4">
-                            Assignment Submission
+                            {assignment.assignmentType === "quiz" ? "Quiz — Trắc nghiệm" : "Assignment Submission"}
                         </h2>
                         {role === "guest" ? (
                             <div className="bg-white rounded-xl shadow-sm border border-teal-200 p-6 flex items-start gap-4">
@@ -197,6 +198,13 @@ export default async function AssignmentPage({ params }: AssignmentPageProps) {
                                     </p>
                                 </div>
                             </div>
+                        ) : assignment.assignmentType === "quiz" && assignment.quizData ? (
+                            <QuizForm
+                                assignmentId={assignment.id}
+                                questions={assignment.quizData}
+                                existingSubmission={submission ?? undefined}
+                                isPastDue={isPastDue}
+                            />
                         ) : (
                             <SubmissionForm
                                 assignmentId={assignment.id}

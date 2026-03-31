@@ -1,5 +1,5 @@
 import { google } from "googleapis";
-import type { Student, Assignment, Submission, PromptFile, SubmissionFile, SubmissionType, Material } from "@/types";
+import type { Student, Assignment, Submission, PromptFile, SubmissionFile, SubmissionType, Material, QuizQuestion } from "@/types";
 
 // Auth scopes for Google Sheets
 const SCOPES = ["https://www.googleapis.com/auth/spreadsheets"];
@@ -100,7 +100,7 @@ export async function getAssignments(): Promise<Assignment[]> {
     try {
         const res = await sheets.spreadsheets.values.get({
             spreadsheetId: GOOGLE_SHEET_ID,
-            range: "Assignments!A2:K",
+            range: "Assignments!A2:M",
         });
 
         const rows = res.data.values || [];
@@ -111,6 +111,16 @@ export async function getAssignments(): Promise<Assignment[]> {
             } catch {
                 console.error(`Failed to parse promptFilesJSON for assignment ${row[0]}`);
             }
+
+            let quizData: QuizQuestion[] | undefined = undefined;
+            try {
+                if (row[12]) quizData = JSON.parse(row[12]);
+            } catch {
+                console.error(`Failed to parse quizData for assignment ${row[0]}`);
+            }
+
+            const rawType = (row[11] ?? "").trim().toLowerCase();
+            const assignmentType: "standard" | "quiz" = rawType === "quiz" ? "quiz" : "standard";
 
             return {
                 id: row[0] ?? "",
@@ -124,6 +134,8 @@ export async function getAssignments(): Promise<Assignment[]> {
                 promptFiles,
                 createdAt: row[9] ?? new Date().toISOString(),
                 updatedAt: row[10] ?? new Date().toISOString(),
+                assignmentType,
+                quizData,
             };
         }).filter((a) => a.id);
     } catch (e) {
@@ -156,12 +168,14 @@ export async function saveAssignment(assignment: Assignment): Promise<void> {
         JSON.stringify(assignment.promptFiles),
         assignment.createdAt,
         assignment.updatedAt,
+        assignment.assignmentType || "standard",
+        assignment.quizData ? JSON.stringify(assignment.quizData) : "",
     ];
 
     try {
         await sheets.spreadsheets.values.append({
             spreadsheetId: GOOGLE_SHEET_ID,
-            range: "Assignments!A:K",
+            range: "Assignments!A:M",
             valueInputOption: "USER_ENTERED",
             requestBody: { values: [row] },
         });
@@ -351,7 +365,7 @@ export async function getSubmissions(): Promise<Submission[]> {
     try {
         const res = await sheets.spreadsheets.values.get({
             spreadsheetId: GOOGLE_SHEET_ID,
-            range: "Submissions!A2:K",
+            range: "Submissions!A2:M",
         });
 
         const rows = res.data.values || [];
@@ -363,6 +377,13 @@ export async function getSubmissions(): Promise<Submission[]> {
                 } catch {
                     console.error(`Failed to parse fileJSON for submission ${row[0]}`);
                 }
+            }
+
+            let quizAnswers: number[] | undefined = undefined;
+            try {
+                if (row[11]) quizAnswers = JSON.parse(row[11]);
+            } catch {
+                console.error(`Failed to parse quizAnswers for submission ${row[0]}`);
             }
 
             return {
@@ -377,6 +398,8 @@ export async function getSubmissions(): Promise<Submission[]> {
                 repoUrl: row[8] || undefined,
                 grade: row[9] ? Number(row[9]) : undefined,
                 feedback: row[10] || undefined,
+                quizAnswers,
+                quizScore: row[12] ? Number(row[12]) : undefined,
             };
         }).filter((s) => s.id);
     } catch (e) {
@@ -439,13 +462,15 @@ export async function saveSubmission(submission: Submission): Promise<void> {
             submission.repoUrl ?? "",
             submission.grade !== undefined ? submission.grade : "",
             submission.feedback ?? "",
+            submission.quizAnswers ? JSON.stringify(submission.quizAnswers) : "",
+            submission.quizScore !== undefined ? submission.quizScore : "",
         ];
 
         if (rowIndexToUpdate > 0) {
             // Update
             await sheets.spreadsheets.values.update({
                 spreadsheetId: GOOGLE_SHEET_ID,
-                range: `Submissions!A${rowIndexToUpdate}:K${rowIndexToUpdate}`,
+                range: `Submissions!A${rowIndexToUpdate}:M${rowIndexToUpdate}`,
                 valueInputOption: "USER_ENTERED",
                 requestBody: { values: [row] },
             });
@@ -453,7 +478,7 @@ export async function saveSubmission(submission: Submission): Promise<void> {
             // Append
             await sheets.spreadsheets.values.append({
                 spreadsheetId: GOOGLE_SHEET_ID,
-                range: "Submissions!A:K",
+                range: "Submissions!A:M",
                 valueInputOption: "USER_ENTERED",
                 requestBody: { values: [row] },
             });

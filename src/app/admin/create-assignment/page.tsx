@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState, useRef, useCallback } from "react";
 import { useActionState } from "react";
 import { createAssignmentAction, type CreateAssignmentFormState } from "./actions";
-import type { PromptFile } from "@/types";
+import type { PromptFile, QuizQuestion } from "@/types";
 
 const ALLOWED_EXTENSIONS = [".pdf", ".docx", ".zip", ".ipynb"];
 const MAX_FILE_SIZE_MB = 20;
@@ -48,6 +48,54 @@ export default function CreateAssignmentPage() {
 
     const [fileUpload, setFileUpload] = useState(true);
     const [githubLink, setGithubLink] = useState(false);
+
+    // Assignment type: "standard" or "quiz"
+    const [assignmentType, setAssignmentType] = useState<"standard" | "quiz">("standard");
+
+    // Quiz builder state
+    const [quizQuestions, setQuizQuestions] = useState<QuizQuestion[]>([]);
+
+    const addQuestion = useCallback(() => {
+        setQuizQuestions((prev) => [
+            ...prev,
+            {
+                id: crypto.randomUUID(),
+                question: "",
+                options: ["", "", "", ""],
+                correctIndex: -1,
+            },
+        ]);
+    }, []);
+
+    const removeQuestion = useCallback((index: number) => {
+        setQuizQuestions((prev) => prev.filter((_, i) => i !== index));
+    }, []);
+
+    const updateQuestion = useCallback((index: number, field: string, value: string) => {
+        setQuizQuestions((prev) => {
+            const updated = [...prev];
+            updated[index] = { ...updated[index], [field]: value };
+            return updated;
+        });
+    }, []);
+
+    const updateOption = useCallback((qIndex: number, oIndex: number, value: string) => {
+        setQuizQuestions((prev) => {
+            const updated = [...prev];
+            const options = [...updated[qIndex].options];
+            options[oIndex] = value;
+            updated[qIndex] = { ...updated[qIndex], options };
+            return updated;
+        });
+    }, []);
+
+    const setCorrectAnswer = useCallback((qIndex: number, oIndex: number) => {
+        setQuizQuestions((prev) => {
+            const updated = [...prev];
+            updated[qIndex] = { ...updated[qIndex], correctIndex: oIndex };
+            return updated;
+        });
+    }, []);
 
     // Fallback Drive Link
     const [manualDriveLink, setManualDriveLink] = useState("");
@@ -179,6 +227,10 @@ export default function CreateAssignmentPage() {
             // Build FormData from form inputs + inject promptFilesJson
             const fd = new FormData(form);
             fd.set("promptFilesJson", JSON.stringify(uploadedPromptFiles));
+            fd.set("assignmentType", assignmentType);
+            if (assignmentType === "quiz") {
+                fd.set("quizDataJson", JSON.stringify(quizQuestions));
+            }
 
             // Call server action directly
             formAction(fd);
@@ -602,48 +654,227 @@ export default function CreateAssignmentPage() {
                             </div>
                         </section>
 
-                        {/* Section 4: Submission Methods */}
+                        {/* Section 4: Assignment Type + Submission Methods */}
                         <section>
                             <div className="flex items-center gap-2 mb-6">
                                 <div className="w-1.5 h-6 bg-[var(--hw-primary)] rounded-full" />
                                 <h5 className="text-sm font-bold uppercase tracking-widest text-[var(--hw-on-surface-variant)]">
-                                    04. Submission Methods
+                                    04. Assignment Type
                                 </h5>
                             </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <label className="group flex items-center p-6 bg-[var(--hw-surface-container-lowest)] rounded-xl cursor-pointer hover:bg-[var(--hw-primary)]/5 transition-all border border-transparent hover:border-[var(--hw-primary)]/10">
-                                    <div className="w-12 h-12 rounded-lg bg-[var(--hw-surface-container-low)] group-hover:bg-[var(--hw-primary)]/10 flex items-center justify-center text-[var(--hw-primary)] transition-colors">
+
+                            {/* Type Selector */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+                                <button
+                                    type="button"
+                                    onClick={() => setAssignmentType("standard")}
+                                    className={`group flex items-center p-6 rounded-xl cursor-pointer transition-all border-2 ${
+                                        assignmentType === "standard"
+                                            ? "bg-[var(--hw-primary)]/5 border-[var(--hw-primary)] shadow-lg shadow-[var(--hw-primary)]/10"
+                                            : "bg-[var(--hw-surface-container-lowest)] border-transparent hover:border-[var(--hw-primary)]/20"
+                                    }`}
+                                >
+                                    <div className={`w-12 h-12 rounded-lg flex items-center justify-center transition-colors ${
+                                        assignmentType === "standard"
+                                            ? "bg-[var(--hw-primary)] text-white"
+                                            : "bg-[var(--hw-surface-container-low)] text-[var(--hw-primary)]"
+                                    }`}>
                                         <span className="material-symbols-outlined">upload_file</span>
                                     </div>
-                                    <div className="ml-4 flex-1">
-                                        <p className="text-sm font-bold">File Upload</p>
-                                        <p className="text-xs text-[var(--hw-on-surface-variant)]">Allow PDF, DOCX, or ZIP files</p>
+                                    <div className="ml-4 text-left flex-1">
+                                        <p className="text-sm font-bold">Standard Assignment</p>
+                                        <p className="text-xs text-[var(--hw-on-surface-variant)]">File upload / GitHub link submission</p>
                                     </div>
-                                    <input
-                                        type="checkbox"
-                                        name="fileUpload"
-                                        checked={fileUpload}
-                                        onChange={(e) => setFileUpload(e.target.checked)}
-                                        className="rounded border-[var(--hw-outline)] text-[var(--hw-primary)] focus:ring-[var(--hw-primary)]"
-                                    />
-                                </label>
-                                <label className="group flex items-center p-6 bg-[var(--hw-surface-container-lowest)] rounded-xl cursor-pointer hover:bg-[var(--hw-primary)]/5 transition-all border border-transparent hover:border-[var(--hw-primary)]/10">
-                                    <div className="w-12 h-12 rounded-lg bg-[var(--hw-surface-container-low)] group-hover:bg-[var(--hw-primary)]/10 flex items-center justify-center text-[var(--hw-primary)] transition-colors">
-                                        <span className="material-symbols-outlined">code</span>
+                                    {assignmentType === "standard" && (
+                                        <span className="material-symbols-outlined text-[var(--hw-primary)]" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
+                                    )}
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => { setAssignmentType("quiz"); if (quizQuestions.length === 0) addQuestion(); }}
+                                    className={`group flex items-center p-6 rounded-xl cursor-pointer transition-all border-2 ${
+                                        assignmentType === "quiz"
+                                            ? "bg-emerald-500/5 border-emerald-500 shadow-lg shadow-emerald-500/10"
+                                            : "bg-[var(--hw-surface-container-lowest)] border-transparent hover:border-emerald-500/20"
+                                    }`}
+                                >
+                                    <div className={`w-12 h-12 rounded-lg flex items-center justify-center transition-colors ${
+                                        assignmentType === "quiz"
+                                            ? "bg-emerald-500 text-white"
+                                            : "bg-[var(--hw-surface-container-low)] text-emerald-600"
+                                    }`}>
+                                        <span className="material-symbols-outlined">quiz</span>
                                     </div>
-                                    <div className="ml-4 flex-1">
-                                        <p className="text-sm font-bold">GitHub Link</p>
-                                        <p className="text-xs text-[var(--hw-on-surface-variant)]">Direct repository integration</p>
+                                    <div className="ml-4 text-left flex-1">
+                                        <p className="text-sm font-bold">Quiz — Trắc nghiệm</p>
+                                        <p className="text-xs text-[var(--hw-on-surface-variant)]">Multiple choice, auto-graded</p>
                                     </div>
-                                    <input
-                                        type="checkbox"
-                                        name="githubLink"
-                                        checked={githubLink}
-                                        onChange={(e) => setGithubLink(e.target.checked)}
-                                        className="rounded border-[var(--hw-outline)] text-[var(--hw-primary)] focus:ring-[var(--hw-primary)]"
-                                    />
-                                </label>
+                                    {assignmentType === "quiz" && (
+                                        <span className="material-symbols-outlined text-emerald-500" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
+                                    )}
+                                </button>
                             </div>
+
+                            {/* Standard: Submission Methods */}
+                            {assignmentType === "standard" && (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <label className="group flex items-center p-6 bg-[var(--hw-surface-container-lowest)] rounded-xl cursor-pointer hover:bg-[var(--hw-primary)]/5 transition-all border border-transparent hover:border-[var(--hw-primary)]/10">
+                                        <div className="w-12 h-12 rounded-lg bg-[var(--hw-surface-container-low)] group-hover:bg-[var(--hw-primary)]/10 flex items-center justify-center text-[var(--hw-primary)] transition-colors">
+                                            <span className="material-symbols-outlined">upload_file</span>
+                                        </div>
+                                        <div className="ml-4 flex-1">
+                                            <p className="text-sm font-bold">File Upload</p>
+                                            <p className="text-xs text-[var(--hw-on-surface-variant)]">Allow PDF, DOCX, or ZIP files</p>
+                                        </div>
+                                        <input
+                                            type="checkbox"
+                                            name="fileUpload"
+                                            checked={fileUpload}
+                                            onChange={(e) => setFileUpload(e.target.checked)}
+                                            className="rounded border-[var(--hw-outline)] text-[var(--hw-primary)] focus:ring-[var(--hw-primary)]"
+                                        />
+                                    </label>
+                                    <label className="group flex items-center p-6 bg-[var(--hw-surface-container-lowest)] rounded-xl cursor-pointer hover:bg-[var(--hw-primary)]/5 transition-all border border-transparent hover:border-[var(--hw-primary)]/10">
+                                        <div className="w-12 h-12 rounded-lg bg-[var(--hw-surface-container-low)] group-hover:bg-[var(--hw-primary)]/10 flex items-center justify-center text-[var(--hw-primary)] transition-colors">
+                                            <span className="material-symbols-outlined">code</span>
+                                        </div>
+                                        <div className="ml-4 flex-1">
+                                            <p className="text-sm font-bold">GitHub Link</p>
+                                            <p className="text-xs text-[var(--hw-on-surface-variant)]">Direct repository integration</p>
+                                        </div>
+                                        <input
+                                            type="checkbox"
+                                            name="githubLink"
+                                            checked={githubLink}
+                                            onChange={(e) => setGithubLink(e.target.checked)}
+                                            className="rounded border-[var(--hw-outline)] text-[var(--hw-primary)] focus:ring-[var(--hw-primary)]"
+                                        />
+                                    </label>
+                                </div>
+                            )}
+
+                            {/* Quiz Builder */}
+                            {assignmentType === "quiz" && (
+                                <div className="bg-[var(--hw-surface-container-low)] p-1 rounded-xl">
+                                    <div className="bg-[var(--hw-surface-container-lowest)] p-8 rounded-lg space-y-6">
+                                        {/* Header */}
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center">
+                                                    <span className="material-symbols-outlined text-emerald-600">quiz</span>
+                                                </div>
+                                                <div>
+                                                    <h4 className="text-sm font-bold">Quiz Builder</h4>
+                                                    <p className="text-xs text-[var(--hw-on-surface-variant)]">{quizQuestions.length} câu hỏi</p>
+                                                </div>
+                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={addQuestion}
+                                                className="flex items-center gap-1.5 px-4 py-2 bg-emerald-500 text-white text-xs font-bold rounded-lg hover:bg-emerald-600 transition-colors shadow-sm"
+                                            >
+                                                <span className="material-symbols-outlined text-sm">add</span>
+                                                Thêm câu hỏi
+                                            </button>
+                                        </div>
+
+                                        {/* Questions */}
+                                        <div className="space-y-6">
+                                            {quizQuestions.map((q, qIdx) => (
+                                                <div key={q.id} className="bg-[var(--hw-surface-container-low)] rounded-xl p-6 border border-[var(--hw-outline-variant)]/20 relative">
+                                                    {/* Question number + Delete */}
+                                                    <div className="flex items-center justify-between mb-4">
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="w-7 h-7 rounded-full bg-emerald-500 text-white text-xs font-bold flex items-center justify-center">
+                                                                {qIdx + 1}
+                                                            </span>
+                                                            <span className="text-xs font-bold text-[var(--hw-on-surface-variant)] uppercase tracking-wider">Câu hỏi {qIdx + 1}</span>
+                                                        </div>
+                                                        {quizQuestions.length > 1 && (
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => removeQuestion(qIdx)}
+                                                                className="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                                                                title="Xóa câu hỏi"
+                                                            >
+                                                                <span className="material-symbols-outlined text-lg">delete</span>
+                                                            </button>
+                                                        )}
+                                                    </div>
+
+                                                    {/* Question Text */}
+                                                    <textarea
+                                                        value={q.question}
+                                                        onChange={(e) => updateQuestion(qIdx, "question", e.target.value)}
+                                                        placeholder="Nhập nội dung câu hỏi... (hỗ trợ code)"
+                                                        rows={2}
+                                                        className="w-full bg-white border border-[var(--hw-outline-variant)]/30 rounded-lg p-3 text-sm font-medium text-[var(--hw-on-surface)] focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all mb-4 placeholder:text-[var(--hw-on-surface-variant)]/40 resize-y font-mono"
+                                                    />
+
+                                                    {/* Options */}
+                                                    <div className="space-y-2">
+                                                        {q.options.map((opt, oIdx) => (
+                                                                <label
+                                                                key={oIdx}
+                                                                className={`flex items-start gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all ${
+                                                                    q.correctIndex === oIdx
+                                                                        ? "bg-emerald-50 border-emerald-400"
+                                                                        : "bg-white border-[var(--hw-outline-variant)]/20 hover:border-emerald-200"
+                                                                }`}
+                                                            >
+                                                                <div className="flex items-center gap-2 pt-1 flex-shrink-0">
+                                                                    <input
+                                                                        type="radio"
+                                                                        name={`correct-${q.id}`}
+                                                                        checked={q.correctIndex === oIdx}
+                                                                        onChange={() => setCorrectAnswer(qIdx, oIdx)}
+                                                                        className="text-emerald-500 focus:ring-emerald-500"
+                                                                    />
+                                                                    <span className={`w-6 h-6 rounded text-xs font-bold flex items-center justify-center ${
+                                                                        q.correctIndex === oIdx
+                                                                            ? "bg-emerald-500 text-white"
+                                                                            : "bg-[var(--hw-surface-container-high)] text-[var(--hw-on-surface-variant)]"
+                                                                    }`}>
+                                                                        {String.fromCharCode(65 + oIdx)}
+                                                                    </span>
+                                                                </div>
+                                                                <textarea
+                                                                    value={opt}
+                                                                    onChange={(e) => updateOption(qIdx, oIdx, e.target.value)}
+                                                                    placeholder={`Lựa chọn ${String.fromCharCode(65 + oIdx)} (hỗ trợ code)`}
+                                                                    rows={1}
+                                                                    className="flex-1 bg-transparent border-none text-sm text-[var(--hw-on-surface)] focus:ring-0 p-0 placeholder:text-[var(--hw-on-surface-variant)]/40 resize-y font-mono min-h-[24px]"
+                                                                />
+                                                                {q.correctIndex === oIdx && (
+                                                                    <span className="material-symbols-outlined text-emerald-500 text-sm pt-1 flex-shrink-0" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
+                                                                )}
+                                                            </label>
+                                                        ))}
+                                                    </div>
+
+                                                    {q.correctIndex < 0 && (
+                                                        <p className="mt-2 text-[10px] text-amber-600 font-medium flex items-center gap-1">
+                                                            <span className="material-symbols-outlined text-xs">warning</span>
+                                                            Chưa chọn đáp án đúng
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            ))}
+                                        </div>
+
+                                        {/* Info */}
+                                        <div className="flex items-start gap-3 p-4 bg-emerald-50 rounded-lg border border-emerald-100">
+                                            <span className="material-symbols-outlined text-emerald-500 text-xl flex-shrink-0 mt-0.5">tips_and_updates</span>
+                                            <div>
+                                                <p className="text-xs font-bold text-emerald-700 mb-1">Chấm tự động</p>
+                                                <p className="text-xs text-emerald-600 leading-relaxed">
+                                                    Hệ thống sẽ tự động chấm điểm khi học sinh nộp bài. Điểm = (số câu đúng / tổng câu) × 100.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
                         </section>
 
                         {/* Footer Actions */}

@@ -241,7 +241,12 @@ export function CurriculumList({ assignments: initialAssignments, materials: ini
                                                         <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 bg-amber-100 text-amber-700 rounded">Draft</span>
                                                     )}
                                                 </div>
-                                                <h4 className="text-sm font-semibold text-slate-800">{a.title}</h4>
+                                                <h4 className="text-sm font-semibold text-slate-800 flex items-center gap-2">
+                                                    {a.title}
+                                                    {a.assignmentType === "quiz" && (
+                                                        <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 bg-emerald-100 text-emerald-700 rounded">Quiz</span>
+                                                    )}
+                                                </h4>
                                                 {a.dueAt && (
                                                     <p className="text-[10px] text-slate-400 mt-0.5">Due: {new Date(a.dueAt).toLocaleDateString("vi-VN")}</p>
                                                 )}

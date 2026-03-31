@@ -35,6 +35,7 @@ export const mockAssignments: Assignment[] = [
         ],
         createdAt: "2026-03-20T10:00:00+07:00",
         updatedAt: "2026-03-20T10:00:00+07:00",
+        assignmentType: "standard",
     },
     {
         id: "w1-l2",
@@ -55,6 +56,7 @@ export const mockAssignments: Assignment[] = [
         ],
         createdAt: "2026-03-21T10:00:00+07:00",
         updatedAt: "2026-03-21T14:30:00+07:00",
+        assignmentType: "standard",
     },
     {
         id: "w2-l1",
@@ -82,6 +84,7 @@ export const mockAssignments: Assignment[] = [
         ],
         createdAt: "2026-03-25T10:00:00+07:00",
         updatedAt: "2026-03-25T10:00:00+07:00",
+        assignmentType: "standard",
     },
     {
         id: "w2-l2",
@@ -95,6 +98,7 @@ export const mockAssignments: Assignment[] = [
         promptFiles: [],
         createdAt: "2026-03-25T15:00:00+07:00",
         updatedAt: "2026-03-25T15:00:00+07:00",
+        assignmentType: "standard",
     },
 ];
 
