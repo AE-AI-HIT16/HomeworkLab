@@ -45,9 +45,10 @@ export async function createAssignmentAction(
         return { error: "Please enter a title for the assignment." };
     }
 
-    // Parse week/lesson numbers
-    const weekMatch = week?.match(/Week (\d+)/);
-    const lessonMatch = lesson?.match(/(?:Lecture|Practical) (\d+)/);
+    // Parse week/lesson numbers — extract first number from any format
+    // Supports: "3", "Week 3", "3 - Machine Learning", "3_Decision Tree", etc.
+    const weekMatch = week?.match(/(\d+)/);
+    const lessonMatch = lesson?.match(/(\d+)/);
     const weekNum = weekMatch ? parseInt(weekMatch[1]) : 1;
     const lessonNum = lessonMatch ? parseInt(lessonMatch[1]) : 1;
 
