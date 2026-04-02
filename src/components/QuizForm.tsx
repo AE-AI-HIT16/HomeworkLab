@@ -158,11 +158,11 @@ export function QuizForm({ assignmentId, questions, existingSubmission, isPastDu
                         </button>
                     </div>
 
-                    {/* Info: no answer reveal */}
+                    {/* Info: improved instruction */}
                     <div className="mt-4 flex items-start gap-2.5 p-3 bg-white/50 rounded-lg">
                         <span className="material-symbols-outlined text-[var(--hw-on-surface-variant)] text-sm flex-shrink-0 mt-0.5">info</span>
                         <p className="text-[11px] text-[var(--hw-on-surface-variant)] leading-relaxed">
-                            Đáp án đúng/sai sẽ không được hiển thị. Bạn có thể làm lại bài để cải thiện điểm số.
+                            Bạn có thể xem những câu mình đã làm đúng hoặc sai phía dưới. Hãy thử làm lại bài để cải thiện điểm số nhé!
                         </p>
                     </div>
                 </div>
@@ -191,65 +191,110 @@ export function QuizForm({ assignmentId, questions, existingSubmission, isPastDu
                 </div>
             )}
 
-            {/* Questions — no answer reveal after submit */}
-            {view === "idle" && (
+            {/* Questions — reveal correct/wrong status, but not the correct answers for wrong ones */}
+            {(view === "idle" || view === "result") && (
                 <div className="space-y-4">
-                    {questions.map((q, qIdx) => (
-                        <div
-                            key={q.id}
-                            className={`bg-white rounded-xl border overflow-hidden transition-all ${
-                                answers[qIdx] >= 0
-                                    ? "border-[var(--hw-primary)]/30"
-                                    : "border-[var(--hw-surface-container-high)]"
-                            }`}
-                        >
-                            {/* Question Header */}
-                            <div className="px-5 py-3 flex items-start gap-3 bg-[var(--hw-surface-container-lowest)]">
-                                <span className={`w-7 h-7 rounded-full text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5 ${
-                                    answers[qIdx] >= 0
-                                        ? "bg-[var(--hw-primary)] text-white"
-                                        : "bg-[var(--hw-surface-container-high)] text-[var(--hw-on-surface-variant)]"
+                    {questions.map((q, qIdx) => {
+                        const isCorrect = answers[qIdx] === q.correctIndex;
+                        const hasAnswered = answers[qIdx] >= 0;
+
+                        return (
+                            <div
+                                key={q.id}
+                                className={`bg-white rounded-xl border overflow-hidden transition-all ${
+                                    view === "result"
+                                        ? isCorrect
+                                            ? "border-emerald-500/50"
+                                            : "border-red-500/50 shadow-sm shadow-red-500/5"
+                                        : hasAnswered
+                                            ? "border-[var(--hw-primary)]/30"
+                                            : "border-[var(--hw-surface-container-high)]"
+                                }`}
+                            >
+                                {/* Question Header */}
+                                <div className={`px-5 py-3 flex items-start gap-3 ${
+                                    view === "result" 
+                                        ? isCorrect ? "bg-emerald-50" : "bg-red-50"
+                                        : "bg-[var(--hw-surface-container-lowest)]"
                                 }`}>
-                                    {qIdx + 1}
-                                </span>
-                                <div className="flex-1 text-sm font-medium text-[var(--hw-on-surface)]">
-                                    {renderContent(q.question)}
-                                </div>
-                            </div>
-
-                            {/* Options */}
-                            <div className="p-4 space-y-2">
-                                {q.options.map((opt, oIdx) => {
-                                    if (!opt.trim()) return null;
-                                    const isSelected = answers[qIdx] === oIdx;
-
-                                    return (
-                                        <button
-                                            key={oIdx}
-                                            type="button"
-                                            onClick={() => handleSelect(qIdx, oIdx)}
-                                            className={`w-full flex items-start gap-3 p-3 rounded-lg border-2 transition-all text-left ${
-                                                isSelected
-                                                    ? "bg-[var(--hw-primary)]/5 border-[var(--hw-primary)] shadow-sm"
-                                                    : "bg-[var(--hw-surface-container-lowest)] border-[var(--hw-outline-variant)]/20 hover:border-[var(--hw-primary)]/40 cursor-pointer"
-                                            }`}
-                                        >
-                                            <span className={`w-6 h-6 rounded text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5 ${
-                                                isSelected
+                                    <div className="relative mt-0.5 flex-shrink-0">
+                                        <span className={`w-7 h-7 rounded-full text-xs font-bold flex items-center justify-center ${
+                                            view === "result"
+                                                ? isCorrect ? "bg-emerald-500 text-white" : "bg-red-500 text-white"
+                                                : hasAnswered
                                                     ? "bg-[var(--hw-primary)] text-white"
                                                     : "bg-[var(--hw-surface-container-high)] text-[var(--hw-on-surface-variant)]"
+                                        }`}>
+                                            {qIdx + 1}
+                                        </span>
+                                        {view === "result" && (
+                                            <span className={`absolute -right-1 -top-1 w-4 h-4 rounded-full border-2 border-white flex items-center justify-center text-[10px] ${
+                                                isCorrect ? "bg-emerald-500 text-white" : "bg-red-500 text-white"
                                             }`}>
-                                                {String.fromCharCode(65 + oIdx)}
+                                                <span className="material-symbols-outlined text-[10px]" style={{ fontVariationSettings: "'FILL' 1" }}>
+                                                    {isCorrect ? "check" : "close"}
+                                                </span>
                                             </span>
-                                            <div className="flex-1 text-sm text-[var(--hw-on-surface)]">
-                                                {renderContent(opt)}
-                                            </div>
-                                        </button>
-                                    );
-                                })}
+                                        )}
+                                    </div>
+                                    <div className="flex-1 text-sm font-medium text-[var(--hw-on-surface)]">
+                                        {renderContent(q.question)}
+                                    </div>
+                                </div>
+
+                                {/* Options */}
+                                <div className="p-4 space-y-2 text-sm">
+                                    {q.options.map((opt, oIdx) => {
+                                        if (!opt.trim()) return null;
+                                        const isSelected = answers[qIdx] === oIdx;
+
+                                        let optionClasses = "bg-[var(--hw-surface-container-lowest)] border-[var(--hw-outline-variant)]/20 hover:border-[var(--hw-primary)]/40";
+                                        let labelClasses = "bg-[var(--hw-surface-container-high)] text-[var(--hw-on-surface-variant)]";
+                                        let textClasses = "text-[var(--hw-on-surface)]";
+
+                                        if (isSelected) {
+                                            if (view === "result") {
+                                                if (isCorrect) {
+                                                    optionClasses = "bg-emerald-500 text-white border-emerald-500 shadow-sm";
+                                                    labelClasses = "bg-white/20 text-white";
+                                                    textClasses = "text-white font-medium";
+                                                } else {
+                                                    optionClasses = "bg-red-500 text-white border-red-500 shadow-sm";
+                                                    labelClasses = "bg-white/20 text-white";
+                                                    textClasses = "text-white font-medium";
+                                                }
+                                            } else {
+                                                optionClasses = "bg-[var(--hw-primary)]/5 border-[var(--hw-primary)] shadow-sm";
+                                                labelClasses = "bg-[var(--hw-primary)] text-white";
+                                            }
+                                        }
+
+                                        return (
+                                            <button
+                                                key={oIdx}
+                                                type="button"
+                                                disabled={view === "result"}
+                                                onClick={() => handleSelect(qIdx, oIdx)}
+                                                className={`w-full flex items-start gap-3 p-3 rounded-lg border-2 transition-all text-left ${optionClasses}`}
+                                            >
+                                                <span className={`w-6 h-6 rounded text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5 ${labelClasses}`}>
+                                                    {String.fromCharCode(65 + oIdx)}
+                                                </span>
+                                                <div className={`flex-1 text-sm ${textClasses}`}>
+                                                    {renderContent(opt)}
+                                                </div>
+                                                {isSelected && view === "result" && (
+                                                    <span className="material-symbols-outlined text-sm pt-0.5" style={{ fontVariationSettings: "'FILL' 1" }}>
+                                                        {isCorrect ? "check_circle" : "cancel"}
+                                                    </span>
+                                                )}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
                             </div>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
             )}
 

@@ -216,8 +216,13 @@ export async function getMaterials(): Promise<Material[]> {
                 postContent: row[7] || undefined,
             };
         }).filter((m) => m.id);
-    } catch (e) {
-        console.error("Failed to get materials from Google Sheets", e);
+    } catch (e: unknown) {
+        const error = e as { response?: { status: number }; code?: number };
+        if (error?.response?.status === 400 || error?.code === 400) {
+            console.warn("Materials sheet not found or invalid range. Returning empty list.");
+        } else {
+            console.error("Failed to get materials from Google Sheets", e);
+        }
         return [];
     }
 }
