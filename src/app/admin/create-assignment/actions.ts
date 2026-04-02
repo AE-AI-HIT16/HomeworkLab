@@ -141,6 +141,11 @@ export async function createAssignmentAction(
         console.warn("Could not create Drive folders:", err);
     }
 
+    console.log(`[CreateAssignment] Creating ${assignmentType} assignment: "${title}"`);
+    if (assignmentType === "quiz") {
+        console.log(`[CreateAssignment] Quiz questions count: ${quizData?.length || 0}`);
+    }
+
     try {
         await saveAssignment({
             id,
