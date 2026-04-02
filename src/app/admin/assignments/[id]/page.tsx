@@ -71,6 +71,8 @@ export default async function AdminAssignmentDetailPage({ params }: AdminAssignm
                         currentWeek={assignment.week}
                         currentLesson={assignment.lesson}
                         currentTitle={assignment.title}
+                        currentQuizData={assignment.quizData}
+                        assignmentType={assignment.assignmentType}
                     />
                 </div>
 
