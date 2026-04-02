@@ -185,6 +185,69 @@ export async function saveAssignment(assignment: Assignment): Promise<void> {
     }
 }
 
+/**
+ * Update specific fields of an existing assignment in Google Sheets.
+ */
+export async function updateAssignmentFields(
+    assignmentId: string,
+    fields: Partial<Pick<Assignment, "week" | "lesson" | "title" | "description" | "dueAt" | "published">>
+): Promise<void> {
+    const sheets = getSheetsApi();
+    if (!sheets) throw new Error("Google Sheets credentials missing.");
+
+    try {
+        // Find the row
+        const res = await sheets.spreadsheets.values.get({
+            spreadsheetId: GOOGLE_SHEET_ID,
+            range: "Assignments!A:M",
+        });
+        const rows = res.data.values || [];
+        const rowIndex = rows.findIndex((row) => row[0] === assignmentId);
+        if (rowIndex === -1) throw new Error(`Assignment ${assignmentId} not found.`);
+
+        // Column mapping: A=id(0), B=week(1), C=lesson(2), D=title(3), E=description(4), F=dueAt(5), G=published(6)
+        const updates: Array<{ range: string; value: string | number }> = [];
+
+        if (fields.week !== undefined) {
+            updates.push({ range: `Assignments!B${rowIndex + 1}`, value: fields.week });
+        }
+        if (fields.lesson !== undefined) {
+            updates.push({ range: `Assignments!C${rowIndex + 1}`, value: fields.lesson });
+        }
+        if (fields.title !== undefined) {
+            updates.push({ range: `Assignments!D${rowIndex + 1}`, value: fields.title });
+        }
+        if (fields.description !== undefined) {
+            updates.push({ range: `Assignments!E${rowIndex + 1}`, value: fields.description });
+        }
+        if (fields.dueAt !== undefined) {
+            updates.push({ range: `Assignments!F${rowIndex + 1}`, value: fields.dueAt });
+        }
+        if (fields.published !== undefined) {
+            updates.push({ range: `Assignments!G${rowIndex + 1}`, value: fields.published ? "TRUE" : "FALSE" });
+        }
+
+        // Also update the updatedAt timestamp (column K = index 10)
+        updates.push({ range: `Assignments!K${rowIndex + 1}`, value: new Date().toISOString() });
+
+        if (updates.length > 0) {
+            await sheets.spreadsheets.values.batchUpdate({
+                spreadsheetId: GOOGLE_SHEET_ID,
+                requestBody: {
+                    valueInputOption: "RAW",
+                    data: updates.map((u) => ({
+                        range: u.range,
+                        values: [[u.value]],
+                    })),
+                },
+            });
+        }
+    } catch (e) {
+        console.error("Failed to update assignment in Google Sheets", e);
+        throw e;
+    }
+}
+
 // ─── Materials ────────────────────────────────────────────────────────────
 
 export async function getMaterials(): Promise<Material[]> {

@@ -3,6 +3,7 @@ import { getAssignmentDetailsWithSubmissions } from "@/lib/google-sheets";
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { AdminSubmissionTable } from "@/components/AdminSubmissionTable";
+import { EditAssignmentModal } from "@/components/EditAssignmentModal";
 
 interface AdminAssignmentDetailPageProps {
     params: Promise<{ id: string }>;
@@ -65,6 +66,12 @@ export default async function AdminAssignmentDetailPage({ params }: AdminAssignm
                         </div>
                         <h1 className="text-3xl font-bold text-gray-900">{assignment.title}</h1>
                     </div>
+                    <EditAssignmentModal
+                        assignmentId={assignment.id}
+                        currentWeek={assignment.week}
+                        currentLesson={assignment.lesson}
+                        currentTitle={assignment.title}
+                    />
                 </div>
 
                 <div className="bg-white border rounded-xl p-5 mt-6 shadow-sm">
