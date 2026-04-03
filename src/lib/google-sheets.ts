@@ -190,7 +190,7 @@ export async function saveAssignment(assignment: Assignment): Promise<void> {
  */
 export async function updateAssignmentFields(
     assignmentId: string,
-    fields: Partial<Pick<Assignment, "week" | "lesson" | "title" | "description" | "dueAt" | "published">>
+    fields: Partial<Pick<Assignment, "week" | "lesson" | "title" | "description" | "dueAt" | "published" | "quizData" | "promptFiles">>
 ): Promise<void> {
     const sheets = getSheetsApi();
     if (!sheets) throw new Error("Google Sheets credentials missing.");
@@ -225,6 +225,14 @@ export async function updateAssignmentFields(
         }
         if (fields.published !== undefined) {
             updates.push({ range: `Assignments!G${rowIndex + 1}`, value: fields.published ? "TRUE" : "FALSE" });
+        }
+        // Column M = quizData (index 12)
+        if (fields.quizData !== undefined) {
+            updates.push({ range: `Assignments!M${rowIndex + 1}`, value: JSON.stringify(fields.quizData) });
+        }
+        // Column I = promptFiles (index 8)
+        if (fields.promptFiles !== undefined) {
+            updates.push({ range: `Assignments!I${rowIndex + 1}`, value: JSON.stringify(fields.promptFiles) });
         }
 
         // Also update the updatedAt timestamp (column K = index 10)

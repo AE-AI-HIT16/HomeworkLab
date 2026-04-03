@@ -71,6 +71,18 @@ export default async function AdminAssignmentDetailPage({ params }: AdminAssignm
                         currentWeek={assignment.week}
                         currentLesson={assignment.lesson}
                         currentTitle={assignment.title}
+                        currentDescription={assignment.description}
+                        currentDriveLink={
+                            (() => {
+                                const linkFile = assignment.promptFiles?.find(f => f.mimeType === "text/uri-list");
+                                if (!linkFile) return undefined;
+                                return linkFile.driveFileId.startsWith("http")
+                                    ? linkFile.driveFileId
+                                    : `https://drive.google.com/drive/folders/${linkFile.driveFileId}`;
+                            })()
+                        }
+                        currentQuizData={assignment.quizData}
+                        assignmentType={assignment.assignmentType}
                     />
                 </div>
 
