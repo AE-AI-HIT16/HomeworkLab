@@ -3,7 +3,6 @@
 import { saveSubmission, getSubmission, updateAssignmentFields } from "@/lib/google-sheets";
 import { getCurrentUserRole } from "@/lib/roles";
 import { revalidatePath } from "next/cache";
-import type { QuizQuestion } from "@/types";
 
 export async function gradeSubmissionAction(
     assignmentId: string,
@@ -37,7 +36,7 @@ export async function gradeSubmissionAction(
 
 export async function updateAssignmentAction(
     assignmentId: string,
-    fields: { week?: number; lesson?: number; title?: string; description?: string; quizData?: QuizQuestion[] }
+    fields: { week?: number; lesson?: number; title?: string; description?: string }
 ) {
     const { role } = await getCurrentUserRole();
     if (role !== "admin") {
