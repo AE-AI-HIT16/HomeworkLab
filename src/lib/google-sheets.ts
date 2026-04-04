@@ -1,4 +1,5 @@
 import { google } from "googleapis";
+import { unstable_cache, revalidateTag } from "next/cache";
 import type { Student, Assignment, Submission, PromptFile, SubmissionFile, SubmissionType, Material, QuizQuestion } from "@/types";
 
 // Auth scopes for Google Sheets
@@ -34,7 +35,7 @@ function getSheetsApi() {
 
 // ─── Students ─────────────────────────────────────────────────────────────
 
-export async function getStudents(): Promise<Student[]> {
+export const getStudents = unstable_cache(async (): Promise<Student[]> => {
     const sheets = getSheetsApi();
     if (!sheets) return []; // Fallback
 
@@ -56,7 +57,7 @@ export async function getStudents(): Promise<Student[]> {
         console.error("Failed to get students from Google Sheets", e);
         return [];
     }
-}
+}, ['sheets-students'], { tags: ['sheets-students'], revalidate: 3600 });
 
 /**
  * Update the role of a student in the Google Sheet (column E).
@@ -85,6 +86,8 @@ export async function updateStudentRole(githubUsername: string, newRole: "studen
             valueInputOption: "USER_ENTERED",
             requestBody: { values: [[newRole]] },
         });
+
+        revalidateTag('sheets-students', {});
     } catch (e) {
         console.error("Failed to update student role in Google Sheets", e);
         throw e;
@@ -93,7 +96,7 @@ export async function updateStudentRole(githubUsername: string, newRole: "studen
 
 // ─── Assignments ──────────────────────────────────────────────────────────
 
-export async function getAssignments(): Promise<Assignment[]> {
+export const getAssignments = unstable_cache(async (): Promise<Assignment[]> => {
     const sheets = getSheetsApi();
     if (!sheets) return []; // Fallback
 
@@ -143,7 +146,7 @@ export async function getAssignments(): Promise<Assignment[]> {
         console.error("Failed to get assignments from Google Sheets", e);
         return [];
     }
-}
+}, ['sheets-assignments'], { tags: ['sheets-assignments'], revalidate: 3600 });
 
 export async function getAssignmentById(id: string): Promise<Assignment | undefined> {
     const assignments = await getAssignments();
@@ -193,6 +196,8 @@ export async function saveAssignment(assignment: Assignment): Promise<void> {
             valueInputOption: "USER_ENTERED",
             requestBody: { values: [row] },
         });
+
+        revalidateTag('sheets-assignments', {});
     } catch (e) {
         console.error("Failed to save assignment to Google Sheets", e);
         throw e;
@@ -264,6 +269,8 @@ export async function updateAssignmentFields(
                 },
             });
         }
+
+        revalidateTag('sheets-assignments', {});
     } catch (e) {
         console.error("Failed to update assignment in Google Sheets", e);
         throw e;
@@ -272,7 +279,7 @@ export async function updateAssignmentFields(
 
 // ─── Materials ────────────────────────────────────────────────────────────
 
-export async function getMaterials(): Promise<Material[]> {
+export const getMaterials = unstable_cache(async (): Promise<Material[]> => {
     const sheets = getSheetsApi();
     if (!sheets) return []; // Fallback
 
@@ -311,7 +318,7 @@ export async function getMaterials(): Promise<Material[]> {
         }
         return [];
     }
-}
+}, ['sheets-materials'], { tags: ['sheets-materials'], revalidate: 3600 });
 
 export async function saveMaterial(material: Material): Promise<void> {
     const sheets = getSheetsApi();
@@ -339,6 +346,8 @@ export async function saveMaterial(material: Material): Promise<void> {
             valueInputOption: "USER_ENTERED",
             requestBody: { values: [row] },
         });
+
+        revalidateTag('sheets-materials', {});
     } catch (e) {
         console.error("Failed to save material to Google Sheets", e);
         throw e;
@@ -378,6 +387,8 @@ export async function deleteAssignment(assignmentId: string): Promise<void> {
                 }],
             },
         });
+
+        revalidateTag('sheets-assignments', {});
     } catch (e) {
         console.error("Failed to delete assignment from Google Sheets", e);
         throw e;
@@ -416,6 +427,8 @@ export async function deleteMaterial(materialId: string): Promise<void> {
                 }],
             },
         });
+
+        revalidateTag('sheets-materials', {});
     } catch (e) {
         console.error("Failed to delete material from Google Sheets", e);
         throw e;
@@ -442,6 +455,8 @@ export async function updateMaterialTitle(materialId: string, newTitle: string):
             valueInputOption: "USER_ENTERED",
             requestBody: { values: [[newTitle]] },
         });
+
+        revalidateTag('sheets-materials', {});
     } catch (e) {
         console.error("Failed to update material title in Google Sheets", e);
         throw e;
@@ -450,7 +465,7 @@ export async function updateMaterialTitle(materialId: string, newTitle: string):
 
 // ─── Submissions ──────────────────────────────────────────────────────────
 
-export async function getSubmissions(): Promise<Submission[]> {
+export const getSubmissions = unstable_cache(async (): Promise<Submission[]> => {
     const sheets = getSheetsApi();
     if (!sheets) return []; // Fallback
 
@@ -499,7 +514,7 @@ export async function getSubmissions(): Promise<Submission[]> {
         console.error("Failed to get submissions from Google Sheets", e);
         return [];
     }
-}
+}, ['sheets-submissions'], { tags: ['sheets-submissions'], revalidate: 3600 });
 
 export async function getSubmissionsByAssignment(assignmentId: string): Promise<Submission[]> {
     const submissions = await getSubmissions();
@@ -577,6 +592,8 @@ export async function saveSubmission(submission: Submission): Promise<void> {
                 requestBody: { values: [row] },
             });
         }
+
+        revalidateTag('sheets-submissions', {});
     } catch (e) {
         console.error("Failed to save submission to Google Sheets", e);
         throw e;
