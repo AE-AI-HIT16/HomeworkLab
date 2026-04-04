@@ -5,6 +5,7 @@ import { useState, useRef, useCallback } from "react";
 import { useActionState } from "react";
 import { createAssignmentAction, type CreateAssignmentFormState } from "./actions";
 import type { PromptFile, QuizQuestion } from "@/types";
+import { courses } from "@/lib/courses";
 
 const ALLOWED_EXTENSIONS = [".pdf", ".docx", ".zip", ".ipynb"];
 const MAX_FILE_SIZE_MB = 20;
@@ -51,6 +52,9 @@ export default function CreateAssignmentPage() {
 
     // Assignment type: "standard" or "quiz"
     const [assignmentType, setAssignmentType] = useState<"standard" | "quiz">("standard");
+
+    // Course selector
+    const [selectedCourseId, setSelectedCourseId] = useState<string>("");
 
     // Quiz builder state
     const [quizQuestions, setQuizQuestions] = useState<QuizQuestion[]>([]);
@@ -353,6 +357,52 @@ export default function CreateAssignmentPage() {
                     <form ref={formRef} className="space-y-12 pb-20">
                         {/* Hidden input for prompt files */}
                         <input type="hidden" name="promptFilesJson" defaultValue="[]" />
+                        <input type="hidden" name="courseId" value={selectedCourseId} />
+
+                        {/* Section 0: Course Selector */}
+                        <section>
+                            <div className="flex items-center gap-2 mb-6">
+                                <div className="w-1.5 h-6 bg-emerald-500 rounded-full" />
+                                <h5 className="text-sm font-bold uppercase tracking-widest text-[var(--hw-on-surface-variant)]">
+                                    00. Select Course
+                                </h5>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                {courses.map((course) => (
+                                    <button
+                                        key={course.id}
+                                        type="button"
+                                        onClick={() => setSelectedCourseId(course.id)}
+                                        className={`group relative flex items-center p-5 rounded-xl cursor-pointer transition-all border-2 overflow-hidden ${selectedCourseId === course.id
+                                                ? `bg-gradient-to-br ${course.gradient} text-white border-transparent shadow-lg`
+                                                : "bg-[var(--hw-surface-container-lowest)] border-transparent hover:border-slate-200"
+                                            }`}
+                                    >
+                                        <div className={`w-11 h-11 rounded-lg flex items-center justify-center transition-colors shrink-0 ${selectedCourseId === course.id
+                                                ? "bg-white/20 text-white"
+                                                : `bg-gradient-to-br ${course.gradient} text-white`
+                                            }`}>
+                                            <span className="material-symbols-outlined text-[22px]">{course.icon}</span>
+                                        </div>
+                                        <div className="ml-4 text-left flex-1">
+                                            <p className={`text-sm font-bold ${selectedCourseId === course.id ? "text-white" : "text-[var(--hw-on-surface)]"
+                                                }`}>{course.name}</p>
+                                            <p className={`text-xs ${selectedCourseId === course.id ? "text-white/70" : "text-[var(--hw-on-surface-variant)]"
+                                                }`}>{course.tagline}</p>
+                                        </div>
+                                        {selectedCourseId === course.id && (
+                                            <span className="material-symbols-outlined text-white" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
+                                        )}
+                                    </button>
+                                ))}
+                            </div>
+                            {!selectedCourseId && (
+                                <p className="text-xs text-amber-600 mt-3 flex items-center gap-1">
+                                    <span className="material-symbols-outlined text-sm">warning</span>
+                                    Bạn cần chọn lớp trước khi tạo bài tập.
+                                </p>
+                            )}
+                        </section>
 
                         {/* Section 1: Core Identity */}
                         <section>
@@ -668,17 +718,15 @@ export default function CreateAssignmentPage() {
                                 <button
                                     type="button"
                                     onClick={() => setAssignmentType("standard")}
-                                    className={`group flex items-center p-6 rounded-xl cursor-pointer transition-all border-2 ${
-                                        assignmentType === "standard"
+                                    className={`group flex items-center p-6 rounded-xl cursor-pointer transition-all border-2 ${assignmentType === "standard"
                                             ? "bg-[var(--hw-primary)]/5 border-[var(--hw-primary)] shadow-lg shadow-[var(--hw-primary)]/10"
                                             : "bg-[var(--hw-surface-container-lowest)] border-transparent hover:border-[var(--hw-primary)]/20"
-                                    }`}
+                                        }`}
                                 >
-                                    <div className={`w-12 h-12 rounded-lg flex items-center justify-center transition-colors ${
-                                        assignmentType === "standard"
+                                    <div className={`w-12 h-12 rounded-lg flex items-center justify-center transition-colors ${assignmentType === "standard"
                                             ? "bg-[var(--hw-primary)] text-white"
                                             : "bg-[var(--hw-surface-container-low)] text-[var(--hw-primary)]"
-                                    }`}>
+                                        }`}>
                                         <span className="material-symbols-outlined">upload_file</span>
                                     </div>
                                     <div className="ml-4 text-left flex-1">
@@ -692,17 +740,15 @@ export default function CreateAssignmentPage() {
                                 <button
                                     type="button"
                                     onClick={() => { setAssignmentType("quiz"); if (quizQuestions.length === 0) addQuestion(); }}
-                                    className={`group flex items-center p-6 rounded-xl cursor-pointer transition-all border-2 ${
-                                        assignmentType === "quiz"
+                                    className={`group flex items-center p-6 rounded-xl cursor-pointer transition-all border-2 ${assignmentType === "quiz"
                                             ? "bg-emerald-500/5 border-emerald-500 shadow-lg shadow-emerald-500/10"
                                             : "bg-[var(--hw-surface-container-lowest)] border-transparent hover:border-emerald-500/20"
-                                    }`}
+                                        }`}
                                 >
-                                    <div className={`w-12 h-12 rounded-lg flex items-center justify-center transition-colors ${
-                                        assignmentType === "quiz"
+                                    <div className={`w-12 h-12 rounded-lg flex items-center justify-center transition-colors ${assignmentType === "quiz"
                                             ? "bg-emerald-500 text-white"
                                             : "bg-[var(--hw-surface-container-low)] text-emerald-600"
-                                    }`}>
+                                        }`}>
                                         <span className="material-symbols-outlined">quiz</span>
                                     </div>
                                     <div className="ml-4 text-left flex-1">
@@ -814,13 +860,12 @@ export default function CreateAssignmentPage() {
                                                     {/* Options */}
                                                     <div className="space-y-2">
                                                         {q.options.map((opt, oIdx) => (
-                                                                <label
+                                                            <label
                                                                 key={oIdx}
-                                                                className={`flex items-start gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all ${
-                                                                    q.correctIndex === oIdx
+                                                                className={`flex items-start gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all ${q.correctIndex === oIdx
                                                                         ? "bg-emerald-50 border-emerald-400"
                                                                         : "bg-white border-[var(--hw-outline-variant)]/20 hover:border-emerald-200"
-                                                                }`}
+                                                                    }`}
                                                             >
                                                                 <div className="flex items-center gap-2 pt-1 flex-shrink-0">
                                                                     <input
@@ -830,11 +875,10 @@ export default function CreateAssignmentPage() {
                                                                         onChange={() => setCorrectAnswer(qIdx, oIdx)}
                                                                         className="text-emerald-500 focus:ring-emerald-500"
                                                                     />
-                                                                    <span className={`w-6 h-6 rounded text-xs font-bold flex items-center justify-center ${
-                                                                        q.correctIndex === oIdx
+                                                                    <span className={`w-6 h-6 rounded text-xs font-bold flex items-center justify-center ${q.correctIndex === oIdx
                                                                             ? "bg-emerald-500 text-white"
                                                                             : "bg-[var(--hw-surface-container-high)] text-[var(--hw-on-surface-variant)]"
-                                                                    }`}>
+                                                                        }`}>
                                                                         {String.fromCharCode(65 + oIdx)}
                                                                     </span>
                                                                 </div>

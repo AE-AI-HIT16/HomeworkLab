@@ -6,6 +6,7 @@ import { saveAssignment } from "@/lib/google-sheets";
 import { createAssignmentFolders } from "@/lib/google-drive";
 import { redirect } from "next/navigation";
 import type { PromptFile, QuizQuestion } from "@/types";
+import { getActiveCourseIds } from "@/lib/courses";
 
 export interface CreateAssignmentFormState {
     error?: string;
@@ -39,8 +40,12 @@ export async function createAssignmentAction(
     const driveFolderLink = formData.get("driveFolderLink") as string;
     const assignmentType = (formData.get("assignmentType") as string) || "standard";
     const quizDataJson = formData.get("quizDataJson") as string | null;
+    const courseId = formData.get("courseId") as string;
 
     // Validation
+    if (!courseId || !getActiveCourseIds().includes(courseId)) {
+        return { error: "Please select a valid course for this assignment." };
+    }
     if (!title?.trim()) {
         return { error: "Please enter a title for the assignment." };
     }
@@ -144,6 +149,7 @@ export async function createAssignmentAction(
     try {
         await saveAssignment({
             id,
+            courseId,
             week: weekNum,
             lesson: lessonNum,
             title: title.trim(),

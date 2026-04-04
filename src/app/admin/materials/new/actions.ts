@@ -5,6 +5,7 @@ import { getCurrentUserRole } from "@/lib/roles";
 import { saveMaterial } from "@/lib/google-sheets";
 import { revalidatePath } from "next/cache";
 import type { Material, MaterialContentMode } from "@/types";
+import { getActiveCourseIds } from "@/lib/courses";
 
 export interface CreateMaterialFormState {
     success?: boolean;
@@ -33,8 +34,12 @@ export async function createMaterialAction(
         // New fields
         const url = formData.get("url")?.toString().trim() || "";
         const postContent = formData.get("postContent")?.toString() || "";
+        const courseId = formData.get("courseId")?.toString().trim() || "";
 
         // Validate common fields
+        if (!courseId || !getActiveCourseIds().includes(courseId)) {
+            return { error: "Vui lòng chọn lớp cho tài liệu này." };
+        }
         if (!title || !weekStr || !typeStr) {
             return { error: "Vui lòng điền đầy đủ Tên tài liệu, Tuần, và Loại." };
         }
@@ -74,6 +79,7 @@ export async function createMaterialAction(
         // Construct Material object
         const material: Material = {
             id,
+            courseId,
             week,
             title,
             url,

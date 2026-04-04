@@ -5,12 +5,13 @@ import type { CreateAssignmentInput, ActionResult } from "@/types";
 import { saveAssignment, saveSubmission, getAssignmentById } from "@/lib/google-sheets";
 import { getCurrentUserRole } from "@/lib/roles";
 import { createAssignmentFolders, normalizeFileName, uploadSubmissionFile } from "@/lib/google-drive";
+import { getActiveCourseIds } from "@/lib/courses";
 
 /**
  * Generate assignment ID in format: w{week}-l{lesson}
  */
-function generateAssignmentId(week: number, lesson: number): string {
-    return `w${week}-l${lesson}`;
+function generateAssignmentId(courseId: string, week: number, lesson: number): string {
+    return `${courseId}-w${week}-l${lesson}`;
 }
 
 function guessMimeType(filename: string): string {
@@ -35,6 +36,9 @@ export async function createAssignment(input: CreateAssignmentInput): Promise<Ac
     }
 
     // 2. Validate input
+    if (!input.courseId || !getActiveCourseIds().includes(input.courseId)) {
+        return { success: false, error: "Please select a valid course." };
+    }
     if (!input.title.trim()) {
         return { success: false, error: "Title cannot be empty." };
     }
@@ -46,7 +50,7 @@ export async function createAssignment(input: CreateAssignmentInput): Promise<Ac
     }
 
     const now = new Date().toISOString();
-    const id = generateAssignmentId(input.week, input.lesson);
+    const id = generateAssignmentId(input.courseId, input.week, input.lesson);
 
     // Handle Drive folder creation
     let driveFolderId: string | undefined = undefined;
@@ -60,6 +64,7 @@ export async function createAssignment(input: CreateAssignmentInput): Promise<Ac
 
     const assignment: Assignment = {
         id,
+        courseId: input.courseId,
         week: input.week,
         lesson: input.lesson,
         title: input.title.trim(),
@@ -172,6 +177,7 @@ export async function submitAssignment(formData: FormData): Promise<ActionResult
     const submission: Submission = {
         id: `sub-${assignmentId}-${user.githubUsername}`,
         assignmentId: assignment.id,
+        courseId: assignment.courseId,
         githubUsername: user.githubUsername,
         studentName: user.name,
         submittedAt: now,

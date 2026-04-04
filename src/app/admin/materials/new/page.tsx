@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useActionState, useEffect, useRef, useState } from "react";
 import { createMaterialAction, type CreateMaterialFormState } from "./actions";
 import type { MaterialContentMode } from "@/types";
+import { courses } from "@/lib/courses";
 
 function MarkdownPreview({ content }: { content: string }) {
     // Simple markdown-to-html for preview (headings, bold, italic, code, lists)
@@ -43,6 +44,7 @@ export default function CreateMaterialPage() {
     const [contentMode, setContentMode] = useState<MaterialContentMode>("link");
     const [postContent, setPostContent] = useState("");
     const [showPreview, setShowPreview] = useState(false);
+    const [selectedCourseId, setSelectedCourseId] = useState<string>("");
 
     // Reset form on success
     useEffect(() => {
@@ -51,6 +53,7 @@ export default function CreateMaterialPage() {
             setPostContent("");
             setShowPreview(false);
             setContentMode("link");
+            setSelectedCourseId("");
             alert("✅ Material added successfully! You can add another one.");
         }
     }, [state.success]);
@@ -151,6 +154,55 @@ export default function CreateMaterialPage() {
                     <form ref={formRef} action={formAction} className="space-y-8 pb-20">
                         {/* Hidden field for contentMode */}
                         <input type="hidden" name="contentMode" value={contentMode} />
+                        <input type="hidden" name="courseId" value={selectedCourseId} />
+
+                        {/* Section: Course Selector */}
+                        <section className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                            <div className="p-6 border-b border-slate-100 bg-slate-50/50">
+                                <h4 className="font-bold text-slate-900 flex items-center gap-2">
+                                    <span className="material-symbols-outlined text-emerald-500">school</span>
+                                    Select Course
+                                </h4>
+                                <p className="text-xs text-slate-500 mt-1">Chọn lớp mà tài liệu này thuộc về</p>
+                            </div>
+                            <div className="p-6">
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                    {courses.map((course) => (
+                                        <button
+                                            key={course.id}
+                                            type="button"
+                                            onClick={() => setSelectedCourseId(course.id)}
+                                            className={`group flex items-center p-4 rounded-xl cursor-pointer transition-all border-2 overflow-hidden ${selectedCourseId === course.id
+                                                    ? `bg-gradient-to-br ${course.gradient} text-white border-transparent shadow-lg`
+                                                    : "bg-slate-50 border-slate-200 hover:border-slate-300"
+                                                }`}
+                                        >
+                                            <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${selectedCourseId === course.id
+                                                    ? "bg-white/20 text-white"
+                                                    : `bg-gradient-to-br ${course.gradient} text-white`
+                                                }`}>
+                                                <span className="material-symbols-outlined text-[20px]">{course.icon}</span>
+                                            </div>
+                                            <div className="ml-3 text-left flex-1">
+                                                <p className={`text-sm font-bold ${selectedCourseId === course.id ? "text-white" : "text-slate-900"
+                                                    }`}>{course.name}</p>
+                                                <p className={`text-[10px] ${selectedCourseId === course.id ? "text-white/70" : "text-slate-400"
+                                                    }`}>{course.tagline}</p>
+                                            </div>
+                                            {selectedCourseId === course.id && (
+                                                <span className="material-symbols-outlined text-white text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
+                                            )}
+                                        </button>
+                                    ))}
+                                </div>
+                                {!selectedCourseId && (
+                                    <p className="text-xs text-amber-600 mt-3 flex items-center gap-1">
+                                        <span className="material-symbols-outlined text-sm">warning</span>
+                                        Bạn cần chọn lớp trước khi tạo tài liệu.
+                                    </p>
+                                )}
+                            </div>
+                        </section>
 
                         {/* Section: Material Details */}
                         <section className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
@@ -233,16 +285,14 @@ export default function CreateMaterialPage() {
                                             key={mode.value}
                                             type="button"
                                             onClick={() => setContentMode(mode.value)}
-                                            className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all text-center ${
-                                                contentMode === mode.value
+                                            className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all text-center ${contentMode === mode.value
                                                     ? "border-indigo-500 bg-indigo-50 text-indigo-700 shadow-sm"
                                                     : "border-slate-200 bg-slate-50 text-slate-500 hover:border-slate-300 hover:bg-slate-100"
-                                            }`}
+                                                }`}
                                         >
                                             <span
-                                                className={`material-symbols-outlined text-[28px] ${
-                                                    contentMode === mode.value ? "text-indigo-600" : "text-slate-400"
-                                                }`}
+                                                className={`material-symbols-outlined text-[28px] ${contentMode === mode.value ? "text-indigo-600" : "text-slate-400"
+                                                    }`}
                                                 style={{ fontVariationSettings: contentMode === mode.value ? "'FILL' 1" : "" }}
                                             >
                                                 {mode.icon}

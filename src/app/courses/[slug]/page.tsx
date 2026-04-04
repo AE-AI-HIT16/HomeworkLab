@@ -3,7 +3,7 @@ import Link from "next/link";
 import { getCourseById } from "@/lib/courses";
 import { requireSession } from "@/lib/auth";
 import { getCurrentUserRole } from "@/lib/roles";
-import { getAssignments, getSubmissionsByStudent, getMaterials } from "@/lib/google-sheets";
+import { getAssignmentsByCourse, getSubmissionsByStudent, getMaterialsByCourse } from "@/lib/google-sheets";
 import { TopNav } from "@/components/TopNav";
 import type { Assignment, Submission, Material } from "@/types";
 
@@ -45,17 +45,19 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
     const { role } = await getCurrentUserRole();
     const user = session.user;
 
-    // We only have real data for 'ai-core' right now.
-    // In a real app, we'd filter assignments by courseId.
-    const allAssignments = course.id === "ai-core" ? await getAssignments() : [];
+    // Fetch assignments and materials filtered by this course's ID
+    const allAssignments = await getAssignmentsByCourse(course.id);
     const publishedAssignments = allAssignments.filter((a) => a.published);
-    const userSubmissions = course.id === "ai-core" ? await getSubmissionsByStudent(user.githubUsername) : [];
+    const userSubmissions = await getSubmissionsByStudent(user.githubUsername);
+    // Filter submissions to only those relevant to this course's assignments
+    const courseAssignmentIds = new Set(publishedAssignments.map((a) => a.id));
+    const courseSubmissions = userSubmissions.filter((s) => courseAssignmentIds.has(s.assignmentId));
 
-    const allMaterials = course.id === "ai-core" ? await getMaterials() : [];
+    const allMaterials = await getMaterialsByCourse(course.id);
     const publishedMaterials = allMaterials.filter((m) => m.published);
 
     const submissionMap = new Map<string, Submission>(
-        userSubmissions.map((s) => [s.assignmentId, s])
+        courseSubmissions.map((s) => [s.assignmentId, s])
     );
 
     // Group assignments and materials into Modules (Weeks)
@@ -94,7 +96,7 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
 
     // Calculate Progress dynamically if data exists
     const totalAssignments = publishedAssignments.length;
-    const submittedCount = userSubmissions.filter(s => publishedAssignments.some(a => a.id === s.assignmentId)).length;
+    const submittedCount = courseSubmissions.filter(s => publishedAssignments.some(a => a.id === s.assignmentId)).length;
     const progressPct = totalAssignments > 0 ? Math.round((submittedCount / totalAssignments) * 100) : course.progress;
 
     // Find next actionable assignment
@@ -264,11 +266,10 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
                                                                         <div className="flex items-center gap-2 mb-1">
                                                                             <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 capitalize">{m.type}</span>
                                                                             {m.contentMode !== "link" && (
-                                                                                <span className={`text-[9px] font-bold uppercase px-1.5 py-0.5 rounded ${
-                                                                                    m.contentMode === "post" 
-                                                                                        ? "bg-violet-100 text-violet-700" 
-                                                                                        : "bg-sky-100 text-sky-700"
-                                                                                }`}>
+                                                                                <span className={`text-[9px] font-bold uppercase px-1.5 py-0.5 rounded ${m.contentMode === "post"
+                                                                                    ? "bg-violet-100 text-violet-700"
+                                                                                    : "bg-sky-100 text-sky-700"
+                                                                                    }`}>
                                                                                     {m.contentMode === "post" ? "Post" : "File"}
                                                                                 </span>
                                                                             )}

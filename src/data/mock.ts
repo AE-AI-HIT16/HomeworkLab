@@ -11,6 +11,7 @@ import type { Assignment, Submission } from "@/types";
 export const mockAssignments: Assignment[] = [
     {
         id: "w1-l1",
+        courseId: "ai-core",
         week: 1,
         lesson: 1,
         title: "Giới thiệu Python & NumPy",
@@ -39,6 +40,7 @@ export const mockAssignments: Assignment[] = [
     },
     {
         id: "w1-l2",
+        courseId: "ai-core",
         week: 1,
         lesson: 2,
         title: "Pandas & Data Cleaning",
@@ -60,6 +62,7 @@ export const mockAssignments: Assignment[] = [
     },
     {
         id: "w2-l1",
+        courseId: "ai-core",
         week: 2,
         lesson: 1,
         title: "Linear Regression",
@@ -88,6 +91,7 @@ export const mockAssignments: Assignment[] = [
     },
     {
         id: "w2-l2",
+        courseId: "ai-core",
         week: 2,
         lesson: 2,
         title: "Logistic Regression & Classification",
@@ -109,6 +113,7 @@ export const mockSubmissions: Submission[] = [
     {
         id: "sub-001",
         assignmentId: "w1-l1",
+        courseId: "ai-core",
         githubUsername: "student1",
         studentName: "Nguyễn Văn A",
         submittedAt: "2026-03-31T20:15:00+07:00",
@@ -124,6 +129,7 @@ export const mockSubmissions: Submission[] = [
     {
         id: "sub-002",
         assignmentId: "w1-l1",
+        courseId: "ai-core",
         githubUsername: "student2",
         studentName: "Trần Thị B",
         submittedAt: "2026-04-02T08:30:00+07:00",
@@ -134,6 +140,7 @@ export const mockSubmissions: Submission[] = [
     {
         id: "sub-003",
         assignmentId: "w1-l2",
+        courseId: "ai-core",
         githubUsername: "student1",
         studentName: "Nguyễn Văn A",
         submittedAt: "2026-04-03T18:00:00+07:00",
@@ -151,6 +158,7 @@ export const mockSubmissions: Submission[] = [
     {
         id: "sub-004",
         assignmentId: "w2-l1",
+        courseId: "ai-core",
         githubUsername: "student3",
         studentName: "Lê Văn C",
         submittedAt: "2026-04-07T22:45:00+07:00",

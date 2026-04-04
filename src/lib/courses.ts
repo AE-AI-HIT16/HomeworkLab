@@ -67,3 +67,8 @@ export const courses: Course[] = [
 export function getCourseById(id: string): Course | undefined {
     return courses.find((c) => c.id === id);
 }
+
+/** Get all valid course IDs for validation */
+export function getActiveCourseIds(): string[] {
+    return courses.map((c) => c.id);
+}

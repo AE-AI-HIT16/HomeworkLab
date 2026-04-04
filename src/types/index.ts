@@ -52,6 +52,8 @@ export interface QuizQuestion {
 /** Assignment */
 export interface Assignment {
     id: string;
+    /** Course this assignment belongs to (e.g., "ai-core", "data-engineer", "aiml-engineer") */
+    courseId: string;
     /** Week number (1-based) */
     week: number;
     /** Lesson number within the week (1-based) */
@@ -83,6 +85,8 @@ export type MaterialContentMode = "link" | "file" | "post";
 
 export interface Material {
     id: string;
+    /** Course this material belongs to */
+    courseId: string;
     /** Week number (1-based) */
     week: number;
     title: string;
@@ -116,6 +120,8 @@ export interface SubmissionFile {
 export interface Submission {
     id: string;
     assignmentId: string;
+    /** Course this submission belongs to (denormalized for easy querying) */
+    courseId: string;
     githubUsername: string;
     studentName: string;
     /** ISO 8601 */
@@ -146,6 +152,7 @@ export type AllowedStudent = Student;
 // ─── Server Action Types ────────────────────────────────
 
 export interface CreateAssignmentInput {
+    courseId: string;
     week: number;
     lesson: number;
     title: string;

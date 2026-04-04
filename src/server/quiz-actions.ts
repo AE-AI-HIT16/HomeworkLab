@@ -62,6 +62,7 @@ export async function submitQuizAction(
     await saveSubmission({
         id: existing?.id ?? crypto.randomUUID(),
         assignmentId,
+        courseId: assignment.courseId,
         githubUsername: session.user.githubUsername,
         studentName: session.user.name ?? session.user.githubUsername,
         submittedAt: now.toISOString(),

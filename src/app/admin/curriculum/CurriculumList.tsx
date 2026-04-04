@@ -3,6 +3,23 @@
 import { useState, useTransition, useRef } from "react";
 import { deleteAssignmentAction, deleteMaterialAction, renameMaterialAction } from "./actions";
 import type { Assignment, Material } from "@/types";
+import { getCourseById } from "@/lib/courses";
+
+function getCourseBadge(courseId?: string) {
+    if (!courseId) return null;
+    const course = getCourseById(courseId);
+    if (!course) return null;
+    const colorMap: Record<string, string> = {
+        "ai-core": "bg-indigo-100 text-indigo-700",
+        "data-engineer": "bg-emerald-100 text-emerald-700",
+        "aiml-engineer": "bg-purple-100 text-purple-700",
+    };
+    return (
+        <span className={`text-[9px] font-bold uppercase px-1.5 py-0.5 rounded ${colorMap[courseId] || "bg-slate-100 text-slate-600"}`}>
+            {course.name}
+        </span>
+    );
+}
 
 interface DeleteButtonProps {
     id: string;
@@ -193,12 +210,12 @@ export function CurriculumList({ assignments: initialAssignments, materials: ini
                                                     {!m.published && (
                                                         <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 bg-amber-100 text-amber-700 rounded">Draft</span>
                                                     )}
+                                                    {getCourseBadge(m.courseId)}
                                                     {m.contentMode && m.contentMode !== "link" && (
-                                                        <span className={`text-[9px] font-bold uppercase px-1.5 py-0.5 rounded ${
-                                                            m.contentMode === "post" 
-                                                                ? "bg-violet-100 text-violet-700" 
+                                                        <span className={`text-[9px] font-bold uppercase px-1.5 py-0.5 rounded ${m.contentMode === "post"
+                                                                ? "bg-violet-100 text-violet-700"
                                                                 : "bg-sky-100 text-sky-700"
-                                                        }`}>
+                                                            }`}>
                                                             {m.contentMode === "post" ? "Post" : "File"}
                                                         </span>
                                                     )}
@@ -240,6 +257,7 @@ export function CurriculumList({ assignments: initialAssignments, materials: ini
                                                     {!a.published && (
                                                         <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 bg-amber-100 text-amber-700 rounded">Draft</span>
                                                     )}
+                                                    {getCourseBadge(a.courseId)}
                                                 </div>
                                                 <h4 className="text-sm font-semibold text-slate-800 flex items-center gap-2">
                                                     {a.title}

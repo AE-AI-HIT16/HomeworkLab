@@ -100,7 +100,7 @@ export async function getAssignments(): Promise<Assignment[]> {
     try {
         const res = await sheets.spreadsheets.values.get({
             spreadsheetId: GOOGLE_SHEET_ID,
-            range: "Assignments!A2:M",
+            range: "Assignments!A2:N",
         });
 
         const rows = res.data.values || [];
@@ -124,6 +124,7 @@ export async function getAssignments(): Promise<Assignment[]> {
 
             return {
                 id: row[0] ?? "",
+                courseId: row[13] || "ai-core", // Column N — default to ai-core for legacy data
                 week: Number(row[1]) || 1,
                 lesson: Number(row[2]) || 1,
                 title: row[3] ?? "",
@@ -149,6 +150,18 @@ export async function getAssignmentById(id: string): Promise<Assignment | undefi
     return assignments.find((a) => a.id === id);
 }
 
+/** Get assignments filtered by courseId */
+export async function getAssignmentsByCourse(courseId: string): Promise<Assignment[]> {
+    const assignments = await getAssignments();
+    return assignments.filter((a) => a.courseId === courseId);
+}
+
+/** Get materials filtered by courseId */
+export async function getMaterialsByCourse(courseId: string): Promise<Material[]> {
+    const materials = await getMaterials();
+    return materials.filter((m) => m.courseId === courseId);
+}
+
 export async function saveAssignment(assignment: Assignment): Promise<void> {
     const sheets = getSheetsApi();
     if (!sheets) {
@@ -170,12 +183,13 @@ export async function saveAssignment(assignment: Assignment): Promise<void> {
         assignment.updatedAt,
         assignment.assignmentType || "standard",
         assignment.quizData ? JSON.stringify(assignment.quizData) : "",
+        assignment.courseId || "ai-core", // Column N
     ];
 
     try {
         await sheets.spreadsheets.values.append({
             spreadsheetId: GOOGLE_SHEET_ID,
-            range: "Assignments!A:M",
+            range: "Assignments!A:N",
             valueInputOption: "USER_ENTERED",
             requestBody: { values: [row] },
         });
@@ -194,19 +208,20 @@ export async function getMaterials(): Promise<Material[]> {
     try {
         const res = await sheets.spreadsheets.values.get({
             spreadsheetId: GOOGLE_SHEET_ID,
-            range: "Materials!A2:H",
+            range: "Materials!A2:I",
         });
 
         const rows = res.data.values || [];
         return rows.map((row) => {
             const rawContentMode = (row[6] ?? "").trim().toLowerCase();
-            const contentMode: "link" | "file" | "post" = 
-                ["link", "file", "post"].includes(rawContentMode) 
-                    ? (rawContentMode as "link" | "file" | "post") 
+            const contentMode: "link" | "file" | "post" =
+                ["link", "file", "post"].includes(rawContentMode)
+                    ? (rawContentMode as "link" | "file" | "post")
                     : "link";
 
             return {
                 id: row[0] ?? "",
+                courseId: row[8] || "ai-core", // Column I — default to ai-core for legacy data
                 week: Number(row[1]) || 1,
                 title: row[2] ?? "",
                 url: row[3] ?? "",
@@ -238,12 +253,13 @@ export async function saveMaterial(material: Material): Promise<void> {
         material.published ? "TRUE" : "FALSE",
         material.contentMode || "link",
         material.postContent ?? "",
+        material.courseId || "ai-core", // Column I
     ];
 
     try {
         await sheets.spreadsheets.values.append({
             spreadsheetId: GOOGLE_SHEET_ID,
-            range: "Materials!A:H",
+            range: "Materials!A:I",
             valueInputOption: "USER_ENTERED",
             requestBody: { values: [row] },
         });
@@ -365,7 +381,7 @@ export async function getSubmissions(): Promise<Submission[]> {
     try {
         const res = await sheets.spreadsheets.values.get({
             spreadsheetId: GOOGLE_SHEET_ID,
-            range: "Submissions!A2:M",
+            range: "Submissions!A2:N",
         });
 
         const rows = res.data.values || [];
@@ -389,6 +405,7 @@ export async function getSubmissions(): Promise<Submission[]> {
             return {
                 id: row[0] ?? "",
                 assignmentId: row[1] ?? "",
+                courseId: row[13] || "ai-core", // Column N — default to ai-core for legacy data
                 githubUsername: row[2] ?? "",
                 studentName: row[3] ?? "",
                 submittedAt: row[4] ?? new Date().toISOString(),
@@ -464,13 +481,14 @@ export async function saveSubmission(submission: Submission): Promise<void> {
             submission.feedback ?? "",
             submission.quizAnswers ? JSON.stringify(submission.quizAnswers) : "",
             submission.quizScore !== undefined ? submission.quizScore : "",
+            submission.courseId || "ai-core", // Column N
         ];
 
         if (rowIndexToUpdate > 0) {
             // Update
             await sheets.spreadsheets.values.update({
                 spreadsheetId: GOOGLE_SHEET_ID,
-                range: `Submissions!A${rowIndexToUpdate}:M${rowIndexToUpdate}`,
+                range: `Submissions!A${rowIndexToUpdate}:N${rowIndexToUpdate}`,
                 valueInputOption: "USER_ENTERED",
                 requestBody: { values: [row] },
             });
@@ -478,7 +496,7 @@ export async function saveSubmission(submission: Submission): Promise<void> {
             // Append
             await sheets.spreadsheets.values.append({
                 spreadsheetId: GOOGLE_SHEET_ID,
-                range: "Submissions!A:M",
+                range: "Submissions!A:N",
                 valueInputOption: "USER_ENTERED",
                 requestBody: { values: [row] },
             });
