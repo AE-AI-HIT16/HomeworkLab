@@ -3,6 +3,7 @@ import { getAssignmentDetailsWithSubmissions } from "@/lib/google-sheets";
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { AdminSubmissionTable } from "@/components/AdminSubmissionTable";
+import { EditAssignmentModal } from "@/components/EditAssignmentModal";
 
 interface AdminAssignmentDetailPageProps {
     params: Promise<{ id: string }>;
@@ -65,6 +66,24 @@ export default async function AdminAssignmentDetailPage({ params }: AdminAssignm
                         </div>
                         <h1 className="text-3xl font-bold text-gray-900">{assignment.title}</h1>
                     </div>
+                    <EditAssignmentModal
+                        assignmentId={assignment.id}
+                        currentWeek={assignment.week}
+                        currentLesson={assignment.lesson}
+                        currentTitle={assignment.title}
+                        currentDescription={assignment.description}
+                        currentDriveLink={
+                            (() => {
+                                const linkFile = assignment.promptFiles?.find(f => f.mimeType === "text/uri-list");
+                                if (!linkFile) return undefined;
+                                return linkFile.driveFileId.startsWith("http")
+                                    ? linkFile.driveFileId
+                                    : `https://drive.google.com/drive/folders/${linkFile.driveFileId}`;
+                            })()
+                        }
+                        currentQuizData={assignment.quizData}
+                        assignmentType={assignment.assignmentType}
+                    />
                 </div>
 
                 <div className="bg-white border rounded-xl p-5 mt-6 shadow-sm">

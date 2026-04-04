@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, startTransition } from "react";
 import { useActionState } from "react";
 import { createAssignmentAction, type CreateAssignmentFormState } from "./actions";
 import type { PromptFile, QuizQuestion } from "@/types";
@@ -236,12 +236,14 @@ export default function CreateAssignmentPage() {
                 fd.set("quizDataJson", JSON.stringify(quizQuestions));
             }
 
-            // Call server action directly
-            formAction(fd);
+            // Call server action directly within a transition
+            startTransition(() => {
+                formAction(fd);
+            });
         } finally {
             setIsUploadingFiles(false);
         }
-    }, [pendingFiles, formAction]);
+    }, [pendingFiles, formAction, assignmentType, quizQuestions]);
 
     const isUploading = isUploadingFiles || pendingFiles.some((f) => f.status === "uploading");
 

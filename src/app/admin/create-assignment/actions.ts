@@ -50,9 +50,10 @@ export async function createAssignmentAction(
         return { error: "Please enter a title for the assignment." };
     }
 
-    // Parse week/lesson numbers
-    const weekMatch = week?.match(/Week (\d+)/);
-    const lessonMatch = lesson?.match(/(?:Lecture|Practical) (\d+)/);
+    // Parse week/lesson numbers — extract first number from any format
+    // Supports: "3", "Week 3", "3 - Machine Learning", "3_Decision Tree", etc.
+    const weekMatch = week?.match(/(\d+)/);
+    const lessonMatch = lesson?.match(/(\d+)/);
     const weekNum = weekMatch ? parseInt(weekMatch[1]) : 1;
     const lessonNum = lessonMatch ? parseInt(lessonMatch[1]) : 1;
 
@@ -144,6 +145,11 @@ export async function createAssignmentAction(
         driveFolderId = folders.parentFolderId;
     } catch (err) {
         console.warn("Could not create Drive folders:", err);
+    }
+
+    console.log(`[CreateAssignment] Creating ${assignmentType} assignment: "${title}"`);
+    if (assignmentType === "quiz") {
+        console.log(`[CreateAssignment] Quiz questions count: ${quizData?.length || 0}`);
     }
 
     try {
