@@ -145,7 +145,7 @@ export default async function AdminStudentsPage() {
                                                     <span className="material-symbols-outlined text-[10px]">
                                                         {student.role === "guest" ? "visibility" : "school"}
                                                     </span>
-                                                    {student.role === "guest" ? "Khách mời" : "Học sinh"}
+                                                    {student.role === "guest" ? "Guest" : "Student"}
                                                 </span>
                                                 <RoleToggleButton githubUsername={student.githubUsername} currentRole={student.role} />
                                             </div>

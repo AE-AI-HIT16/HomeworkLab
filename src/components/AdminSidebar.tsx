@@ -14,7 +14,7 @@ export function AdminSidebar() {
     };
 
     return (
-        <aside className="fixed left-0 top-14 h-[calc(100vh-56px)] w-56 bg-slate-50 flex-col p-4 text-sm hidden md:flex border-r border-slate-200 z-40">
+        <aside className="fixed left-0 top-16 h-[calc(100vh-64px)] w-56 bg-slate-50 flex-col p-4 text-sm hidden md:flex border-r border-slate-200 z-40">
             <div className="mb-6 px-2">
                 <p className="text-[10px] uppercase tracking-widest text-slate-400 font-bold mb-1">Workspace</p>
                 <div className="flex items-center gap-2">

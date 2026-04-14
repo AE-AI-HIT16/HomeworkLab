@@ -21,12 +21,27 @@ export function TopNav({ user, role, showSearch = false }: TopNavProps) {
     const pathname = usePathname();
     const dashboardLink = "/dashboard"; // Unified dashboard for all
 
-    const isActive = (path: string) => pathname === path;
+    const isActive = (path: string) => {
+        if (path === "/admin") return pathname === "/admin";
+        return pathname === path || pathname.startsWith(`${path}/`);
+    };
 
     const linkClass = (path: string) =>
         isActive(path)
             ? "text-[var(--hw-primary)] font-semibold border-b-2 border-[var(--hw-primary)] pb-0.5"
             : "text-[var(--hw-on-surface-variant)] hover:text-[var(--hw-on-surface)] transition-colors";
+
+    const primaryLinks = role === "admin"
+        ? [
+            { href: "/dashboard", label: "Dashboard" },
+            { href: "/admin", label: "Analytics" },
+            { href: "/admin/curriculum", label: "Curriculum" },
+        ]
+        : [
+            { href: "/dashboard", label: "Dashboard" },
+            { href: "/courses", label: "Courses" },
+            { href: "/leaderboard", label: "Leaderboard" },
+        ];
 
     return (
         <nav className="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-md shadow-sm h-16 flex items-center justify-between px-6">
@@ -42,14 +57,11 @@ export function TopNav({ user, role, showSearch = false }: TopNavProps) {
                 </Link>
 
                 <div className="hidden md:flex items-center gap-6 text-sm">
-                    <Link href="/dashboard" className={linkClass("/dashboard")}>
-                        Dashboard
-                    </Link>
-                    {role === "admin" && (
-                        <Link href="/admin" className={linkClass("/admin")}>
-                            Analytics
+                    {primaryLinks.map((item) => (
+                        <Link key={item.href} href={item.href} className={linkClass(item.href)}>
+                            {item.label}
                         </Link>
-                    )}
+                    ))}
                 </div>
 
                 {showSearch && <SearchBar />}
@@ -82,13 +94,13 @@ export function TopNav({ user, role, showSearch = false }: TopNavProps) {
                                     ? "bg-teal-50 text-teal-700"
                                     : "bg-[var(--hw-primary-fixed)] text-[var(--hw-primary)]"
                             }`}>
-                                {role === "guest" ? "khách mời" : role}
+                                {role === "guest" ? "guest" : role}
                             </div>
                         </div>
                         {role === "admin" && (
-                            <Link href="/admin/settings" className="flex items-center gap-2 px-3 py-2 text-sm text-slate-600 hover:bg-slate-50 rounded-lg transition-colors">
-                                <span className="material-symbols-outlined text-[16px]">settings</span>
-                                Settings
+                            <Link href="/admin/curriculum" className="flex items-center gap-2 px-3 py-2 text-sm text-slate-600 hover:bg-slate-50 rounded-lg transition-colors">
+                                <span className="material-symbols-outlined text-[16px]">menu_book</span>
+                                Curriculum
                             </Link>
                         )}
                         <LogoutButton />

@@ -220,7 +220,7 @@ export default function LandingPage() {
           <div className="grid md:grid-cols-3 gap-8">
             {[
               { img: "/landing/ai-track.png", title: "AI Core", desc: "Fundamental architectures and mathematics for deep learning foundations.", modules: 12, slug: "ai-core" },
-              { img: "/landing/ml-engineer.png", title: "AI/ML Engineer", desc: "Production-ready ML pipelines, model deployment, and MLOps workflows.", modules: 24, slug: "ai-ml-engineer" },
+              { img: "/landing/ml-engineer.png", title: "AI/ML Engineer", desc: "Production-ready ML pipelines, model deployment, and MLOps workflows.", modules: 24, slug: "aiml-engineer" },
               { img: "/landing/data-engineer.png", title: "Data Engineer", desc: "Scaling data storage, processing pipelines, and architecture for big data systems.", modules: 18, slug: "data-engineer" },
             ].map((course) => (
               <Link href={`/courses/${course.slug}`} key={course.slug} className="bg-[#f2f4f6] p-2 rounded-2xl hover:scale-[1.02] transition-transform block">
@@ -340,15 +340,15 @@ export default function LandingPage() {
             <div>
               <h6 className="font-[Manrope] font-bold text-[#191c1e] mb-6">Company</h6>
               <ul className="space-y-4">
-                <li><a className="text-sm text-[#464554] hover:text-[#4648d4] hover:underline underline-offset-4" href="#">About</a></li>
-                <li><a className="text-sm text-[#464554] hover:text-[#4648d4] hover:underline underline-offset-4" href="#">Contact</a></li>
+                <li><Link className="text-sm text-[#464554] hover:text-[#4648d4] hover:underline underline-offset-4" href="/about">About</Link></li>
+                <li><Link className="text-sm text-[#464554] hover:text-[#4648d4] hover:underline underline-offset-4" href="/contact">Contact</Link></li>
               </ul>
             </div>
             <div>
               <h6 className="font-[Manrope] font-bold text-[#191c1e] mb-6">Legal</h6>
               <ul className="space-y-4">
-                <li><a className="text-sm text-[#464554] hover:text-[#4648d4] hover:underline underline-offset-4" href="#">Privacy</a></li>
-                <li><a className="text-sm text-[#464554] hover:text-[#4648d4] hover:underline underline-offset-4" href="#">Terms</a></li>
+                <li><Link className="text-sm text-[#464554] hover:text-[#4648d4] hover:underline underline-offset-4" href="/privacy">Privacy</Link></li>
+                <li><Link className="text-sm text-[#464554] hover:text-[#4648d4] hover:underline underline-offset-4" href="/terms">Terms</Link></li>
               </ul>
             </div>
           </div>

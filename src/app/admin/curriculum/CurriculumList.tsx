@@ -41,7 +41,7 @@ function DeleteButton({ id, type, title, onDeleted }: DeleteButtonProps) {
             if (result.success) {
                 onDeleted();
             } else {
-                alert(`Lỗi: ${result.error}`);
+                alert(`Error: ${result.error}`);
             }
             setShowConfirm(false);
         });
@@ -50,19 +50,19 @@ function DeleteButton({ id, type, title, onDeleted }: DeleteButtonProps) {
     if (showConfirm) {
         return (
             <div className="flex items-center gap-2">
-                <span className="text-xs text-red-600 font-medium">Xóa?</span>
+                <span className="text-xs text-red-600 font-medium">Delete?</span>
                 <button
                     onClick={handleDelete}
                     disabled={isPending}
                     className="px-2 py-1 bg-red-600 text-white text-xs rounded-lg font-bold hover:bg-red-700 disabled:opacity-50"
                 >
-                    {isPending ? "..." : "Có"}
+                    {isPending ? "..." : "Yes"}
                 </button>
                 <button
                     onClick={() => setShowConfirm(false)}
                     className="px-2 py-1 bg-slate-200 text-slate-700 text-xs rounded-lg font-bold hover:bg-slate-300"
                 >
-                    Hủy
+                    Cancel
                 </button>
             </div>
         );
@@ -72,7 +72,7 @@ function DeleteButton({ id, type, title, onDeleted }: DeleteButtonProps) {
         <button
             onClick={() => setShowConfirm(true)}
             className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-            title={`Xóa "${title}"`}
+            title={`Delete "${title}"`}
         >
             <span className="material-symbols-outlined text-[18px]">delete</span>
         </button>
@@ -102,7 +102,7 @@ function EditTitleButton({ id, currentTitle, onRenamed }: EditTitleButtonProps) 
             if (result.success) {
                 onRenamed(value.trim());
             } else {
-                alert(`Lỗi: ${result.error}`);
+                alert(`Error: ${result.error}`);
                 setValue(currentTitle);
             }
             setIsEditing(false);
@@ -168,8 +168,8 @@ export function CurriculumList({ assignments: initialAssignments, materials: ini
             {sortedWeeks.length === 0 ? (
                 <div className="bg-white border border-dashed border-slate-300 rounded-2xl p-12 text-center">
                     <span className="material-symbols-outlined text-[48px] text-slate-300 mb-3 block">inventory_2</span>
-                    <h3 className="font-bold text-slate-900 mb-1">Chưa có nội dung nào</h3>
-                    <p className="text-sm text-slate-500">Hãy thêm Bài tập hoặc Tài liệu từ sidebar bên trái.</p>
+                    <h3 className="font-bold text-slate-900 mb-1">No content yet</h3>
+                    <p className="text-sm text-slate-500">Add assignments or materials from the left sidebar.</p>
                 </div>
             ) : (
                 sortedWeeks.map(weekNum => {
@@ -266,7 +266,7 @@ export function CurriculumList({ assignments: initialAssignments, materials: ini
                                                     )}
                                                 </h4>
                                                 {a.dueAt && (
-                                                    <p className="text-[10px] text-slate-400 mt-0.5">Due: {new Date(a.dueAt).toLocaleDateString("vi-VN")}</p>
+                                                    <p className="text-[10px] text-slate-400 mt-0.5">Due: {new Date(a.dueAt).toLocaleDateString("en-US")}</p>
                                                 )}
                                             </div>
                                         </div>

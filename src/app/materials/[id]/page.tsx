@@ -63,6 +63,7 @@ export default async function MaterialDetailPage({ params }: { params: Promise<{
         slides: "slideshow",
         other: "link",
     };
+    const backToCourseHref = `/courses/${material.courseId || "ai-core"}`;
 
     // ── File Preview: Full-screen fixed layout ──
     if (material.contentMode === "file" && material.url) {
@@ -83,7 +84,7 @@ export default async function MaterialDetailPage({ params }: { params: Promise<{
                 <div className="pt-14 flex-none">
                     <div className="bg-white border-b border-slate-200 px-4 md:px-6 py-3 flex items-center justify-between">
                         <div className="flex items-center gap-3 min-w-0">
-                            <Link href="/courses/ai-core" className="shrink-0 p-1.5 rounded-lg hover:bg-slate-100 transition-colors text-slate-500 hover:text-slate-800">
+                            <Link href={backToCourseHref} className="shrink-0 p-1.5 rounded-lg hover:bg-slate-100 transition-colors text-slate-500 hover:text-slate-800">
                                 <span className="material-symbols-outlined text-[20px]">arrow_back</span>
                             </Link>
                             <div className="h-5 w-px bg-slate-200 shrink-0" />
@@ -142,7 +143,7 @@ export default async function MaterialDetailPage({ params }: { params: Promise<{
                     <div className="absolute top-0 right-0 w-72 h-72 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4" />
 
                     <div className="max-w-3xl mx-auto relative z-10 text-white">
-                        <Link href="/courses/ai-core" className="inline-flex items-center gap-2 text-white/70 hover:text-white text-sm font-medium mb-6 transition-colors">
+                        <Link href={backToCourseHref} className="inline-flex items-center gap-2 text-white/70 hover:text-white text-sm font-medium mb-6 transition-colors">
                             <span className="material-symbols-outlined text-[18px]">arrow_back</span>
                             Back to Course
                         </Link>

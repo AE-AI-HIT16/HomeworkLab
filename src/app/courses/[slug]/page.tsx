@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { getCourseById } from "@/lib/courses";
 import { requireSession } from "@/lib/auth";
 import { getCurrentUserRole } from "@/lib/roles";
@@ -55,6 +56,8 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
 
     const allMaterials = await getMaterialsByCourse(course.id);
     const publishedMaterials = allMaterials.filter((m) => m.published);
+    const firstMaterial = publishedMaterials[0];
+    const courseMaterialsHref = firstMaterial ? `/materials/${firstMaterial.id}` : `/courses/${course.id}`;
 
     const submissionMap = new Map<string, Submission>(
         courseSubmissions.map((s) => [s.assignmentId, s])
@@ -83,8 +86,8 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
     }
 
     // Sort items: Materials first, Assignments second ordered by lesson
-    for (const [_, module] of weekMap) {
-        module.items.sort((a, b) => {
+    for (const weekEntry of weekMap.values()) {
+        weekEntry.items.sort((a, b) => {
             if (a.kind === "material" && b.kind === "assignment") return -1;
             if (a.kind === "assignment" && b.kind === "material") return 1;
             if (a.kind === "assignment" && b.kind === "assignment") return a.data.lesson - b.data.lesson;
@@ -253,11 +256,8 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
                                                         // Post and File modes: navigate to internal page
                                                         const isInternal = m.contentMode === "post" || m.contentMode === "file";
                                                         const href = isInternal ? `/materials/${m.id}` : m.url;
-                                                        const Tag = isInternal ? Link : "a" as any;
-                                                        const extraProps = isInternal ? {} : { target: "_blank", rel: "noopener noreferrer" };
-
-                                                        return (
-                                                            <Tag href={href} key={`mat-${m.id}-${idx}`} className="group flex items-start sm:items-center justify-between p-4 md:px-6 hover:bg-slate-50 transition-colors gap-4" {...extraProps}>
+                                                        const rowContent = (
+                                                            <>
                                                                 <div className="flex items-start sm:items-center gap-4">
                                                                     <div className="shrink-0 w-10 h-10 rounded-xl border flex items-center justify-center text-slate-500 bg-slate-50 border-slate-200">
                                                                         <span className="material-symbols-outlined text-[20px]">{iconName}</span>
@@ -285,7 +285,21 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
                                                                     )}
                                                                     <span className="material-symbols-outlined text-slate-300 group-hover:text-indigo-400">{modeIcon}</span>
                                                                 </div>
-                                                            </Tag>
+                                                            </>
+                                                        );
+
+                                                        if (isInternal) {
+                                                            return (
+                                                                <Link href={href} key={`mat-${m.id}-${idx}`} className="group flex items-start sm:items-center justify-between p-4 md:px-6 hover:bg-slate-50 transition-colors gap-4">
+                                                                    {rowContent}
+                                                                </Link>
+                                                            );
+                                                        }
+
+                                                        return (
+                                                            <a href={href} key={`mat-${m.id}-${idx}`} target="_blank" rel="noopener noreferrer" className="group flex items-start sm:items-center justify-between p-4 md:px-6 hover:bg-slate-50 transition-colors gap-4">
+                                                                {rowContent}
+                                                            </a>
                                                         );
                                                     } else {
                                                         const a = item.data;
@@ -385,8 +399,8 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
                         <div className="bg-slate-50 border border-slate-100 rounded-2xl p-6">
                             <h3 className="text-sm font-bold tracking-widest text-slate-400 uppercase mb-4">Resources</h3>
                             <div className="space-y-2">
-                                <a href="#" className="flex items-center gap-3 p-3 bg-white rounded-xl border border-slate-200 hover:border-indigo-300 hover:text-indigo-600 transition-colors group">
-                                    <img src="https://upload.wikimedia.org/wikipedia/commons/4/45/Notion_app_logo.png" className="w-5 h-5 opacity-70 group-hover:opacity-100" alt="Notion" />
+                                <a href={courseMaterialsHref} className="flex items-center gap-3 p-3 bg-white rounded-xl border border-slate-200 hover:border-indigo-300 hover:text-indigo-600 transition-colors group">
+                                    <Image src="https://upload.wikimedia.org/wikipedia/commons/4/45/Notion_app_logo.png" className="w-5 h-5 opacity-70 group-hover:opacity-100" alt="Notion" width={20} height={20} unoptimized />
                                     <span className="text-sm font-medium text-slate-700 group-hover:text-indigo-600">Course Materials</span>
                                 </a>
                                 <a href="https://m.me/j/AbZAVqiI0kPWfa3X/?send_source=gc:copy_invite_link_c" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-3 bg-white rounded-xl border border-slate-200 hover:border-indigo-300 hover:text-indigo-600 transition-colors group">

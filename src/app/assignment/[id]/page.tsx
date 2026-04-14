@@ -183,7 +183,7 @@ export default async function AssignmentPage({ params }: AssignmentPageProps) {
                     {/* Assignment Submission Module */}
                     <section className="mb-12">
                         <h2 className="text-lg font-medium text-[var(--hw-on-surface)] mb-4">
-                            {assignment.assignmentType === "quiz" ? "Quiz — Trắc nghiệm" : "Assignment Submission"}
+                            {assignment.assignmentType === "quiz" ? "Quiz" : "Assignment Submission"}
                         </h2>
                         {role === "guest" ? (
                             <div className="bg-white rounded-xl shadow-sm border border-teal-200 p-6 flex items-start gap-4">
@@ -191,10 +191,10 @@ export default async function AssignmentPage({ params }: AssignmentPageProps) {
                                     <span className="material-symbols-outlined">visibility</span>
                                 </div>
                                 <div>
-                                    <h3 className="font-semibold text-slate-900 text-sm mb-1">Chế độ Khách mời</h3>
+                                    <h3 className="font-semibold text-slate-900 text-sm mb-1">Guest mode</h3>
                                     <p className="text-sm text-slate-600 leading-relaxed">
-                                        Bạn đang xem bài tập với tư cách khách mời và không thể nộp bài. 
-                                        Liên hệ giảng viên để được nâng cấp lên quyền Học sinh.
+                                        You are viewing this assignment as a guest and cannot submit work.
+                                        Contact your instructor to request student access.
                                     </p>
                                 </div>
                             </div>
@@ -315,7 +315,7 @@ export default async function AssignmentPage({ params }: AssignmentPageProps) {
                 </main>
 
                 {/* ═══ RIGHT SIDEBAR ═══ */}
-                <aside className="hidden xl:block w-80 p-6 border-l border-[var(--hw-surface-container-high)] bg-white/50 fixed right-0 top-14 h-[calc(100vh-56px)] overflow-y-auto">
+                <aside className="hidden xl:block w-80 p-6 border-l border-[var(--hw-surface-container-high)] bg-white/50 fixed right-0 top-16 h-[calc(100vh-64px)] overflow-y-auto">
                     {isSubmitted ? (
                         /* ═══ SUBMITTED STATE: Sidebar ═══ */
                         <div className="space-y-6">

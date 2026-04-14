@@ -29,9 +29,9 @@ function MarkdownPreview({ content }: { content: string }) {
 }
 
 const contentModes: { value: MaterialContentMode; label: string; icon: string; description: string }[] = [
-    { value: "link", label: "Gắn Link", icon: "link", description: "URL đến Notion, YouTube, Drive..." },
-    { value: "file", label: "File Preview", icon: "description", description: "Google Drive file xem trước" },
-    { value: "post", label: "Viết Post", icon: "edit_note", description: "Viết bài Markdown trực tiếp" },
+    { value: "link", label: "External Link", icon: "link", description: "URL to Notion, YouTube, Drive..." },
+    { value: "file", label: "File Preview", icon: "description", description: "Embedded Google Drive file preview" },
+    { value: "post", label: "Write Post", icon: "edit_note", description: "Write Markdown content directly" },
 ];
 
 export default function CreateMaterialPage() {
@@ -50,84 +50,33 @@ export default function CreateMaterialPage() {
     useEffect(() => {
         if (state.success && formRef.current) {
             formRef.current.reset();
-            setPostContent("");
-            setShowPreview(false);
-            setContentMode("link");
-            setSelectedCourseId("");
+            const timer = window.setTimeout(() => {
+                setPostContent("");
+                setShowPreview(false);
+                setContentMode("link");
+                setSelectedCourseId("");
+            }, 0);
             alert("✅ Material added successfully! You can add another one.");
+            return () => window.clearTimeout(timer);
         }
     }, [state.success]);
 
     return (
-        <div className="min-h-screen flex bg-[var(--hw-surface)] text-[var(--hw-on-surface)] antialiased">
-            {/* Sidebar */}
-            <aside className="hidden md:flex h-screen w-64 fixed left-0 top-0 bg-slate-50 flex-col p-4 space-y-2 z-40">
-                <div className="flex items-center px-4 py-6 space-x-3">
-                    <div className="w-8 h-8 bg-[var(--hw-primary)] rounded-lg flex items-center justify-center text-white">
-                        <span className="material-symbols-outlined text-[20px]">school</span>
-                    </div>
-                    <div>
-                        <h1 className="text-lg font-black text-indigo-600 leading-none">HIT <span className="text-slate-800">AI/DATA</span></h1>
-                        <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--hw-on-surface-variant)]/60 mt-1">
-                            AI Workspace
-                        </p>
-                    </div>
+        <main className="w-full max-w-4xl mx-auto p-4 sm:p-6 md:p-8 pb-24 md:pb-16 bg-slate-50 text-[var(--hw-on-surface)] antialiased">
+                <div className="mb-8">
+                    <p className="text-[10px] uppercase font-bold tracking-widest text-indigo-600 mb-1">Content Manager</p>
+                    <h1 className="text-2xl font-bold tracking-tight text-slate-900">Add Course Material</h1>
+                    <p className="text-sm text-slate-500 mt-1">
+                        Add references, files, videos, or written posts directly into course modules.
+                    </p>
                 </div>
 
-                <nav className="flex-1 space-y-1">
-                    <Link href="/dashboard" className="flex items-center px-4 py-3 text-slate-600 hover:bg-slate-100 hover:translate-x-1 transition-transform duration-200 text-sm font-medium">
-                        <span className="material-symbols-outlined mr-3">dashboard</span>
-                        Overview
-                    </Link>
-                    <Link href="/admin" className="flex items-center px-4 py-3 text-slate-600 hover:bg-slate-100 hover:translate-x-1 transition-transform duration-200 text-sm font-medium">
-                        <span className="material-symbols-outlined mr-3">monitoring</span>
-                        Analytics
-                    </Link>
-                    <Link href="/admin/students" className="flex items-center px-4 py-3 text-slate-600 hover:bg-slate-100 hover:translate-x-1 transition-transform duration-200 text-sm font-medium">
-                        <span className="material-symbols-outlined mr-3">group</span>
-                        Students
-                    </Link>
-                    <span className="flex items-center px-4 py-3 bg-white text-indigo-600 shadow-sm rounded-lg text-sm font-medium">
-                        <span className="material-symbols-outlined mr-3" style={{ fontVariationSettings: "'FILL' 1" }}>menu_book</span>
-                        Curriculum
-                    </span>
-                    <Link href="/admin/create-assignment" className="flex items-center px-4 py-3 text-slate-600 hover:bg-slate-100 hover:translate-x-1 transition-transform duration-200 text-sm font-medium pl-10">
-                        <span className="material-symbols-outlined mr-3 text-[18px]">add_task</span>
-                        Add Assignment
-                    </Link>
-                    <span className="flex items-center px-4 py-3 bg-indigo-50/50 text-indigo-600 rounded-lg text-sm font-bold pl-10 border border-indigo-100">
-                        <span className="material-symbols-outlined mr-3 text-[18px]">post_add</span>
-                        Add Material
-                    </span>
-                </nav>
-
-                <div className="pt-4 border-t border-slate-200/50">
-                    <Link href="/courses/ai-core" className="flex items-center px-4 py-3 text-slate-600 hover:bg-slate-100 text-sm font-medium">
-                        <span className="material-symbols-outlined mr-3">school</span>
-                        View Course
-                    </Link>
-                </div>
-            </aside>
-
-            {/* Main Content */}
-            <main className="md:ml-64 min-h-screen pb-24 md:pb-12 bg-slate-50 flex-1">
-                {/* Top Bar */}
-                <header className="fixed top-0 right-0 left-0 md:left-64 z-30 bg-white/80 backdrop-blur-md shadow-sm flex items-center justify-between px-6 py-4">
-                    <div className="flex items-center gap-4">
-                        <button className="md:hidden">
-                            <span className="material-symbols-outlined">menu</span>
-                        </button>
-                        <h2 className="text-xl font-bold tracking-tight text-slate-800">Add Course Material</h2>
-                    </div>
-                </header>
-
-                {/* Content Area */}
-                <div className="pt-24 px-6 max-w-4xl mx-auto">
+                <div>
                     {/* Bento Header */}
                     <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 mb-8 relative overflow-hidden">
                         <div className="relative z-10 md:w-2/3">
                             <span className="text-indigo-600 font-bold text-[10px] uppercase tracking-widest mb-2 block">
-                                Curator Mode
+                                Material Builder
                             </span>
                             <h3 className="text-2xl font-bold text-slate-900 tracking-tight mb-3">
                                 Enrich Syllabus with <span className="text-indigo-600">Materials</span>
@@ -163,7 +112,7 @@ export default function CreateMaterialPage() {
                                     <span className="material-symbols-outlined text-emerald-500">school</span>
                                     Select Course
                                 </h4>
-                                <p className="text-xs text-slate-500 mt-1">Chọn lớp mà tài liệu này thuộc về</p>
+                                <p className="text-xs text-slate-500 mt-1">Choose the course where this material should appear.</p>
                             </div>
                             <div className="p-6">
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -198,7 +147,7 @@ export default function CreateMaterialPage() {
                                 {!selectedCourseId && (
                                     <p className="text-xs text-amber-600 mt-3 flex items-center gap-1">
                                         <span className="material-symbols-outlined text-sm">warning</span>
-                                        Bạn cần chọn lớp trước khi tạo tài liệu.
+                                        Select a course before saving this material.
                                     </p>
                                 )}
                             </div>
@@ -254,10 +203,10 @@ export default function CreateMaterialPage() {
                                                 className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 pl-11 pr-10 text-slate-900 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all appearance-none text-sm font-medium"
                                                 defaultValue="theory"
                                             >
-                                                <option value="theory">Theory / Reading (Thuyết/Bài đọc)</option>
-                                                <option value="video">Video Lecture (Bài giảng)</option>
-                                                <option value="slides">Slides (Trang trình bày)</option>
-                                                <option value="other">Other Link (Khác)</option>
+                                                <option value="theory">Theory / Reading</option>
+                                                <option value="video">Video Lecture</option>
+                                                <option value="slides">Slides</option>
+                                                <option value="other">Other Link</option>
                                             </select>
                                             <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">category</span>
                                             <span className="material-symbols-outlined absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">expand_more</span>
@@ -274,7 +223,7 @@ export default function CreateMaterialPage() {
                                     <span className="material-symbols-outlined text-indigo-500">format_paint</span>
                                     Content Mode
                                 </h4>
-                                <p className="text-xs text-slate-500 mt-1">Chọn cách muốn cung cấp tài liệu cho học sinh</p>
+                                <p className="text-xs text-slate-500 mt-1">Choose how students will consume this material.</p>
                             </div>
 
                             <div className="p-6 space-y-6">
@@ -380,7 +329,7 @@ export default function CreateMaterialPage() {
                                                 name="postContent"
                                                 value={postContent}
                                                 onChange={(e) => setPostContent(e.target.value)}
-                                                placeholder={"# Tiêu đề bài viết\n\nViết nội dung ở đây bằng **Markdown**.\n\n## Phần 1\n- Điểm 1\n- Điểm 2\n\n```python\nprint('Hello World')\n```"}
+                                                placeholder={"# Material title\n\nWrite your content in **Markdown**.\n\n## Section 1\n- Key point 1\n- Key point 2\n\n```python\nprint('Hello World')\n```"}
                                                 className="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 text-slate-900 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-sm font-mono min-h-[300px] resize-y"
                                             />
                                         )}
@@ -393,14 +342,14 @@ export default function CreateMaterialPage() {
                                         <div className="flex items-center gap-4 text-xs text-slate-400">
                                             <span className="flex items-center gap-1">
                                                 <span className="material-symbols-outlined text-[14px]">info</span>
-                                                Hỗ trợ: headings (#), **bold**, *italic*, `code`, lists (-)
+                                                Supports: headings (#), **bold**, *italic*, `code`, lists (-)
                                             </span>
                                             <span>{postContent.length} characters</span>
                                         </div>
 
                                         <div>
                                             <label className="block text-sm font-bold text-slate-700 mb-1.5">
-                                                URL Link <span className="text-slate-400 font-normal">(tùy chọn)</span>
+                                                URL Link <span className="text-slate-400 font-normal">(optional)</span>
                                             </label>
                                             <div className="relative">
                                                 <input
@@ -411,7 +360,7 @@ export default function CreateMaterialPage() {
                                                 />
                                                 <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">link</span>
                                             </div>
-                                            <p className="text-xs text-slate-500 mt-1">Thêm link tham khảo bên ngoài (nếu có).</p>
+                                            <p className="text-xs text-slate-500 mt-1">Add a reference link if needed.</p>
                                         </div>
                                     </div>
                                 )}
@@ -433,7 +382,13 @@ export default function CreateMaterialPage() {
                         </section>
 
                         {/* Footer Actions */}
-                        <div className="flex justify-end gap-4 pt-4">
+                        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-4">
+                            <Link
+                                href="/admin/curriculum"
+                                className="w-full sm:w-auto px-8 py-3.5 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-100 transition-all text-center"
+                            >
+                                Cancel
+                            </Link>
                             <button
                                 type="submit"
                                 disabled={isPending}
@@ -454,7 +409,6 @@ export default function CreateMaterialPage() {
                         </div>
                     </form>
                 </div>
-            </main>
-        </div>
+        </main>
     );
 }

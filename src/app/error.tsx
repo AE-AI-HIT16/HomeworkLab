@@ -21,10 +21,10 @@ export default function GlobalError({
                     ⚠️
                 </div>
                 <h1 className="text-2xl font-bold text-gray-900 mb-3">
-                    Đã xảy ra lỗi hệ thống
+                    A system error occurred
                 </h1>
                 <p className="text-gray-600 mb-8 text-sm break-words line-clamp-3">
-                    {error.message || "Rất tiếc! Đã có lỗi xảy ra trong quá trình xử lý yêu cầu. Vui lòng thử lại sau."}
+                    {error.message || "Sorry, something went wrong while processing your request. Please try again shortly."}
                 </p>
 
                 <div className="space-y-3">
@@ -32,13 +32,13 @@ export default function GlobalError({
                         onClick={() => reset()}
                         className="w-full bg-blue-600 text-white font-medium py-2.5 rounded-lg hover:bg-blue-500 transition"
                     >
-                        Thử lại
+                        Try again
                     </button>
                     <Link
                         href="/dashboard"
                         className="block w-full bg-white text-gray-700 font-medium py-2.5 rounded-lg border border-gray-200 hover:bg-gray-50 transition"
                     >
-                        Về trang chủ
+                        Go to dashboard
                     </Link>
                 </div>
             </div>

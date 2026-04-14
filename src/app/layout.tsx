@@ -10,7 +10,7 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: "HIT - AI/DATA",
-  description: "Nền tảng học tập AI & Data Science cho sinh viên HIT",
+  description: "AI & Data Science learning platform for HIT students",
 };
 
 export default function RootLayout({

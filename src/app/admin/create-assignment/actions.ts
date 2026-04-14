@@ -73,22 +73,22 @@ export async function createAssignmentAction(
         try {
             quizData = JSON.parse(quizDataJson);
             if (!quizData || quizData.length === 0) {
-                return { error: "Quiz phải có ít nhất 1 câu hỏi." };
+                return { error: "Quiz must include at least one question." };
             }
             for (const q of quizData) {
                 if (!q.question?.trim()) {
-                    return { error: "Mỗi câu hỏi phải có nội dung." };
+                    return { error: "Each question must include text." };
                 }
                 const validOptions = q.options.filter((o: string) => o.trim());
                 if (validOptions.length < 2) {
-                    return { error: `Câu "${q.question.substring(0, 30)}..." phải có ít nhất 2 lựa chọn.` };
+                    return { error: `Question "${q.question.substring(0, 30)}..." must have at least 2 options.` };
                 }
                 if (q.correctIndex < 0 || q.correctIndex >= q.options.length) {
-                    return { error: `Câu "${q.question.substring(0, 30)}..." chưa chọn đáp án đúng.` };
+                    return { error: `Question "${q.question.substring(0, 30)}..." has no correct answer selected.` };
                 }
             }
         } catch {
-            return { error: "Dữ liệu quiz không hợp lệ." };
+            return { error: "Invalid quiz data." };
         }
     }
 

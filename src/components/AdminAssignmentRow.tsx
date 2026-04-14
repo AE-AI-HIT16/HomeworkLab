@@ -11,7 +11,7 @@ interface AdminAssignmentRowProps {
 
 function formatDate(iso?: string): string {
     if (!iso) return "—";
-    return new Date(iso).toLocaleDateString("vi-VN", {
+    return new Date(iso).toLocaleString("en-US", {
         day: "2-digit",
         month: "2-digit",
         year: "numeric",
@@ -36,7 +36,7 @@ export function AdminAssignmentRow({
                 <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1 flex-wrap">
                         <span className="text-xs font-medium text-gray-400">
-                            Tuần {assignment.week} / Bài {assignment.lesson}
+                            Week {assignment.week} / Lesson {assignment.lesson}
                         </span>
                         <span
                             className={`text-xs px-2 py-0.5 rounded-full font-medium ${assignment.published
@@ -48,7 +48,7 @@ export function AdminAssignmentRow({
                         </span>
                         {lateCount > 0 && (
                             <span className="text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 font-medium">
-                                {lateCount} trễ hạn
+                                {lateCount} late
                             </span>
                         )}
                     </div>
@@ -58,7 +58,7 @@ export function AdminAssignmentRow({
                             🕐 {formatDate(assignment.dueAt)}
                         </span>
                         <span>
-                            📝 {submittedCount}/{totalStudents} đã nộp
+                            📝 {submittedCount}/{totalStudents} submitted
                             {submittedCount > 0 && ` (📁 ${submissions.filter((s) => s.type === "file").length} — 🔗 ${submissions.filter((s) => s.type === "repo_link").length})`}
                         </span>
                     </div>
@@ -67,7 +67,7 @@ export function AdminAssignmentRow({
                     href={`/assignment/${assignment.id}`}
                     className="shrink-0 text-sm text-blue-600 hover:text-blue-500 font-medium"
                 >
-                    Xem chi tiết →
+                    View details →
                 </Link>
             </div>
 
@@ -75,7 +75,7 @@ export function AdminAssignmentRow({
             {isPastDue && missingStudents.length > 0 && (
                 <div className="mt-3 pt-3 border-t">
                     <p className="text-xs font-medium text-red-600 mb-1">
-                        Chưa nộp ({missingStudents.length}):
+                        Not submitted ({missingStudents.length}):
                     </p>
                     <div className="flex flex-wrap gap-1">
                         {missingStudents.map((s) => (

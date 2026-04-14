@@ -14,11 +14,11 @@ export function AdminTopNav({ user }: { user: { name?: string | null, email?: st
                     <Link href="/admin" className="text-[var(--hw-primary)] font-semibold border-b-2 border-[var(--hw-primary)] pb-0.5">
                         Dashboard
                     </Link>
-                    <Link href="#" className="text-slate-500 hover:text-slate-900 transition-colors">
+                    <Link href="/admin/grading" className="text-slate-500 hover:text-slate-900 transition-colors">
                         Analytics
                     </Link>
-                    <Link href="/admin/settings" className="text-slate-500 hover:text-slate-900 transition-colors">
-                        Settings
+                    <Link href="/admin/curriculum" className="text-slate-500 hover:text-slate-900 transition-colors">
+                        Curriculum
                     </Link>
                 </div>
             </div>

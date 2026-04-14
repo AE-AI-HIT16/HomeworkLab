@@ -19,7 +19,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
                 image: session.user.image,
                 githubUsername: session.user.githubUsername
             }} role="admin" />
-            <div className="flex flex-1 pt-14">
+            <div className="flex flex-1 pt-16">
                 <AdminSidebar />
                 <div className="flex-1 md:ml-56 relative w-full">
                     {children}

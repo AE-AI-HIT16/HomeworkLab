@@ -189,12 +189,12 @@ export default function CreateAssignmentPage() {
                             });
                             if (!res.ok) {
                                 const err = await res.json();
-                                return { file: pf.file, error: err.error ?? "Upload thất bại" };
+                                return { file: pf.file, error: err.error ?? "Upload failed" };
                             }
                             const promptFile: PromptFile = await res.json();
                             return { file: pf.file, promptFile };
                         } catch {
-                            return { file: pf.file, error: "Lỗi kết nối" };
+                            return { file: pf.file, error: "Connection error" };
                         }
                     })
                 );
@@ -248,88 +248,27 @@ export default function CreateAssignmentPage() {
     const isUploading = isUploadingFiles || pendingFiles.some((f) => f.status === "uploading");
 
     return (
-        <div className="min-h-screen flex bg-[var(--hw-surface)] text-[var(--hw-on-surface)] antialiased">
-            {/* Sidebar */}
-            <aside className="hidden md:flex h-screen w-64 fixed left-0 top-0 bg-slate-50 flex-col p-4 space-y-2 z-40">
-                <div className="flex items-center px-4 py-6 space-x-3">
-                    <div className="w-8 h-8 bg-[var(--hw-primary)] rounded-lg flex items-center justify-center text-white">
-                        <span className="material-symbols-outlined text-[20px]">school</span>
-                    </div>
-                    <div>
-                        <h1 className="text-lg font-black text-indigo-600 leading-none">HIT <span className="text-slate-800">AI/DATA</span></h1>
-                        <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--hw-on-surface-variant)]/60 mt-1">
-                            AI Workspace
-                        </p>
-                    </div>
+        <main className="w-full max-w-5xl mx-auto p-4 sm:p-6 md:p-8 pb-24 md:pb-16 bg-[var(--hw-surface)] text-[var(--hw-on-surface)] antialiased">
+                <div className="mb-8">
+                    <p className="text-[10px] uppercase font-bold tracking-widest text-[var(--hw-primary)] mb-1">Content Manager</p>
+                    <h1 className="text-2xl font-bold tracking-tight">Create New Assignment</h1>
+                    <p className="text-sm text-[var(--hw-on-surface-variant)] mt-1">
+                        Draft assignments with clear requirements, resources, and submission rules.
+                    </p>
                 </div>
 
-                <nav className="flex-1 space-y-1">
-                    <Link href="/dashboard" className="flex items-center px-4 py-3 text-slate-600 hover:bg-slate-100 hover:translate-x-1 transition-transform duration-200 text-sm font-medium">
-                        <span className="material-symbols-outlined mr-3">dashboard</span>
-                        Overview
-                    </Link>
-                    <span className="flex items-center px-4 py-3 bg-white text-indigo-600 shadow-sm rounded-lg text-sm font-medium">
-                        <span className="material-symbols-outlined mr-3">assignment</span>
-                        All Work
-                    </span>
-                    <Link href="#" className="flex items-center px-4 py-3 text-slate-600 hover:bg-slate-100 hover:translate-x-1 transition-transform duration-200 text-sm font-medium">
-                        <span className="material-symbols-outlined mr-3">group</span>
-                        Students
-                    </Link>
-                    <Link href="#" className="flex items-center px-4 py-3 text-slate-600 hover:bg-slate-100 hover:translate-x-1 transition-transform duration-200 text-sm font-medium">
-                        <span className="material-symbols-outlined mr-3">menu_book</span>
-                        Curriculum
-                    </Link>
-                    <Link href="#" className="flex items-center px-4 py-3 text-slate-600 hover:bg-slate-100 hover:translate-x-1 transition-transform duration-200 text-sm font-medium">
-                        <span className="material-symbols-outlined mr-3">monitoring</span>
-                        Analytics
-                    </Link>
-                </nav>
-
-                <div className="pt-4 border-t border-slate-200/50">
-                    <Link href="#" className="flex items-center px-4 py-3 text-slate-600 hover:bg-slate-100 text-sm font-medium">
-                        <span className="material-symbols-outlined mr-3">help</span>
-                        Help
-                    </Link>
-                    <Link href="/login" className="flex items-center px-4 py-3 text-slate-600 hover:bg-slate-100 text-sm font-medium">
-                        <span className="material-symbols-outlined mr-3">logout</span>
-                        Logout
-                    </Link>
-                </div>
-            </aside>
-
-            {/* Main Content */}
-            <main className="md:ml-64 min-h-screen pb-24 md:pb-12 bg-[var(--hw-surface)] flex-1">
-                {/* Top Bar */}
-                <header className="fixed top-0 right-0 left-0 md:left-64 z-30 bg-white/80 backdrop-blur-md shadow-sm flex items-center justify-between px-6 py-4">
-                    <div className="flex items-center gap-4">
-                        <button className="md:hidden">
-                            <span className="material-symbols-outlined">menu</span>
-                        </button>
-                        <h2 className="text-xl font-bold tracking-tight">Create New Assignment</h2>
-                    </div>
-                    <div className="flex items-center gap-4">
-                        <button className="p-2 text-slate-500 hover:bg-slate-50 rounded-full transition-all">
-                            <span className="material-symbols-outlined">notifications</span>
-                        </button>
-                        <div className="w-8 h-8 rounded-full bg-[var(--hw-surface-container-high)] overflow-hidden" />
-                    </div>
-                </header>
-
-                {/* Content Area */}
-                <div className="pt-24 px-6 max-w-5xl mx-auto">
+                <div>
                     {/* Bento Header */}
                     <div className="grid grid-cols-12 gap-6 mb-10">
                         <div className="col-span-12 lg:col-span-8 bg-[var(--hw-surface-container-lowest)] p-8 rounded-xl shadow-[0_12px_40px_rgba(26,28,29,0.04)]">
                             <span className="text-[var(--hw-primary)] font-bold text-[10px] uppercase tracking-widest mb-2 block">
-                                Curator Mode
+                                Assignment Builder
                             </span>
                             <h3 className="text-3xl font-semibold tracking-tight mb-4">
-                                Drafting Assignment:{" "}
-                                <span className="text-[var(--hw-primary-container)]">CS-201 Fundamentals</span>
+                                Create a clear, gradable assignment
                             </h3>
                             <p className="text-[var(--hw-on-surface-variant)] max-w-2xl leading-relaxed">
-                                Create a structured learning module with AI-assisted grading capabilities. Your assignments are automatically optimized for clarity and academic integrity.
+                                Define instructions, deadlines, and resources in one place so students can submit with fewer misunderstandings.
                             </p>
                         </div>
                         <div className="col-span-12 lg:col-span-4 bg-[var(--hw-primary)] text-white p-8 rounded-xl relative overflow-hidden group">
@@ -401,7 +340,7 @@ export default function CreateAssignmentPage() {
                             {!selectedCourseId && (
                                 <p className="text-xs text-amber-600 mt-3 flex items-center gap-1">
                                     <span className="material-symbols-outlined text-sm">warning</span>
-                                    Bạn cần chọn lớp trước khi tạo bài tập.
+                                    Select a course before publishing this assignment.
                                 </p>
                             )}
                         </section>
@@ -754,7 +693,7 @@ export default function CreateAssignmentPage() {
                                         <span className="material-symbols-outlined">quiz</span>
                                     </div>
                                     <div className="ml-4 text-left flex-1">
-                                        <p className="text-sm font-bold">Quiz — Trắc nghiệm</p>
+                                        <p className="text-sm font-bold">Quiz</p>
                                         <p className="text-xs text-[var(--hw-on-surface-variant)]">Multiple choice, auto-graded</p>
                                     </div>
                                     {assignmentType === "quiz" && (
@@ -813,7 +752,7 @@ export default function CreateAssignmentPage() {
                                                 </div>
                                                 <div>
                                                     <h4 className="text-sm font-bold">Quiz Builder</h4>
-                                                    <p className="text-xs text-[var(--hw-on-surface-variant)]">{quizQuestions.length} câu hỏi</p>
+                                                    <p className="text-xs text-[var(--hw-on-surface-variant)]">{quizQuestions.length} questions</p>
                                                 </div>
                                             </div>
                                             <button
@@ -822,7 +761,7 @@ export default function CreateAssignmentPage() {
                                                 className="flex items-center gap-1.5 px-4 py-2 bg-emerald-500 text-white text-xs font-bold rounded-lg hover:bg-emerald-600 transition-colors shadow-sm"
                                             >
                                                 <span className="material-symbols-outlined text-sm">add</span>
-                                                Thêm câu hỏi
+                                                Add question
                                             </button>
                                         </div>
 
@@ -836,14 +775,14 @@ export default function CreateAssignmentPage() {
                                                             <span className="w-7 h-7 rounded-full bg-emerald-500 text-white text-xs font-bold flex items-center justify-center">
                                                                 {qIdx + 1}
                                                             </span>
-                                                            <span className="text-xs font-bold text-[var(--hw-on-surface-variant)] uppercase tracking-wider">Câu hỏi {qIdx + 1}</span>
+                                                            <span className="text-xs font-bold text-[var(--hw-on-surface-variant)] uppercase tracking-wider">Question {qIdx + 1}</span>
                                                         </div>
                                                         {quizQuestions.length > 1 && (
                                                             <button
                                                                 type="button"
                                                                 onClick={() => removeQuestion(qIdx)}
                                                                 className="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
-                                                                title="Xóa câu hỏi"
+                                                                title="Delete question"
                                                             >
                                                                 <span className="material-symbols-outlined text-lg">delete</span>
                                                             </button>
@@ -854,7 +793,7 @@ export default function CreateAssignmentPage() {
                                                     <textarea
                                                         value={q.question}
                                                         onChange={(e) => updateQuestion(qIdx, "question", e.target.value)}
-                                                        placeholder="Nhập nội dung câu hỏi... (hỗ trợ code)"
+                                                        placeholder="Write the question content... (code supported)"
                                                         rows={2}
                                                         className="w-full bg-white border border-[var(--hw-outline-variant)]/30 rounded-lg p-3 text-sm font-medium text-[var(--hw-on-surface)] focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all mb-4 placeholder:text-[var(--hw-on-surface-variant)]/40 resize-y font-mono"
                                                     />
@@ -887,7 +826,7 @@ export default function CreateAssignmentPage() {
                                                                 <textarea
                                                                     value={opt}
                                                                     onChange={(e) => updateOption(qIdx, oIdx, e.target.value)}
-                                                                    placeholder={`Lựa chọn ${String.fromCharCode(65 + oIdx)} (hỗ trợ code)`}
+                                                                    placeholder={`Option ${String.fromCharCode(65 + oIdx)} (code supported)`}
                                                                     rows={1}
                                                                     className="flex-1 bg-transparent border-none text-sm text-[var(--hw-on-surface)] focus:ring-0 p-0 placeholder:text-[var(--hw-on-surface-variant)]/40 resize-y font-mono min-h-[24px]"
                                                                 />
@@ -901,7 +840,7 @@ export default function CreateAssignmentPage() {
                                                     {q.correctIndex < 0 && (
                                                         <p className="mt-2 text-[10px] text-amber-600 font-medium flex items-center gap-1">
                                                             <span className="material-symbols-outlined text-xs">warning</span>
-                                                            Chưa chọn đáp án đúng
+                                                            Select the correct answer
                                                         </p>
                                                     )}
                                                 </div>
@@ -912,9 +851,9 @@ export default function CreateAssignmentPage() {
                                         <div className="flex items-start gap-3 p-4 bg-emerald-50 rounded-lg border border-emerald-100">
                                             <span className="material-symbols-outlined text-emerald-500 text-xl flex-shrink-0 mt-0.5">tips_and_updates</span>
                                             <div>
-                                                <p className="text-xs font-bold text-emerald-700 mb-1">Chấm tự động</p>
+                                                <p className="text-xs font-bold text-emerald-700 mb-1">Auto-grading</p>
                                                 <p className="text-xs text-emerald-600 leading-relaxed">
-                                                    Hệ thống sẽ tự động chấm điểm khi học sinh nộp bài. Điểm = (số câu đúng / tổng câu) × 100.
+                                                    Quiz submissions are graded automatically: score = (correct answers / total questions) x 100.
                                                 </p>
                                             </div>
                                         </div>
@@ -926,7 +865,7 @@ export default function CreateAssignmentPage() {
                         {/* Footer Actions */}
                         <div className="pt-8 border-t border-[var(--hw-surface-container)] flex flex-col sm:flex-row justify-between items-center gap-4">
                             <Link
-                                href="/dashboard"
+                                href="/admin/curriculum"
                                 className="w-full sm:w-auto px-8 py-3 rounded-lg text-sm font-bold text-[var(--hw-on-surface-variant)] hover:bg-[var(--hw-surface-container)] transition-all text-center"
                             >
                                 Cancel
@@ -959,7 +898,6 @@ export default function CreateAssignmentPage() {
                         </div>
                     </form>
                 </div>
-            </main>
-        </div>
+        </main>
     );
 }

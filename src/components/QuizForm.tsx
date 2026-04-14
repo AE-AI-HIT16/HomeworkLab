@@ -56,14 +56,14 @@ export function QuizForm({ assignmentId, questions, existingSubmission, isPastDu
 
     const handleSubmit = () => {
         if (answeredCount < questions.length) {
-            setError(`Bạn chưa trả lời hết. Còn ${questions.length - answeredCount} câu chưa trả lời.`);
+            setError(`You still have ${questions.length - answeredCount} unanswered question(s).`);
             return;
         }
         setError("");
         startTransition(async () => {
             const res = await submitQuizAction(assignmentId, answers);
             if (!res.success) {
-                setError(res.error ?? "Đã có lỗi xảy ra.");
+                setError(res.error ?? "Something went wrong.");
                 return;
             }
             setResult({
@@ -119,7 +119,7 @@ export function QuizForm({ assignmentId, questions, existingSubmission, isPastDu
                                 </span>
                             </div>
                             <div>
-                                <p className="text-xs font-bold uppercase tracking-widest text-[var(--hw-on-surface-variant)]">Kết quả</p>
+                                <p className="text-xs font-bold uppercase tracking-widest text-[var(--hw-on-surface-variant)]">Result</p>
                                 <p className={`text-3xl font-black ${getScoreColor(result.score)}`}>
                                     {result.score}<span className="text-lg font-bold">/100</span>
                                 </p>
@@ -127,10 +127,10 @@ export function QuizForm({ assignmentId, questions, existingSubmission, isPastDu
                         </div>
                         <div className="text-right">
                             <p className="text-sm font-medium text-[var(--hw-on-surface)]">
-                                {result.correctCount}/{result.totalCount} câu đúng
+                                {result.correctCount}/{result.totalCount} correct
                             </p>
                             <p className="text-xs text-[var(--hw-on-surface-variant)]">
-                                {result.score >= 80 ? "Xuất sắc! 🎉" : result.score >= 60 ? "Khá tốt! 👍" : "Cần ôn lại 📚"}
+                                {result.score >= 80 ? "Excellent! 🎉" : result.score >= 60 ? "Great job! 👍" : "Review and try again 📚"}
                             </p>
                         </div>
                     </div>
@@ -147,14 +147,14 @@ export function QuizForm({ assignmentId, questions, existingSubmission, isPastDu
 
                     <div className="mt-4 flex items-center justify-between">
                         <p className="text-xs text-[var(--hw-on-surface-variant)] italic">
-                            {existingSubmission?.isLate ? "⚠️ Nộp muộn" : "✓ Đúng hạn"}
+                            {existingSubmission?.isLate ? "⚠️ Submitted late" : "✓ On time"}
                         </p>
                         <button
                             onClick={handleRetake}
                             className="flex items-center gap-1.5 text-xs font-bold text-[var(--hw-primary)] bg-white/80 px-3 py-1.5 rounded-lg hover:bg-white transition-colors"
                         >
                             <span className="material-symbols-outlined text-sm">refresh</span>
-                            Làm lại
+                            Retake
                         </button>
                     </div>
 
@@ -162,7 +162,7 @@ export function QuizForm({ assignmentId, questions, existingSubmission, isPastDu
                     <div className="mt-4 flex items-start gap-2.5 p-3 bg-white/50 rounded-lg">
                         <span className="material-symbols-outlined text-[var(--hw-on-surface-variant)] text-sm flex-shrink-0 mt-0.5">info</span>
                         <p className="text-[11px] text-[var(--hw-on-surface-variant)] leading-relaxed">
-                            Bạn có thể xem những câu mình đã làm đúng hoặc sai phía dưới. Hãy thử làm lại bài để cải thiện điểm số nhé!
+                            You can review your selected answers below. Retake the quiz anytime to improve your score.
                         </p>
                     </div>
                 </div>
@@ -173,7 +173,7 @@ export function QuizForm({ assignmentId, questions, existingSubmission, isPastDu
                 <div className="bg-white rounded-xl border border-[var(--hw-surface-container-high)] p-4 flex items-center gap-4">
                     <div className="flex-1">
                         <div className="flex items-center justify-between mb-1.5">
-                            <span className="text-xs font-bold text-[var(--hw-on-surface-variant)] uppercase tracking-widest">Tiến độ</span>
+                            <span className="text-xs font-bold text-[var(--hw-on-surface-variant)] uppercase tracking-widest">Progress</span>
                             <span className="text-xs font-bold text-[var(--hw-primary)]">{answeredCount}/{questions.length}</span>
                         </div>
                         <div className="h-2 w-full bg-[var(--hw-surface-container-low)] rounded-full overflow-hidden">
@@ -312,7 +312,7 @@ export function QuizForm({ assignmentId, questions, existingSubmission, isPastDu
                     {isPastDue && (
                         <p className="text-[10px] text-amber-600 font-medium mb-2 md:mb-3 flex items-center gap-1 bg-amber-50 px-2 py-1 rounded w-full md:w-auto justify-center">
                             <span className="material-symbols-outlined text-[14px]">warning</span>
-                            Nộp muộn sẽ bị trừ điểm.
+                            Late submissions may lose points.
                         </p>
                     )}
                     <button
@@ -324,12 +324,12 @@ export function QuizForm({ assignmentId, questions, existingSubmission, isPastDu
                         {isPending ? (
                             <>
                                 <span className="material-symbols-outlined text-sm animate-spin">progress_activity</span>
-                                Đang chấm điểm...
+                                Submitting...
                             </>
                         ) : (
                             <>
                                 <span className="material-symbols-outlined text-sm">send</span>
-                                Nộp bài ({answeredCount}/{questions.length})
+                                Submit Quiz ({answeredCount}/{questions.length})
                             </>
                         )}
                     </button>

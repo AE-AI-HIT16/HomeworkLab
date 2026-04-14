@@ -56,9 +56,9 @@ export const authConfig: NextAuthConfig = {
         authorized({ auth, request: { nextUrl } }) {
             const isLoggedIn = !!auth?.user;
             const isOnLogin = nextUrl.pathname === "/login";
+            const publicPaths = ["/", "/unauthorized", "/about", "/contact", "/privacy", "/terms", "/help"];
             const isPublic =
-                nextUrl.pathname === "/" ||
-                nextUrl.pathname === "/unauthorized" ||
+                publicPaths.includes(nextUrl.pathname) ||
                 nextUrl.pathname.startsWith("/api/auth");
 
             // Allow public pages
@@ -73,4 +73,3 @@ export const authConfig: NextAuthConfig = {
 };
 
 export const { handlers, signIn, signOut, auth } = NextAuth(authConfig);
-

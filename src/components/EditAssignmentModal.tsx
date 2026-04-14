@@ -165,7 +165,7 @@ export function EditAssignmentModal({
                                 className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors flex items-center gap-1.5 ${tab === "quiz" ? "bg-emerald-100 text-emerald-700" : "text-gray-500 hover:bg-gray-100"}`}
                             >
                                 <span className="material-symbols-outlined text-[16px]">quiz</span>
-                                Quiz ({quizQuestions.length} câu)
+                                Quiz ({quizQuestions.length} questions)
                             </button>
                         </div>
                     )}
@@ -181,7 +181,7 @@ export function EditAssignmentModal({
                         {success && (
                             <div className="p-3 bg-emerald-50 border border-emerald-100 rounded-lg text-sm text-emerald-600 flex items-center gap-2">
                                 <span className="material-symbols-outlined text-[18px]">check_circle</span>
-                                Đã cập nhật thành công!
+                                Assignment updated successfully.
                             </div>
                         )}
 
@@ -234,7 +234,7 @@ export function EditAssignmentModal({
                                     <textarea
                                         value={description}
                                         onChange={(e) => setDescription(e.target.value)}
-                                        placeholder="Mô tả hoặc link tài liệu..."
+                                        placeholder="Description or resource link..."
                                         rows={3}
                                         className="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-gray-900 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all resize-none text-sm"
                                     />
@@ -251,7 +251,7 @@ export function EditAssignmentModal({
                                         placeholder="https://drive.google.com/..."
                                         className="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-gray-900 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all text-sm"
                                     />
-                                    <p className="text-[10px] text-gray-400 mt-1">Link Google Drive hoặc link tài liệu bên ngoài</p>
+                                    <p className="text-[10px] text-gray-400 mt-1">Google Drive link or any external resource link.</p>
                                 </div>
                             </>
                         )}
@@ -261,7 +261,7 @@ export function EditAssignmentModal({
                             <div className="space-y-4">
                                 <div className="flex items-center justify-between">
                                     <p className="text-sm font-medium text-gray-700">
-                                        {quizQuestions.length} câu hỏi
+                                        {quizQuestions.length} questions
                                     </p>
                                     <button
                                         type="button"
@@ -269,7 +269,7 @@ export function EditAssignmentModal({
                                         className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500 text-white text-xs font-bold rounded-lg hover:bg-emerald-600 transition-colors"
                                     >
                                         <span className="material-symbols-outlined text-[16px]">add</span>
-                                        Thêm câu
+                                        Add question
                                     </button>
                                 </div>
 
@@ -280,14 +280,14 @@ export function EditAssignmentModal({
                                                 <span className="w-6 h-6 rounded-full bg-emerald-500 text-white text-[11px] font-bold flex items-center justify-center">
                                                     {qIdx + 1}
                                                 </span>
-                                                <span className="text-xs font-bold text-gray-500 uppercase">Câu {qIdx + 1}</span>
+                                                <span className="text-xs font-bold text-gray-500 uppercase">Question {qIdx + 1}</span>
                                             </div>
                                             {quizQuestions.length > 1 && (
                                                 <button
                                                     type="button"
                                                     onClick={() => removeQuestion(qIdx)}
                                                     className="p-1 text-red-400 hover:text-red-600 hover:bg-red-50 rounded transition-all"
-                                                    title="Xóa câu hỏi"
+                                                    title="Delete question"
                                                 >
                                                     <span className="material-symbols-outlined text-[18px]">delete</span>
                                                 </button>
@@ -297,7 +297,7 @@ export function EditAssignmentModal({
                                         <textarea
                                             value={q.question}
                                             onChange={(e) => updateQuestion(qIdx, e.target.value)}
-                                            placeholder="Nhập câu hỏi..."
+                                            placeholder="Write the question..."
                                             rows={2}
                                             className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-400 transition-all resize-none"
                                         />
@@ -313,7 +313,7 @@ export function EditAssignmentModal({
                                                                 ? "bg-emerald-500 border-emerald-500 text-white"
                                                                 : "border-gray-300 hover:border-emerald-400 text-transparent"
                                                         }`}
-                                                        title={q.correctIndex === oIdx ? "Đáp án đúng" : "Chọn làm đáp án đúng"}
+                                                        title={q.correctIndex === oIdx ? "Correct answer" : "Set as correct answer"}
                                                     >
                                                         <span className="material-symbols-outlined text-[16px]">check</span>
                                                     </button>
@@ -321,7 +321,7 @@ export function EditAssignmentModal({
                                                         type="text"
                                                         value={opt}
                                                         onChange={(e) => updateOption(qIdx, oIdx, e.target.value)}
-                                                        placeholder={`Đáp án ${String.fromCharCode(65 + oIdx)}`}
+                                                        placeholder={`Option ${String.fromCharCode(65 + oIdx)}`}
                                                         className={`flex-1 bg-white border rounded-lg px-3 py-2 text-sm transition-all ${
                                                             q.correctIndex === oIdx
                                                                 ? "border-emerald-300 ring-1 ring-emerald-200"
@@ -330,7 +330,7 @@ export function EditAssignmentModal({
                                                     />
                                                     {q.correctIndex === oIdx && (
                                                         <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded shrink-0">
-                                                            ✓ Đúng
+                                                            ✓ Correct
                                                         </span>
                                                     )}
                                                 </div>
@@ -342,14 +342,14 @@ export function EditAssignmentModal({
                                 {quizQuestions.length === 0 && (
                                     <div className="text-center py-8 text-gray-400">
                                         <span className="material-symbols-outlined text-4xl mb-2 block">quiz</span>
-                                        <p className="text-sm">Chưa có câu hỏi nào.</p>
+                                        <p className="text-sm">No quiz questions yet.</p>
                                     </div>
                                 )}
                             </div>
                         )}
 
                         <p className="text-[11px] text-gray-400 italic">
-                            Thay đổi sẽ được cập nhật ngay trên Google Sheets và tất cả các trang.
+                            Changes are synced to Google Sheets and reflected across related pages.
                         </p>
                     </div>
 

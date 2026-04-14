@@ -3,6 +3,7 @@ import { getCurrentUserRole } from "@/lib/roles";
 import Link from "next/link";
 import { TopNav } from "@/components/TopNav";
 import { StudentSidebar } from "@/components/StudentSidebar";
+import { MobileBottomNav } from "@/components/MobileBottomNav";
 
 export const dynamic = "force-dynamic";
 
@@ -90,14 +91,14 @@ function CourseCard({ course }: { course: Course }) {
                         disabled
                         className={`w-full py-3 rounded-xl text-sm font-semibold transition-all ${course.buttonClass}`}
                     >
-                        Notify Me
+                        Coming Soon
                     </button>
                 ) : (
                     <Link
                         href={`/courses/${course.id}`}
                         className={`w-full py-3 rounded-xl text-sm font-semibold text-center transition-all active:scale-[0.98] block ${course.buttonClass}`}
                     >
-                        Enter Course →
+                        Open Course
                     </Link>
                 )}
             </div>
@@ -144,10 +145,10 @@ export default async function CoursesPage() {
                                 </p>
                             </div>
                             {role === "admin" && (
-                                <button className="hidden md:flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white text-sm font-semibold rounded-xl hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-600/20 active:scale-[0.98]">
-                                    <span className="material-symbols-outlined text-[18px]">add</span>
-                                    New Course
-                                </button>
+                                <Link href="/admin/curriculum" className="hidden md:flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white text-sm font-semibold rounded-xl hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-600/20 active:scale-[0.98]">
+                                    <span className="material-symbols-outlined text-[18px]">tune</span>
+                                    Manage Curriculum
+                                </Link>
                             )}
                         </div>
                     </div>
@@ -183,25 +184,7 @@ export default async function CoursesPage() {
                 </main>
             </div>
 
-            {/* ═══ MOBILE BOTTOM NAV ═══ */}
-            <nav className="md:hidden fixed bottom-0 left-0 w-full bg-[var(--hw-surface-container-lowest)] border-t border-[var(--hw-outline-variant)]/20 shadow-[0_-4px_20px_rgba(0,0,0,0.03)] h-[72px] flex items-center justify-around px-2 z-50">
-                <Link href="/dashboard" className="flex flex-col items-center justify-center text-[var(--hw-outline)] gap-1 w-[22%] pb-2">
-                    <span className="material-symbols-outlined text-[20px]">dashboard</span>
-                    <span className="text-[9px] font-bold tracking-wider uppercase">Dashboard</span>
-                </Link>
-                <Link href="/courses" className="flex flex-col items-center justify-center text-[var(--hw-primary)] gap-1 w-[22%] py-2 rounded-xl bg-[var(--hw-primary)]/5">
-                    <span className="material-symbols-outlined text-[20px]" style={{ fontVariationSettings: "'FILL' 1" }}>auto_stories</span>
-                    <span className="text-[9px] font-bold tracking-wider uppercase text-[var(--hw-primary)]">Courses</span>
-                </Link>
-                <Link href="/leaderboard" className="flex flex-col items-center justify-center text-[var(--hw-outline)] gap-1 w-[22%] pb-2">
-                    <span className="material-symbols-outlined text-[20px]">emoji_events</span>
-                    <span className="text-[9px] font-bold tracking-wider uppercase">Leaderboard</span>
-                </Link>
-                <Link href="#" className="flex flex-col items-center justify-center text-[var(--hw-outline)] gap-1 w-[22%] pb-2">
-                    <span className="material-symbols-outlined text-[20px]">person</span>
-                    <span className="text-[9px] font-bold tracking-wider uppercase">Profile</span>
-                </Link>
-            </nav>
+            <MobileBottomNav variant="student" />
         </div>
     );
 }

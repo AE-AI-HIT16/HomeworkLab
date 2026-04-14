@@ -13,7 +13,7 @@ export default function GlobalError({
     reset: () => void;
 }) {
     return (
-        <html lang="vi">
+        <html lang="en">
             <body style={{ margin: 0, fontFamily: "system-ui, sans-serif" }}>
                 <div
                     style={{
@@ -38,10 +38,10 @@ export default function GlobalError({
                     >
                         <div style={{ fontSize: "3rem", marginBottom: "1rem" }}>⚠️</div>
                         <h1 style={{ fontSize: "1.25rem", fontWeight: 700, marginBottom: "0.5rem" }}>
-                            Lỗi hệ thống
+                            System error
                         </h1>
                         <p style={{ color: "#64748b", fontSize: "0.875rem", marginBottom: "1.5rem" }}>
-                            Ứng dụng gặp sự cố nghiêm trọng. Vui lòng thử lại.
+                            The application encountered a critical issue. Please try again.
                         </p>
                         {error.digest && (
                             <p style={{ color: "#94a3b8", fontSize: "0.75rem", fontFamily: "monospace", marginBottom: "1rem" }}>
@@ -61,7 +61,7 @@ export default function GlobalError({
                                 cursor: "pointer",
                             }}
                         >
-                            Thử lại
+                            Try again
                         </button>
                     </div>
                 </div>

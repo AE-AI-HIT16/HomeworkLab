@@ -32,7 +32,7 @@ export function RoleToggleButton({ githubUsername, currentRole }: RoleToggleButt
                     : "bg-[var(--hw-primary-fixed)] text-[var(--hw-primary)] border border-[var(--hw-primary-fixed-dim)] hover:bg-indigo-100"
                 }
             `}
-            title={`Chuyển sang ${nextRole === "guest" ? "Khách mời" : "Học sinh"}`}
+            title={`Switch to ${nextRole === "guest" ? "Guest" : "Student"}`}
         >
             {isPending ? (
                 <span className="material-symbols-outlined text-[14px] animate-spin">progress_activity</span>
@@ -42,10 +42,10 @@ export function RoleToggleButton({ githubUsername, currentRole }: RoleToggleButt
                 </span>
             )}
             {isPending
-                ? "Đang xử lý..."
+                ? "Updating..."
                 : isGuest
-                    ? "→ Học sinh"
-                    : "→ Khách mời"
+                    ? "→ Student"
+                    : "→ Guest"
             }
         </button>
     );

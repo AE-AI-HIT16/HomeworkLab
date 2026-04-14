@@ -19,7 +19,7 @@ const mimeIcons: Record<string, string> = {
 
 export function PromptFileList({ files }: PromptFileListProps) {
     if (files.length === 0) {
-        return <p className="text-sm text-gray-400">Chưa có file đề bài.</p>;
+        return <p className="text-sm text-gray-400">No prompt files yet.</p>;
     }
 
     return (
@@ -44,7 +44,7 @@ export function PromptFileList({ files }: PromptFileListProps) {
                             {size && (
                                 <span className="text-xs text-gray-400 shrink-0">{size}</span>
                             )}
-                            <span className="text-xs text-blue-500 shrink-0">Mở ↗</span>
+                            <span className="text-xs text-blue-500 shrink-0">Open ↗</span>
                         </a>
                     </li>
                 );

@@ -10,22 +10,22 @@ function getStatus(assignment: Assignment, submission?: Submission): SubmissionS
 
 const statusConfig: Record<SubmissionStatus, { label: string; className: string }> = {
     not_submitted: {
-        label: "Chưa nộp",
+        label: "Not submitted",
         className: "bg-gray-100 text-gray-600",
     },
     submitted: {
-        label: "Đã nộp",
+        label: "Submitted",
         className: "bg-green-100 text-green-700",
     },
     late: {
-        label: "Nộp trễ",
+        label: "Late submission",
         className: "bg-amber-100 text-amber-700",
     },
 };
 
 function formatDeadline(dueAt?: string): string {
-    if (!dueAt) return "Không có deadline";
-    return new Date(dueAt).toLocaleDateString("vi-VN", {
+    if (!dueAt) return "No deadline";
+    return new Date(dueAt).toLocaleString("en-US", {
         weekday: "short",
         day: "2-digit",
         month: "2-digit",
@@ -52,7 +52,7 @@ export function AssignmentCard({ assignment, submission }: AssignmentCardProps) 
                     <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
                             <span className="text-xs font-medium text-gray-400">
-                                Bài {assignment.lesson}
+                                Lesson {assignment.lesson}
                             </span>
                             <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${badge.className}`}>
                                 {badge.label}
@@ -69,7 +69,10 @@ export function AssignmentCard({ assignment, submission }: AssignmentCardProps) 
                     </div>
                 </div>
                 <div className="mt-3 flex items-center gap-3 text-xs text-gray-400">
-                    <span>📄 {assignment.promptFiles.length} file đề</span>
+                    <span>
+                        📄 {assignment.promptFiles.length} prompt file
+                        {assignment.promptFiles.length === 1 ? "" : "s"}
+                    </span>
                     <span className={isPastDue && status === "not_submitted" ? "text-red-500 font-medium" : ""}>
                         🕐 {formatDeadline(assignment.dueAt)}
                     </span>

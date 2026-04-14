@@ -1,12 +1,11 @@
 import { auth, signOut } from "@/auth";
-import Link from "next/link";
 
 export default async function UnauthorizedPage() {
     const session = await auth();
     const githubUsername = session?.user?.githubUsername || "[Your GitHub Username]";
     const name = session?.user?.name || "[Your Name]";
 
-    const mailToUrl = `mailto:nguyenhuyhoangqbx5@gmail.com?subject=${encodeURIComponent("Yêu cầu cấp quyền truy cập HIT AI/DATA")}&body=${encodeURIComponent(`Xin chào Admin,\n\nVui lòng thêm tài khoản GitHub của tôi vào danh sách được cấp quyền truy cập hệ thống HIT AI/DATA.\n\nThông tin của tôi:\n- Họ và tên: ${name}\n- GitHub Username: ${githubUsername}\n\nXin cảm ơn!`)}`;
+    const mailToUrl = `mailto:nguyenhuyhoangqbx5@gmail.com?subject=${encodeURIComponent("Request access to HIT AI/DATA")}&body=${encodeURIComponent(`Hello Admin,\n\nPlease add my GitHub account to the authorized list for the HIT AI/DATA system.\n\nMy information:\n- Full name: ${name}\n- GitHub username: ${githubUsername}\n\nThank you!`)}`;
     return (
         <div className="min-h-screen flex flex-col bg-[var(--hw-surface)] text-[var(--hw-on-surface)]">
             {/* Top Nav */}
@@ -48,7 +47,7 @@ export default async function UnauthorizedPage() {
                         </h1>
 
                         <p className="text-[14px] text-[var(--hw-on-surface-variant)] leading-relaxed mb-8 px-2">
-                            Your GitHub account isn't on the
+                            Your GitHub account is not on the
                             authorized list for AI Class 101 yet.
                             <br /><br />
                             If you think this is a mistake, please reach out to your instructor or the class administrator.

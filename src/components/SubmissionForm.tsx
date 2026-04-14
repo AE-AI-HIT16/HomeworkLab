@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import type { Submission, SubmissionType } from "@/types";
 import { submitAssignment } from "@/server/actions";
 import { useRouter } from "next/navigation";
@@ -12,8 +12,9 @@ interface SubmissionFormProps {
     isPastDue: boolean;
 }
 
-const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50 MB
-const ALLOWED_EXTENSIONS = [".pdf", ".docx", ".zip", ".tar", ".py", ".ipynb", ".cpp", ".h", ".c"];
+const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20 MB (must match server validation)
+const ALLOWED_EXTENSIONS = [".py", ".ipynb", ".zip", ".pdf", ".docx", ".csv", ".txt", ".md"];
+const MAX_FILE_SIZE_MB = MAX_FILE_SIZE / (1024 * 1024);
 
 type FormState = "idle" | "uploading" | "success" | "error" | "already_submitted";
 
@@ -67,7 +68,7 @@ export function SubmissionForm({ assignmentId, existingSubmission, isPastDue }: 
 
         if (file.size > MAX_FILE_SIZE) {
             setView("error");
-            setErrorMsg("File is too large. Maximum size is 50MB.");
+            setErrorMsg(`File is too large. Maximum size is ${MAX_FILE_SIZE_MB}MB.`);
             e.target.value = "";
             return;
         }
@@ -95,7 +96,7 @@ export function SubmissionForm({ assignmentId, existingSubmission, isPastDue }: 
                 }
                 if (file.size > MAX_FILE_SIZE) {
                     setView("error");
-                    setErrorMsg("File is too large. Maximum size is 50MB.");
+                    setErrorMsg(`File is too large. Maximum size is ${MAX_FILE_SIZE_MB}MB.`);
                     return;
                 }
                 setFileName(file.name);
@@ -165,7 +166,7 @@ export function SubmissionForm({ assignmentId, existingSubmission, isPastDue }: 
                 setView("success");
                 router.refresh();
             }, 600);
-        } catch (err) {
+        } catch {
             clearInterval(interval);
             setView("error");
             setErrorMsg("Network error. Please try again.");
@@ -369,7 +370,7 @@ export function SubmissionForm({ assignmentId, existingSubmission, isPastDue }: 
                                         </div>
                                         <p className="text-sm font-medium text-slate-900">Drop your submission here</p>
                                         <p className="text-[10px] text-slate-500 mt-1 mb-4 max-w-[200px] leading-relaxed">
-                                            Supported: {ALLOWED_EXTENSIONS.join(", ")} (Max: 50MB)
+                                            Supported: {ALLOWED_EXTENSIONS.join(", ")} (Max: {MAX_FILE_SIZE_MB}MB)
                                         </p>
                                         <span className="border border-slate-200 text-slate-600 text-xs font-medium px-4 py-1.5 rounded-lg hover:bg-slate-50 transition-colors">
                                             Browse Files

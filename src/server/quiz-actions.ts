@@ -19,26 +19,26 @@ export async function submitQuizAction(
     // Auth check
     const session = await auth();
     if (!session?.user?.githubUsername) {
-        return { success: false, error: "Bạn cần đăng nhập để nộp bài." };
+        return { success: false, error: "You need to sign in to submit." };
     }
 
     const role = await getUserRole(session.user.githubUsername);
     if (role === "guest") {
-        return { success: false, error: "Khách mời không thể nộp bài." };
+        return { success: false, error: "Guest accounts cannot submit assignments." };
     }
 
     // Get the assignment
     const assignment = await getAssignmentById(assignmentId);
     if (!assignment) {
-        return { success: false, error: "Không tìm thấy bài tập." };
+        return { success: false, error: "Assignment not found." };
     }
 
     if (assignment.assignmentType !== "quiz" || !assignment.quizData) {
-        return { success: false, error: "Bài tập này không phải dạng trắc nghiệm." };
+        return { success: false, error: "This assignment is not a quiz." };
     }
 
     if (answers.length !== assignment.quizData.length) {
-        return { success: false, error: "Số câu trả lời không khớp với số câu hỏi." };
+        return { success: false, error: "The number of answers does not match the number of questions." };
     }
 
     // Grade the quiz

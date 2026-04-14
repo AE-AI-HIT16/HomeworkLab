@@ -3,7 +3,7 @@ import { getCurrentUserRole } from "@/lib/roles";
 import { getStudents, getSubmissions } from "@/lib/google-sheets";
 import { TopNav } from "@/components/TopNav";
 import { StudentSidebar } from "@/components/StudentSidebar";
-import Link from "next/link";
+import { MobileBottomNav } from "@/components/MobileBottomNav";
 
 export const dynamic = "force-dynamic";
 
@@ -233,21 +233,7 @@ export default async function LeaderboardPage() {
                 </main>
             </div>
 
-            {/* ═══ MOBILE BOTTOM NAV (From layout/courses, keeping it exact) ═══ */}
-            <nav className="md:hidden fixed bottom-0 left-0 w-full bg-[var(--hw-surface-container-lowest)] border-t border-[var(--hw-outline-variant)]/20 shadow-[0_-4px_20px_rgba(0,0,0,0.03)] h-[72px] flex items-center justify-around px-2 z-50">
-                <Link href="/dashboard" className="flex flex-col items-center justify-center text-[var(--hw-outline)] gap-1 w-[30%] pb-2">
-                    <span className="material-symbols-outlined text-[20px]">dashboard</span>
-                    <span className="text-[9px] font-bold tracking-wider uppercase">Dashboard</span>
-                </Link>
-                <Link href="/courses" className="flex flex-col items-center justify-center text-[var(--hw-outline)] gap-1 w-[30%] pb-2">
-                    <span className="material-symbols-outlined text-[20px]">auto_stories</span>
-                    <span className="text-[9px] font-bold tracking-wider uppercase">Courses</span>
-                </Link>
-                <Link href="/leaderboard" className="flex flex-col items-center justify-center text-[var(--hw-primary)] gap-1 w-[30%] py-2 rounded-xl bg-[var(--hw-primary)]/5">
-                    <span className="material-symbols-outlined text-[20px]" style={{ fontVariationSettings: "'FILL' 1" }}>emoji_events</span>
-                    <span className="text-[9px] font-bold tracking-wider uppercase text-[var(--hw-primary)]">Leaderboard</span>
-                </Link>
-            </nav>
+            <MobileBottomNav variant="student" />
         </div>
     );
 }

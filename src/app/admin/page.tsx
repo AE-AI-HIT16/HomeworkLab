@@ -3,6 +3,7 @@ import { getCurrentUserRole } from "@/lib/roles";
 import { AdminAssignmentCard } from "@/components/AdminAssignmentCard";
 import { redirect } from "next/navigation";
 import { getAssignments, getSubmissionsByAssignment, getStudents } from "@/lib/google-sheets";
+import { MobileBottomNav } from "@/components/MobileBottomNav";
 
 export default async function AdminDashboardPage() {
     const { role, session } = await getCurrentUserRole();
@@ -56,7 +57,7 @@ export default async function AdminDashboardPage() {
     // EMPTY STATE
     if (assignments.length === 0) {
         return (
-            <main className="p-8 max-w-5xl mx-auto min-h-[calc(100vh-56px)] mt-14 pb-20 overflow-y-auto">
+            <main className="p-8 max-w-5xl mx-auto min-h-[calc(100vh-64px)] pb-20 overflow-y-auto">
                 <div className="max-w-3xl mx-auto flex flex-col items-center justify-center text-center mt-32">
                     <div className="w-64 h-48 relative mb-8 flex items-center justify-center">
                         <div className="absolute inset-0 flex items-center justify-center gap-6 opacity-60">
@@ -81,14 +82,14 @@ export default async function AdminDashboardPage() {
                             <span className="material-symbols-outlined text-lg">add</span>
                             Create your first assignment
                         </Link>
-                        <button className="bg-slate-100 text-slate-700 font-medium px-6 py-3 rounded-xl hover:bg-slate-200 transition-colors">
-                            Import from Resources
-                        </button>
+                        <Link href="/admin/curriculum" className="bg-slate-100 text-slate-700 font-medium px-6 py-3 rounded-xl hover:bg-slate-200 transition-colors">
+                            Open curriculum
+                        </Link>
                     </div>
 
                     <div className="mt-16 text-center">
                         <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">QUICK START TIP</p>
-                        <p className="text-xs text-slate-400 italic">Try using the AI Module Generator to draft a complete assignment syllabus in seconds.</p>
+                        <p className="text-xs text-slate-400 italic">Start with one assignment, then attach materials from Curriculum for each week.</p>
                     </div>
                 </div>
             </main>
@@ -96,7 +97,7 @@ export default async function AdminDashboardPage() {
     }
 
     return (
-        <main className="p-4 sm:p-6 md:p-8 max-w-6xl mx-auto md:mt-14 pb-24 md:pb-20 overflow-y-auto w-full">
+        <main className="p-4 sm:p-6 md:p-8 max-w-6xl mx-auto pb-24 md:pb-20 overflow-y-auto w-full">
             <div className="mb-6 md:mb-8">
                 <p className="text-[10px] uppercase font-bold tracking-widest text-[var(--hw-primary)] mb-1">Analytics Overview</p>
                 <h1 className="text-2xl font-bold tracking-tight text-slate-900">Assignment Dashboard</h1>
@@ -174,9 +175,9 @@ export default async function AdminDashboardPage() {
                     </div>
                     <div className="flex justify-between items-center text-xs mt-8">
                         <p className="text-slate-500">Showing the average grade distribution across the last 5 operational weeks.</p>
-                        <button className="font-semibold text-[var(--hw-primary)] hover:text-[var(--hw-on-primary-fixed)] transition-colors flex items-center gap-1">
+                        <Link href="/admin/grading" className="font-semibold text-[var(--hw-primary)] hover:text-[var(--hw-on-primary-fixed)] transition-colors flex items-center gap-1">
                             Full Analytics <span className="material-symbols-outlined text-[14px]">trending_up</span>
-                        </button>
+                        </Link>
                     </div>
                 </div>
 
@@ -229,9 +230,9 @@ export default async function AdminDashboardPage() {
                         </div>
                     </div>
 
-                    <button className="w-full mt-6 py-2 bg-white border border-slate-200 text-xs font-bold text-slate-600 rounded-lg hover:bg-slate-50 transition-colors">
-                        Manage Labs
-                    </button>
+                    <Link href="/admin/students" className="w-full mt-6 py-2 bg-white border border-slate-200 text-xs font-bold text-slate-600 rounded-lg hover:bg-slate-50 transition-colors inline-flex items-center justify-center">
+                        Manage Students
+                    </Link>
                 </div>
             </div>
 
@@ -242,25 +243,7 @@ export default async function AdminDashboardPage() {
                 </Link>
             </div>
 
-            {/* Mobile Bottom Navigation */}
-            <nav className="md:hidden fixed bottom-0 left-0 w-full bg-[var(--hw-surface-container-lowest)] border-t border-[var(--hw-outline-variant)]/20 shadow-[0_-4px_20px_rgba(0,0,0,0.03)] h-[72px] flex items-center justify-around px-2 z-50">
-                <Link href="/admin" className="flex flex-col items-center justify-center text-[var(--hw-primary)] gap-1 w-[22%] py-2 rounded-xl bg-[var(--hw-primary)]/5">
-                    <span className="material-symbols-outlined text-[20px]" style={{ fontVariationSettings: "'FILL' 1" }}>dashboard</span>
-                    <span className="text-[9px] font-bold tracking-wider uppercase text-[var(--hw-primary)]">Dashboard</span>
-                </Link>
-                <Link href="#" className="flex flex-col items-center justify-center text-[var(--hw-outline)] gap-1 w-[22%] pb-2">
-                    <span className="material-symbols-outlined text-[20px]">groups</span>
-                    <span className="text-[9px] font-bold tracking-wider uppercase">Students</span>
-                </Link>
-                <Link href="#" className="flex flex-col items-center justify-center text-[var(--hw-outline)] gap-1 w-[22%] pb-2">
-                    <span className="material-symbols-outlined text-[20px]">grading</span>
-                    <span className="text-[9px] font-bold tracking-wider uppercase">Grading</span>
-                </Link>
-                <Link href="#" className="flex flex-col items-center justify-center text-[var(--hw-outline)] gap-1 w-[22%] pb-2">
-                    <span className="material-symbols-outlined text-[20px]">settings</span>
-                    <span className="text-[9px] font-bold tracking-wider uppercase">Settings</span>
-                </Link>
-            </nav>
+            <MobileBottomNav variant="admin" />
         </main>
     );
 }

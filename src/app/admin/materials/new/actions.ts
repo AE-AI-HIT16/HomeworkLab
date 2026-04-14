@@ -21,7 +21,7 @@ export async function createMaterialAction(
         // Enforce Admin role
         const { role } = await getCurrentUserRole();
         if (role !== "admin") {
-            return { error: "Bạn không có quyền thực hiện hành động này (Yêu cầu quyền Admin)." };
+            return { error: "You do not have permission to perform this action (admin role required)." };
         }
 
         // Extract form data
@@ -38,15 +38,15 @@ export async function createMaterialAction(
 
         // Validate common fields
         if (!courseId || !getActiveCourseIds().includes(courseId)) {
-            return { error: "Vui lòng chọn lớp cho tài liệu này." };
+            return { error: "Please select a valid course for this material." };
         }
         if (!title || !weekStr || !typeStr) {
-            return { error: "Vui lòng điền đầy đủ Tên tài liệu, Tuần, và Loại." };
+            return { error: "Please provide title, week, and material type." };
         }
 
         const week = parseInt(weekStr, 10);
         if (isNaN(week) || week < 1) {
-            return { error: "Số Tuần (Week) không hợp lệ." };
+            return { error: "Invalid week value." };
         }
 
         let type: "theory" | "video" | "slides" | "other" = "other";
@@ -62,13 +62,13 @@ export async function createMaterialAction(
 
         // Mode-specific validation
         if (contentMode === "link" && !url) {
-            return { error: "Vui lòng nhập URL link cho tài liệu." };
+            return { error: "Please enter a URL for this material." };
         }
         if (contentMode === "file" && !url) {
-            return { error: "Vui lòng nhập Google Drive URL để preview file." };
+            return { error: "Please enter a Google Drive URL for file preview." };
         }
         if (contentMode === "post" && !postContent.trim()) {
-            return { error: "Vui lòng viết nội dung bài post (Markdown)." };
+            return { error: "Please provide post content (Markdown)." };
         }
 
         const published = publishedStr === "on";
@@ -96,8 +96,9 @@ export async function createMaterialAction(
         revalidatePath("/courses/[slug]", "page");
 
         return { success: true, materialId: id };
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error("Create Material Action Error:", error);
-        return { error: error.message || "Đã xảy ra lỗi hệ thống khi lưu tài liệu." };
+        const message = error instanceof Error ? error.message : "";
+        return { error: message || "A system error occurred while saving this material." };
     }
 }

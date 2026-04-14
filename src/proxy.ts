@@ -16,12 +16,11 @@ import type { Session } from "next-auth";
  */
 export const proxy = auth((req: NextRequest & { auth: Session | null }) => {
     const { pathname } = req.nextUrl;
+    const publicPaths = ["/", "/login", "/unauthorized", "/about", "/contact", "/privacy", "/terms", "/help"];
 
     // Public pages — no auth required
     const isPublic =
-        pathname === "/" ||
-        pathname === "/login" ||
-        pathname === "/unauthorized" ||
+        publicPaths.includes(pathname) ||
         pathname.startsWith("/api/auth");
 
     if (isPublic) return NextResponse.next();

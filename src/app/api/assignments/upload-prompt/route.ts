@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
         formData = await req.formData();
     } catch (err) {
         console.error("formData parse error:", err);
-        return NextResponse.json({ error: "Invalid form data. File có thể quá lớn (tối đa 20MB)." }, { status: 400 });
+        return NextResponse.json({ error: "Invalid form data. The file may be too large (max 20MB)." }, { status: 400 });
     }
 
     const file = formData.get("file") as File | null;
@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
     const ext = "." + fileName.split(".").pop()?.toLowerCase();
     if (!ALLOWED_EXTENSIONS.includes(ext)) {
         return NextResponse.json(
-            { error: `Loại file không hỗ trợ. Chỉ nhận: ${ALLOWED_EXTENSIONS.join(", ")}` },
+            { error: `Unsupported file type. Allowed types: ${ALLOWED_EXTENSIONS.join(", ")}` },
             { status: 400 }
         );
     }
@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
 
     if (!folderId) {
         return NextResponse.json(
-            { error: "Google Drive chưa được cấu hình. Vui lòng set GOOGLE_DRIVE_ROOT_FOLDER_ID trong env." },
+            { error: "Google Drive is not configured. Please set GOOGLE_DRIVE_ROOT_FOLDER_ID in your environment." },
             { status: 503 }
         );
     }
@@ -82,7 +82,7 @@ export async function POST(req: NextRequest) {
         const errMsg = error instanceof Error ? error.message : String(error);
         console.error("Upload prompt file failed:", errMsg);
         return NextResponse.json(
-            { error: `Upload thất bại: ${errMsg.substring(0, 200)}` },
+            { error: `Upload failed: ${errMsg.substring(0, 200)}` },
             { status: 500 }
         );
     }

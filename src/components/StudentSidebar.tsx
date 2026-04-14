@@ -10,8 +10,13 @@ interface StudentSidebarProps {
 export function StudentSidebar({ role }: StudentSidebarProps) {
     const pathname = usePathname();
 
+    const isActive = (path: string) => {
+        if (path === "/dashboard") return pathname === "/dashboard";
+        return pathname === path || pathname.startsWith(`${path}/`);
+    };
+
     const linkClass = (path: string) =>
-        pathname === path
+        isActive(path)
             ? "flex items-center gap-3 px-3 py-2.5 bg-white text-[var(--hw-primary)] shadow-sm rounded-lg font-semibold"
             : "flex items-center gap-3 px-3 py-2.5 text-[var(--hw-on-surface-variant)] hover:bg-[var(--hw-surface-container-low)] rounded-lg hover:translate-x-1 transition-transform";
 

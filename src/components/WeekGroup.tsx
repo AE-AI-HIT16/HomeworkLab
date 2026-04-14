@@ -13,10 +13,10 @@ export function WeekGroup({ week, assignments, submissionMap }: WeekGroupProps) 
         <section>
             <h2 className="text-lg font-bold text-gray-800 mb-3 flex items-center gap-2">
                 <span className="bg-blue-600 text-white text-xs px-2 py-1 rounded-md">
-                    Tuần {week}
+                    Week {week}
                 </span>
                 <span className="text-sm font-normal text-gray-400">
-                    {assignments.length} bài tập
+                    {assignments.length} assignments
                 </span>
             </h2>
             <div className="grid gap-3 sm:grid-cols-2">

@@ -1,6 +1,6 @@
 export default function AdminLoading() {
     return (
-        <main className="p-4 sm:p-6 md:p-8 max-w-6xl mx-auto md:mt-14 pb-24 md:pb-20 overflow-y-auto w-full animate-pulse">
+        <main className="p-4 sm:p-6 md:p-8 max-w-6xl mx-auto pb-24 md:pb-20 overflow-y-auto w-full animate-pulse">
             {/* Header Skeleton */}
             <div className="flex items-center justify-between mb-6 md:mb-8">
                 <div>

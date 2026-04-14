@@ -3,6 +3,7 @@
 import { signIn } from "next-auth/react";
 import { useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 
 interface LoginClientProps {
     accessDenied: boolean;
@@ -149,13 +150,13 @@ export default function LoginClient({ accessDenied, deniedUser }: LoginClientPro
 
                         {/* Footer Links */}
                         <div className="mt-12 pt-8 border-t border-[#c7c4d8]/10 flex items-center justify-between">
-                            <a className="text-xs font-[Inter] font-semibold text-[#464555] hover:text-[#3525cd] transition-colors flex items-center" href="#">
+                            <Link className="text-xs font-[Inter] font-semibold text-[#464555] hover:text-[#3525cd] transition-colors flex items-center" href="/help">
                                 <span className="material-symbols-outlined text-[16px] mr-1.5">help_outline</span>
                                 Access Help
-                            </a>
+                            </Link>
                             <div className="flex space-x-4">
-                                <a className="text-xs font-[Inter] text-[#777587] hover:text-[#191c1e] transition-colors" href="#">Privacy</a>
-                                <a className="text-xs font-[Inter] text-[#777587] hover:text-[#191c1e] transition-colors" href="#">Terms</a>
+                                <Link className="text-xs font-[Inter] text-[#777587] hover:text-[#191c1e] transition-colors" href="/privacy">Privacy</Link>
+                                <Link className="text-xs font-[Inter] text-[#777587] hover:text-[#191c1e] transition-colors" href="/terms">Terms</Link>
                             </div>
                         </div>
                     </div>

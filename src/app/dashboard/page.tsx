@@ -6,6 +6,7 @@ import type { Assignment, Submission } from "@/types";
 
 import { TopNav } from "@/components/TopNav";
 import { StudentSidebar } from "@/components/StudentSidebar";
+import { MobileBottomNav } from "@/components/MobileBottomNav";
 
 function getSubmissionStatus(assignment: Assignment, submission?: Submission) {
     if (submission) {
@@ -63,7 +64,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
 
     // Categorize Assignments
     const now = new Date();
-    const pendingAssignments = publishedAssignments
+    const pendingAssignments = assignments
         .filter((a) => !submissionMap.has(a.id))
         .sort((a, b) => {
             // Sort by week/lesson ascending
@@ -108,11 +109,21 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
 
                 {/* ═══ MAIN CONTENT ═══ */}
                 <main className="ml-0 md:ml-64 w-full p-4 sm:p-6 md:p-8 min-h-screen bg-[var(--hw-surface)] pb-24 max-w-7xl mx-auto">
-                    <header className="mb-8">
-                        <h1 className="text-2xl font-bold tracking-tight text-[var(--hw-on-surface)] mb-1">Learning Hub</h1>
-                        <p className="text-[var(--hw-on-surface-variant)] text-sm">
-                            {role === "admin" ? "Admin View — All Assignments" : `Welcome back, ${user.name?.split(" ")[0] ?? user.githubUsername}`}
-                        </p>
+                    <header className="mb-8 flex items-start justify-between gap-4">
+                        <div>
+                            <h1 className="text-2xl font-bold tracking-tight text-[var(--hw-on-surface)] mb-1">Learning Hub</h1>
+                            <p className="text-[var(--hw-on-surface-variant)] text-sm">
+                                {role === "admin"
+                                    ? "You are viewing the student-facing dashboard."
+                                    : `Welcome back, ${user.name?.split(" ")[0] ?? user.githubUsername}`}
+                            </p>
+                        </div>
+                        {role === "admin" && (
+                            <Link href="/admin" className="hidden md:inline-flex items-center gap-2 px-4 py-2.5 bg-[var(--hw-primary)] text-white text-sm font-semibold rounded-xl hover:brightness-110 transition-all shadow-md shadow-[var(--hw-primary)]/20">
+                                Open Admin Workspace
+                                <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
+                            </Link>
+                        )}
                     </header>
 
                     {/* TOP METRICS */}
@@ -210,9 +221,9 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
                                         <div className="w-16 h-16 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center mb-4">
                                             <span className="material-symbols-outlined text-[32px]">celebration</span>
                                         </div>
-                                        <h3 className="text-lg font-bold text-[var(--hw-on-surface)] mb-2">You're all caught up!</h3>
+                                        <h3 className="text-lg font-bold text-[var(--hw-on-surface)] mb-2">You&apos;re all caught up!</h3>
                                         <p className="text-[var(--hw-on-surface-variant)] text-sm max-w-md">
-                                            You've completed all published assignments. Great job staying on top of your studies!
+                                            You&apos;ve completed all published assignments. Great job staying on top of your studies!
                                         </p>
                                     </div>
                                 )}
@@ -326,21 +337,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
                 </main>
             </div>
 
-            {/* ═══ MOBILE BOTTOM NAV ═══ */}
-            <nav className="md:hidden fixed bottom-0 left-0 w-full bg-[var(--hw-surface-container-lowest)] border-t border-[var(--hw-outline-variant)]/20 shadow-[0_-4px_20px_rgba(0,0,0,0.03)] h-[72px] flex items-center justify-around px-2 z-50">
-                <Link href="/dashboard" className="flex flex-col items-center justify-center text-[var(--hw-primary)] gap-1 w-[30%] py-2 rounded-xl bg-[var(--hw-primary)]/5">
-                    <span className="material-symbols-outlined text-[20px]" style={{ fontVariationSettings: "'FILL' 1" }}>dashboard</span>
-                    <span className="text-[9px] font-bold tracking-wider uppercase text-[var(--hw-primary)]">Dashboard</span>
-                </Link>
-                <Link href="/courses" className="flex flex-col items-center justify-center text-[var(--hw-outline)] gap-1 w-[30%] pb-2">
-                    <span className="material-symbols-outlined text-[20px]">auto_stories</span>
-                    <span className="text-[9px] font-bold tracking-wider uppercase">Courses</span>
-                </Link>
-                <Link href="/leaderboard" className="flex flex-col items-center justify-center text-[var(--hw-outline)] gap-1 w-[30%] pb-2">
-                    <span className="material-symbols-outlined text-[20px]">emoji_events</span>
-                    <span className="text-[9px] font-bold tracking-wider uppercase">Leaderboard</span>
-                </Link>
-            </nav>
+            <MobileBottomNav variant="student" />
         </div>
     );
 }
