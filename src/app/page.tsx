@@ -58,9 +58,12 @@ export default function LandingPage() {
               <Link href="/login" className="w-full sm:w-auto px-8 py-4 rounded-xl bg-gradient-to-br from-[#4648d4] to-[#6063ee] text-white font-semibold hover:scale-[1.02] transition-transform shadow-[0_32px_64px_-12px_rgba(19,20,74,0.06)]">
                 Get Started
               </Link>
-              <button className="w-full sm:w-auto px-8 py-4 rounded-xl border border-[#c7c4d7]/30 text-[#191c1e] font-semibold hover:bg-[#f2f4f6] transition-colors">
+              <Link
+                href="/contact"
+                className="w-full sm:w-auto px-8 py-4 rounded-xl border border-[#c7c4d7]/30 text-[#191c1e] font-semibold hover:bg-[#f2f4f6] transition-colors text-center"
+              >
                 Request Demo
-              </button>
+              </Link>
             </div>
           </div>
 

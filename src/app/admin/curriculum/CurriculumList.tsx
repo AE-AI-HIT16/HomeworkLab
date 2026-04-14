@@ -52,6 +52,7 @@ function DeleteButton({ id, type, title, onDeleted }: DeleteButtonProps) {
             <div className="flex items-center gap-2">
                 <span className="text-xs text-red-600 font-medium">Delete?</span>
                 <button
+                    type="button"
                     onClick={handleDelete}
                     disabled={isPending}
                     className="px-2 py-1 bg-red-600 text-white text-xs rounded-lg font-bold hover:bg-red-700 disabled:opacity-50"
@@ -59,6 +60,7 @@ function DeleteButton({ id, type, title, onDeleted }: DeleteButtonProps) {
                     {isPending ? "..." : "Yes"}
                 </button>
                 <button
+                    type="button"
                     onClick={() => setShowConfirm(false)}
                     className="px-2 py-1 bg-slate-200 text-slate-700 text-xs rounded-lg font-bold hover:bg-slate-300"
                 >
@@ -70,7 +72,9 @@ function DeleteButton({ id, type, title, onDeleted }: DeleteButtonProps) {
 
     return (
         <button
+            type="button"
             onClick={() => setShowConfirm(true)}
+            aria-label={`Delete "${title}"`}
             className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
             title={`Delete "${title}"`}
         >
@@ -136,14 +140,16 @@ function EditTitleButton({ id, currentTitle, onRenamed }: EditTitleButtonProps) 
     }
 
     return (
-        <h4
-            className="text-sm font-semibold text-slate-800 cursor-pointer hover:text-indigo-600 transition-colors group/edit inline-flex items-center gap-1"
+        <button
+            type="button"
             onClick={() => setIsEditing(true)}
             title="Click to edit title"
+            aria-label={`Edit title: ${currentTitle}`}
+            className="text-sm font-semibold text-slate-800 hover:text-indigo-600 transition-colors group/edit inline-flex items-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 rounded"
         >
-            {currentTitle}
+            <span>{currentTitle}</span>
             <span className="material-symbols-outlined text-[14px] text-slate-300 opacity-0 group-hover/edit:opacity-100 transition-opacity">edit</span>
-        </h4>
+        </button>
     );
 }
 

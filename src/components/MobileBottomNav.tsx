@@ -36,20 +36,25 @@ function isActive(pathname: string, href: string): boolean {
 export function MobileBottomNav({ variant }: MobileBottomNavProps) {
     const pathname = usePathname();
     const items = variant === "admin" ? adminItems : studentItems;
+    const navigationLabel = variant === "admin" ? "Admin navigation" : "Student navigation";
 
     return (
-        <nav className="md:hidden fixed bottom-0 left-0 w-full bg-[var(--hw-surface-container-lowest)] border-t border-[var(--hw-outline-variant)]/20 shadow-[0_-4px_20px_rgba(0,0,0,0.03)] h-[72px] flex items-center justify-around px-2 z-50">
+        <nav
+            aria-label={navigationLabel}
+            className="md:hidden fixed bottom-0 left-0 w-full bg-[var(--hw-surface-container-lowest)] border-t border-[var(--hw-outline-variant)]/20 shadow-[0_-4px_20px_rgba(0,0,0,0.03)] h-[72px] flex items-center justify-around px-2 z-50"
+        >
             {items.map((item) => {
                 const active = isActive(pathname, item.href);
                 return (
                     <Link
                         key={item.href}
                         href={item.href}
+                        aria-current={active ? "page" : undefined}
                         className={`flex-1 mx-1 flex flex-col items-center justify-center gap-1 h-[52px] rounded-xl transition-colors ${
                             active
                                 ? "text-[var(--hw-primary)] bg-[var(--hw-primary)]/5"
                                 : "text-[var(--hw-outline)]"
-                        }`}
+                        } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--hw-primary)] focus-visible:ring-offset-2`}
                     >
                         <span
                             className="material-symbols-outlined text-[20px]"

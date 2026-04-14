@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, useCallback } from "react";
+import { useState, useTransition, useCallback, useEffect, useId } from "react";
 import { updateAssignmentAction } from "@/app/admin/assignments/[id]/actions";
 import type { QuizQuestion } from "@/types";
 
@@ -35,6 +35,7 @@ export function EditAssignmentModal({
     const [isPending, startTransition] = useTransition();
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState(false);
+    const titleId = useId();
 
     // Quiz state
     const [quizQuestions, setQuizQuestions] = useState<QuizQuestion[]>(currentQuizData ?? []);
@@ -106,10 +107,38 @@ export function EditAssignmentModal({
         });
     };
 
+    const closeModal = useCallback(() => {
+        if (!isPending) {
+            setOpen(false);
+        }
+    }, [isPending]);
+
+    useEffect(() => {
+        if (!open) return;
+
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if (event.key === "Escape") {
+                event.preventDefault();
+                closeModal();
+            }
+        };
+
+        document.addEventListener("keydown", handleKeyDown);
+        const previousOverflow = document.body.style.overflow;
+        document.body.style.overflow = "hidden";
+
+        return () => {
+            document.removeEventListener("keydown", handleKeyDown);
+            document.body.style.overflow = previousOverflow;
+        };
+    }, [open, closeModal]);
+
     if (!open) {
         return (
             <button
+                type="button"
                 onClick={() => setOpen(true)}
+                aria-haspopup="dialog"
                 className="inline-flex items-center gap-1.5 px-4 py-2 bg-white border border-gray-200 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm"
             >
                 <span className="material-symbols-outlined text-[18px]">edit</span>
@@ -123,12 +152,15 @@ export function EditAssignmentModal({
             {/* Backdrop */}
             <div
                 className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 animate-[fadeIn_0.15s_ease]"
-                onClick={() => !isPending && setOpen(false)}
+                onClick={closeModal}
             />
 
             {/* Modal */}
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
                 <div
+                    role="dialog"
+                    aria-modal="true"
+                    aria-labelledby={titleId}
                     className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl animate-[slideUp_0.2s_ease] overflow-hidden max-h-[90vh] flex flex-col"
                     onClick={(e) => e.stopPropagation()}
                 >
@@ -139,12 +171,14 @@ export function EditAssignmentModal({
                                 <span className="material-symbols-outlined text-indigo-600">edit_note</span>
                             </div>
                             <div>
-                                <h3 className="text-lg font-bold text-gray-900">Edit Assignment</h3>
+                                <h3 id={titleId} className="text-lg font-bold text-gray-900">Edit Assignment</h3>
                                 <p className="text-xs text-gray-500">Update assignment details{isQuiz ? " & quiz questions" : ""}</p>
                             </div>
                         </div>
                         <button
-                            onClick={() => !isPending && setOpen(false)}
+                            type="button"
+                            onClick={closeModal}
+                            aria-label="Close edit assignment dialog"
                             className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
                         >
                             <span className="material-symbols-outlined text-[20px]">close</span>
@@ -196,6 +230,7 @@ export function EditAssignmentModal({
                                         type="text"
                                         value={title}
                                         onChange={(e) => setTitle(e.target.value)}
+                                        autoFocus
                                         className="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-gray-900 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all"
                                     />
                                 </div>
@@ -286,6 +321,7 @@ export function EditAssignmentModal({
                                                 <button
                                                     type="button"
                                                     onClick={() => removeQuestion(qIdx)}
+                                                    aria-label={`Delete question ${qIdx + 1}`}
                                                     className="p-1 text-red-400 hover:text-red-600 hover:bg-red-50 rounded transition-all"
                                                     title="Delete question"
                                                 >
@@ -308,6 +344,8 @@ export function EditAssignmentModal({
                                                     <button
                                                         type="button"
                                                         onClick={() => setCorrectAnswer(qIdx, oIdx)}
+                                                        aria-label={`Mark option ${String.fromCharCode(65 + oIdx)} as correct for question ${qIdx + 1}`}
+                                                        aria-pressed={q.correctIndex === oIdx}
                                                         className={`w-7 h-7 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${
                                                             q.correctIndex === oIdx
                                                                 ? "bg-emerald-500 border-emerald-500 text-white"
@@ -356,13 +394,15 @@ export function EditAssignmentModal({
                     {/* Footer */}
                     <div className="px-6 py-4 border-t border-gray-100 flex items-center justify-end gap-3 bg-gray-50/50 shrink-0">
                         <button
-                            onClick={() => setOpen(false)}
+                            type="button"
+                            onClick={closeModal}
                             disabled={isPending}
                             className="px-4 py-2.5 text-sm font-medium text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
                         >
                             Cancel
                         </button>
                         <button
+                            type="button"
                             onClick={handleSave}
                             disabled={isPending || !title.trim()}
                             className="px-5 py-2.5 text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors disabled:opacity-50 flex items-center gap-2 shadow-sm"

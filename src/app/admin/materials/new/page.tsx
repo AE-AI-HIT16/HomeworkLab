@@ -121,10 +121,11 @@ export default function CreateMaterialPage() {
                                             key={course.id}
                                             type="button"
                                             onClick={() => setSelectedCourseId(course.id)}
+                                            aria-pressed={selectedCourseId === course.id}
                                             className={`group flex items-center p-4 rounded-xl cursor-pointer transition-all border-2 overflow-hidden ${selectedCourseId === course.id
                                                     ? `bg-gradient-to-br ${course.gradient} text-white border-transparent shadow-lg`
                                                     : "bg-slate-50 border-slate-200 hover:border-slate-300"
-                                                }`}
+                                                } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2`}
                                         >
                                             <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${selectedCourseId === course.id
                                                     ? "bg-white/20 text-white"
@@ -234,10 +235,11 @@ export default function CreateMaterialPage() {
                                             key={mode.value}
                                             type="button"
                                             onClick={() => setContentMode(mode.value)}
+                                            aria-pressed={contentMode === mode.value}
                                             className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all text-center ${contentMode === mode.value
                                                     ? "border-indigo-500 bg-indigo-50 text-indigo-700 shadow-sm"
                                                     : "border-slate-200 bg-slate-50 text-slate-500 hover:border-slate-300 hover:bg-slate-100"
-                                                }`}
+                                                } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2`}
                                         >
                                             <span
                                                 className={`material-symbols-outlined text-[28px] ${contentMode === mode.value ? "text-indigo-600" : "text-slate-400"
@@ -313,6 +315,7 @@ export default function CreateMaterialPage() {
                                             <button
                                                 type="button"
                                                 onClick={() => setShowPreview(!showPreview)}
+                                                aria-pressed={showPreview}
                                                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors border border-slate-200 hover:bg-slate-50"
                                             >
                                                 <span className="material-symbols-outlined text-[16px]">

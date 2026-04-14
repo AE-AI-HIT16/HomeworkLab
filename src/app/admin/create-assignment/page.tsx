@@ -135,6 +135,17 @@ export default function CreateAssignmentPage() {
         setPendingFiles((prev) => prev.filter((_, i) => i !== index));
     }, []);
 
+    const openFilePicker = useCallback(() => {
+        fileInputRef.current?.click();
+    }, []);
+
+    const handleDropzoneKeyDown = useCallback((e: React.KeyboardEvent<HTMLDivElement>) => {
+        if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            openFilePicker();
+        }
+    }, [openFilePicker]);
+
     const handleDragOver = useCallback((e: React.DragEvent) => {
         e.preventDefault();
         setIsDragging(true);
@@ -278,9 +289,12 @@ export default function CreateAssignmentPage() {
                                 <p className="text-xs text-white/80 leading-snug">
                                     Generate rubrics or scaffold instructions based on your lesson plan.
                                 </p>
-                                <button className="mt-6 bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg text-xs font-bold transition-all border border-white/10 backdrop-blur-sm">
+                                <Link
+                                    href="/help"
+                                    className="mt-6 inline-flex bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg text-xs font-bold transition-all border border-white/10 backdrop-blur-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80"
+                                >
                                     Launch Guide
-                                </button>
+                                </Link>
                             </div>
                             <div className="absolute -bottom-8 -right-8 w-32 h-32 bg-white/10 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700" />
                         </div>
@@ -314,10 +328,11 @@ export default function CreateAssignmentPage() {
                                         key={course.id}
                                         type="button"
                                         onClick={() => setSelectedCourseId(course.id)}
+                                        aria-pressed={selectedCourseId === course.id}
                                         className={`group relative flex items-center p-5 rounded-xl cursor-pointer transition-all border-2 overflow-hidden ${selectedCourseId === course.id
                                                 ? `bg-gradient-to-br ${course.gradient} text-white border-transparent shadow-lg`
                                                 : "bg-[var(--hw-surface-container-lowest)] border-transparent hover:border-slate-200"
-                                            }`}
+                                            } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--hw-primary)] focus-visible:ring-offset-2`}
                                     >
                                         <div className={`w-11 h-11 rounded-lg flex items-center justify-center transition-colors shrink-0 ${selectedCourseId === course.id
                                                 ? "bg-white/20 text-white"
@@ -413,20 +428,50 @@ export default function CreateAssignmentPage() {
                                         </label>
                                         <div className="border border-[var(--hw-outline-variant)]/20 rounded-lg overflow-hidden">
                                             <div className="bg-[var(--hw-surface-container-low)] px-4 py-2 border-b border-[var(--hw-outline-variant)]/10 flex gap-4">
-                                                <button type="button" className="text-[var(--hw-on-surface-variant)] hover:text-[var(--hw-primary)]">
+                                                <button
+                                                    type="button"
+                                                    disabled
+                                                    aria-label="Formatting tools coming soon"
+                                                    title="Formatting tools coming soon"
+                                                    className="text-[var(--hw-on-surface-variant)] disabled:opacity-40 disabled:cursor-not-allowed"
+                                                >
                                                     <span className="material-symbols-outlined text-xl">format_bold</span>
                                                 </button>
-                                                <button type="button" className="text-[var(--hw-on-surface-variant)] hover:text-[var(--hw-primary)]">
+                                                <button
+                                                    type="button"
+                                                    disabled
+                                                    aria-label="Formatting tools coming soon"
+                                                    title="Formatting tools coming soon"
+                                                    className="text-[var(--hw-on-surface-variant)] disabled:opacity-40 disabled:cursor-not-allowed"
+                                                >
                                                     <span className="material-symbols-outlined text-xl">format_italic</span>
                                                 </button>
-                                                <button type="button" className="text-[var(--hw-on-surface-variant)] hover:text-[var(--hw-primary)]">
+                                                <button
+                                                    type="button"
+                                                    disabled
+                                                    aria-label="Formatting tools coming soon"
+                                                    title="Formatting tools coming soon"
+                                                    className="text-[var(--hw-on-surface-variant)] disabled:opacity-40 disabled:cursor-not-allowed"
+                                                >
                                                     <span className="material-symbols-outlined text-xl">format_list_bulleted</span>
                                                 </button>
-                                                <button type="button" className="text-[var(--hw-on-surface-variant)] hover:text-[var(--hw-primary)]">
+                                                <button
+                                                    type="button"
+                                                    disabled
+                                                    aria-label="Formatting tools coming soon"
+                                                    title="Formatting tools coming soon"
+                                                    className="text-[var(--hw-on-surface-variant)] disabled:opacity-40 disabled:cursor-not-allowed"
+                                                >
                                                     <span className="material-symbols-outlined text-xl">link</span>
                                                 </button>
                                                 <div className="flex-1" />
-                                                <button type="button" className="text-[var(--hw-primary)] text-xs font-bold flex items-center gap-1">
+                                                <button
+                                                    type="button"
+                                                    disabled
+                                                    aria-label="AI review coming soon"
+                                                    title="AI review coming soon"
+                                                    className="text-[var(--hw-primary)] text-xs font-bold flex items-center gap-1 disabled:opacity-40 disabled:cursor-not-allowed"
+                                                >
                                                     <span className="material-symbols-outlined text-sm">spellcheck</span>
                                                     AI Review
                                                 </button>
@@ -538,12 +583,16 @@ export default function CreateAssignmentPage() {
                                             onDragOver={handleDragOver}
                                             onDragLeave={handleDragLeave}
                                             onDrop={handleDrop}
-                                            onClick={() => fileInputRef.current?.click()}
+                                            onClick={openFilePicker}
+                                            onKeyDown={handleDropzoneKeyDown}
+                                            role="button"
+                                            tabIndex={0}
+                                            aria-label="Upload prompt files"
                                             className={`relative border-2 border-dashed rounded-xl p-10 flex flex-col items-center justify-center gap-3 cursor-pointer transition-all
                                                 ${isDragging
                                                     ? "border-[var(--hw-primary)] bg-[var(--hw-primary)]/5 scale-[1.01]"
                                                     : "border-[var(--hw-outline-variant)]/40 hover:border-[var(--hw-primary)]/50 hover:bg-[var(--hw-surface-container-low)]"
-                                                }`}
+                                                } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--hw-primary)]/30`}
                                         >
                                             <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-colors ${isDragging ? "bg-[var(--hw-primary)]/15" : "bg-[var(--hw-surface-container-low)]"}`}>
                                                 <span className={`material-symbols-outlined text-3xl transition-colors ${isDragging ? "text-[var(--hw-primary)]" : "text-[var(--hw-on-surface-variant)]"}`}>
@@ -621,6 +670,7 @@ export default function CreateAssignmentPage() {
                                                         <button
                                                             type="button"
                                                             onClick={() => removeFile(i)}
+                                                            aria-label={`Remove file ${pf.file.name}`}
                                                             className="p-1 text-[var(--hw-on-surface-variant)] hover:text-red-500 transition-colors flex-shrink-0"
                                                         >
                                                             <span className="material-symbols-outlined text-lg">close</span>
@@ -659,10 +709,11 @@ export default function CreateAssignmentPage() {
                                 <button
                                     type="button"
                                     onClick={() => setAssignmentType("standard")}
+                                    aria-pressed={assignmentType === "standard"}
                                     className={`group flex items-center p-6 rounded-xl cursor-pointer transition-all border-2 ${assignmentType === "standard"
                                             ? "bg-[var(--hw-primary)]/5 border-[var(--hw-primary)] shadow-lg shadow-[var(--hw-primary)]/10"
                                             : "bg-[var(--hw-surface-container-lowest)] border-transparent hover:border-[var(--hw-primary)]/20"
-                                        }`}
+                                        } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--hw-primary)] focus-visible:ring-offset-2`}
                                 >
                                     <div className={`w-12 h-12 rounded-lg flex items-center justify-center transition-colors ${assignmentType === "standard"
                                             ? "bg-[var(--hw-primary)] text-white"
@@ -681,10 +732,11 @@ export default function CreateAssignmentPage() {
                                 <button
                                     type="button"
                                     onClick={() => { setAssignmentType("quiz"); if (quizQuestions.length === 0) addQuestion(); }}
+                                    aria-pressed={assignmentType === "quiz"}
                                     className={`group flex items-center p-6 rounded-xl cursor-pointer transition-all border-2 ${assignmentType === "quiz"
                                             ? "bg-emerald-500/5 border-emerald-500 shadow-lg shadow-emerald-500/10"
                                             : "bg-[var(--hw-surface-container-lowest)] border-transparent hover:border-emerald-500/20"
-                                        }`}
+                                        } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2`}
                                 >
                                     <div className={`w-12 h-12 rounded-lg flex items-center justify-center transition-colors ${assignmentType === "quiz"
                                             ? "bg-emerald-500 text-white"
@@ -758,6 +810,7 @@ export default function CreateAssignmentPage() {
                                             <button
                                                 type="button"
                                                 onClick={addQuestion}
+                                                aria-label="Add quiz question"
                                                 className="flex items-center gap-1.5 px-4 py-2 bg-emerald-500 text-white text-xs font-bold rounded-lg hover:bg-emerald-600 transition-colors shadow-sm"
                                             >
                                                 <span className="material-symbols-outlined text-sm">add</span>
@@ -781,6 +834,7 @@ export default function CreateAssignmentPage() {
                                                             <button
                                                                 type="button"
                                                                 onClick={() => removeQuestion(qIdx)}
+                                                                aria-label={`Delete question ${qIdx + 1}`}
                                                                 className="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
                                                                 title="Delete question"
                                                             >

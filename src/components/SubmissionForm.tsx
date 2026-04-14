@@ -20,6 +20,12 @@ type FormState = "idle" | "uploading" | "success" | "error" | "already_submitted
 
 export function SubmissionForm({ assignmentId, existingSubmission, isPastDue }: SubmissionFormProps) {
     const router = useRouter();
+    const existingSubmissionLink =
+        existingSubmission?.type === "repo_link"
+            ? existingSubmission.repoUrl
+            : existingSubmission?.file?.driveFileId
+                ? `https://drive.google.com/file/d/${existingSubmission.file.driveFileId}/view`
+                : undefined;
 
     // Determine initial state
     const [view, setView] = useState<FormState>(existingSubmission ? "already_submitted" : "idle");
@@ -203,9 +209,22 @@ export function SubmissionForm({ assignmentId, existingSubmission, isPastDue }: 
                                     {existingSubmission.type === "repo_link" ? "GITHUB REPOSITORY" : `${formatSize(existingSubmission.file?.sizeBytes ?? 0)} • FILE UPLOAD`}
                                 </p>
                             </div>
-                            <button className="self-center text-slate-400 hover:text-[var(--hw-primary)] transition-colors">
-                                <span className="material-symbols-outlined text-xl">download</span>
-                            </button>
+                            {existingSubmissionLink ? (
+                                <a
+                                    href={existingSubmissionLink}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    aria-label="Open submitted work"
+                                    title="Open submitted work"
+                                    className="self-center text-slate-400 hover:text-[var(--hw-primary)] transition-colors"
+                                >
+                                    <span className="material-symbols-outlined text-xl">open_in_new</span>
+                                </a>
+                            ) : (
+                                <span className="self-center text-slate-300" aria-hidden="true">
+                                    <span className="material-symbols-outlined text-xl">link_off</span>
+                                </span>
+                            )}
                         </div>
 
                         <div className="grid grid-cols-2 gap-4 mb-6">
@@ -222,6 +241,7 @@ export function SubmissionForm({ assignmentId, existingSubmission, isPastDue }: 
                         <div className="flex items-center justify-between mt-6 pt-4 border-t border-[var(--hw-surface-container-high)]">
                             <span className="text-xs text-slate-500 italic">Next attempt will overwrite current files.</span>
                             <button
+                                type="button"
                                 onClick={() => setView("idle")}
                                 className="bg-[var(--hw-primary)] text-white text-sm font-medium px-4 py-2 rounded-lg hover:brightness-110 active:scale-95 transition-all flex items-center gap-1.5 shadow-sm"
                             >
@@ -254,6 +274,7 @@ export function SubmissionForm({ assignmentId, existingSubmission, isPastDue }: 
                             </span>
                         </div>
                         <button
+                            type="button"
                             onClick={() => setView("idle")}
                             className="text-sm font-medium text-slate-700 bg-slate-100 px-3 py-1.5 rounded flex items-center gap-1 hover:bg-slate-200 transition-colors"
                         >
@@ -297,6 +318,7 @@ export function SubmissionForm({ assignmentId, existingSubmission, isPastDue }: 
 
                         <div className="mt-6 flex justify-end gap-3">
                             <button
+                                type="button"
                                 onClick={() => setView("idle")}
                                 className="text-xs font-medium text-slate-500 hover:text-slate-800 transition-colors px-3 py-1.5"
                             >
@@ -383,7 +405,7 @@ export function SubmissionForm({ assignmentId, existingSubmission, isPastDue }: 
                         {/* GitHub Repo Zone */}
                         {type === "repo_link" && (
                             <div className="py-4">
-                                <label className="block text-xs font-bold tracking-widest uppercase text-slate-500 mb-2">
+                                <label htmlFor="repo-url" className="block text-xs font-bold tracking-widest uppercase text-slate-500 mb-2">
                                     GitHub Repository URL
                                 </label>
                                 <div className="relative">
@@ -391,10 +413,12 @@ export function SubmissionForm({ assignmentId, existingSubmission, isPastDue }: 
                                         <span className={`material-symbols-outlined text-[18px] ${view === "error" ? "text-red-400" : "text-slate-400"}`}>link</span>
                                     </span>
                                     <input
+                                        id="repo-url"
                                         type="text"
                                         value={repoUrl}
                                         onChange={(e) => { setRepoUrl(e.target.value); setView("idle"); }}
                                         placeholder="github.com/username/project"
+                                        aria-label="GitHub repository URL"
                                         className={`w-full bg-slate-50 border text-sm rounded-lg block pl-10 p-2.5 outline-none transition-colors ${view === "error"
                                             ? "border-red-300 text-red-900 placeholder:text-red-300 focus:ring-1 focus:ring-red-500 bg-red-50/50"
                                             : "border-slate-200 text-slate-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"

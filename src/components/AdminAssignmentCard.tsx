@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
 import type { Assignment, Submission, Student } from "@/types";
 
 interface AdminAssignmentCardProps {
@@ -86,9 +85,12 @@ export function AdminAssignmentCard({
                     <span className="text-[10px] uppercase font-bold tracking-widest text-red-600">
                         NEEDS ATTENTION
                     </span>
-                    <button className="text-xs font-semibold text-slate-500 hover:text-slate-800 transition-colors">
-                        Send Reminder
-                    </button>
+                    <Link
+                        href={`/admin/assignments/${assignment.id}`}
+                        className="text-xs font-semibold text-slate-500 hover:text-slate-800 transition-colors"
+                    >
+                        Review Missing List
+                    </Link>
                 </div>
             </div>
         );

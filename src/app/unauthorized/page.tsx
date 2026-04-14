@@ -19,14 +19,26 @@ export default async function UnauthorizedPage() {
                     </div>
                 </div>
                 <div className="flex items-center gap-4">
-                    <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-[var(--hw-surface-container-low)] transition-all cursor-pointer">
+                    <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg cursor-default">
                         <span className="text-sm font-medium text-[var(--hw-on-surface-variant)]">Support</span>
                     </div>
                     <div className="flex items-center gap-2">
-                        <button className="p-2 text-[var(--hw-outline)] hover:bg-[var(--hw-surface-container-low)] rounded-full transition-all active:scale-95 duration-200">
+                        <button
+                            type="button"
+                            disabled
+                            aria-label="Notifications unavailable"
+                            title="Notifications unavailable"
+                            className="p-2 text-slate-300 cursor-not-allowed rounded-full"
+                        >
                             <span className="material-symbols-outlined">notifications</span>
                         </button>
-                        <button className="p-2 text-[var(--hw-outline)] hover:bg-[var(--hw-surface-container-low)] rounded-full transition-all active:scale-95 duration-200">
+                        <button
+                            type="button"
+                            disabled
+                            aria-label="Settings unavailable"
+                            title="Settings unavailable"
+                            className="p-2 text-slate-300 cursor-not-allowed rounded-full"
+                        >
                             <span className="material-symbols-outlined">settings</span>
                         </button>
                         <div className="w-8 h-8 rounded-full bg-[var(--hw-surface-container-high)] overflow-hidden ml-2 border border-[var(--hw-outline-variant)]/50" />

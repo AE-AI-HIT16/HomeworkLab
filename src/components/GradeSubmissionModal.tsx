@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useCallback, useEffect, useId, useState, useTransition } from "react";
 import { gradeSubmissionAction } from "@/app/admin/assignments/[id]/actions";
 
 interface GradeSubmissionModalProps {
@@ -24,6 +24,29 @@ export default function GradeSubmissionModal({
     const [feedback, setFeedback] = useState<string>(currentFeedback ?? "");
     const [isPending, startTransition] = useTransition();
     const [error, setError] = useState<string | null>(null);
+    const titleId = useId();
+
+    const closeModal = useCallback(() => {
+        if (!isPending) onClose();
+    }, [isPending, onClose]);
+
+    useEffect(() => {
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if (event.key === "Escape") {
+                event.preventDefault();
+                closeModal();
+            }
+        };
+
+        document.addEventListener("keydown", handleKeyDown);
+        const previousOverflow = document.body.style.overflow;
+        document.body.style.overflow = "hidden";
+
+        return () => {
+            document.removeEventListener("keydown", handleKeyDown);
+            document.body.style.overflow = previousOverflow;
+        };
+    }, [closeModal]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -52,12 +75,23 @@ export default function GradeSubmissionModal({
     };
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200">
+        <div
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm"
+            onClick={closeModal}
+        >
+            <div
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby={titleId}
+                className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200"
+                onClick={(event) => event.stopPropagation()}
+            >
                 <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-                    <h3 className="font-bold text-slate-900">Grade Submission</h3>
-                    <button 
-                        onClick={onClose}
+                    <h3 id={titleId} className="font-bold text-slate-900">Grade Submission</h3>
+                    <button
+                        type="button"
+                        onClick={closeModal}
+                        aria-label="Close grading dialog"
                         className="text-slate-400 hover:text-slate-600 transition-colors"
                         disabled={isPending}
                     >
@@ -113,7 +147,7 @@ export default function GradeSubmissionModal({
                     <div className="flex gap-3 pt-2">
                         <button
                             type="button"
-                            onClick={onClose}
+                            onClick={closeModal}
                             className="flex-1 py-2.5 px-4 rounded-xl border border-slate-200 text-slate-600 font-semibold text-sm hover:bg-slate-50 transition-colors"
                             disabled={isPending}
                         >
