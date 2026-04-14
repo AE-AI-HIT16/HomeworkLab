@@ -1,5 +1,5 @@
 import { requireSession } from "@/lib/auth";
-import { getCurrentUserRoleWithContext } from "@/lib/roles";
+import { canManageCourse, getCurrentUserRoleWithContext } from "@/lib/roles";
 import { getAssignmentById, getSubmission } from "@/lib/google-sheets";
 import { notFound } from "next/navigation";
 import Link from "next/link";
@@ -58,6 +58,9 @@ export default async function AssignmentPage({ params }: AssignmentPageProps) {
     const isPastDue = assignment.dueAt ? new Date(assignment.dueAt) < new Date() : false;
     const isSubmitted = !!submission;
     const isLate = submission?.isLate ?? false;
+    const canOpenGrading = (role === "admin" || role === "teacher")
+        ? await canManageCourse(user.githubUsername, assignment.courseId, role)
+        : false;
 
     return (
         <div className="min-h-screen bg-[var(--hw-surface)] flex flex-col font-sans antialiased">
@@ -148,7 +151,7 @@ export default async function AssignmentPage({ params }: AssignmentPageProps) {
                                 Assignment due {formatDate(assignment.dueAt)}, {formatDateTime(submission.submittedAt)}
                             </span>
                         )}
-                        {role === "admin" && (
+                        {canOpenGrading && (
                             <Link
                                 href={`/admin/assignments/${id}`}
                                 className="ml-auto flex items-center gap-1.5 text-xs font-bold text-[var(--hw-primary)] hover:text-[var(--hw-on-primary-fixed)] transition-colors bg-[var(--hw-primary-fixed)] px-3 py-1.5 rounded-lg border border-[var(--hw-primary-fixed-dim)]"

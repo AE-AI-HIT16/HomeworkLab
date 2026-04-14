@@ -1,4 +1,4 @@
-import { getCurrentUserRole } from "@/lib/roles";
+import { canManageCourse, getCurrentUserRole } from "@/lib/roles";
 import { getAssignmentDetailsWithSubmissions } from "@/lib/google-sheets";
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
@@ -25,10 +25,12 @@ export default async function AdminAssignmentDetailPage({ params }: AdminAssignm
     const { id } = await params;
 
     const { role, session } = await getCurrentUserRole();
-    if (role !== "admin" || !session) redirect("/dashboard");
+    if (!session || (role !== "admin" && role !== "teacher")) redirect("/dashboard");
 
     const data = await getAssignmentDetailsWithSubmissions(id);
     if (!data) notFound();
+    const allowed = await canManageCourse(session.user.githubUsername, data.assignment.courseId, role);
+    if (!allowed) redirect("/admin/curriculum");
 
     const { assignment, stats, rows } = data;
     const isPastDue = assignment.dueAt ? new Date(assignment.dueAt) < new Date() : false;

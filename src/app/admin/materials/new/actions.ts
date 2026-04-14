@@ -1,7 +1,7 @@
 "use server";
 
 
-import { getCurrentUserRole } from "@/lib/roles";
+import { canManageCourse, getCurrentUserRole } from "@/lib/roles";
 import { saveMaterial } from "@/lib/google-sheets";
 import { revalidatePath } from "next/cache";
 import type { Material, MaterialContentMode } from "@/types";
@@ -18,10 +18,10 @@ export async function createMaterialAction(
     formData: FormData
 ): Promise<CreateMaterialFormState> {
     try {
-        // Enforce Admin role
-        const { role } = await getCurrentUserRole();
-        if (role !== "admin") {
-            return { error: "You do not have permission to perform this action (admin role required)." };
+        // Enforce role
+        const { role, session } = await getCurrentUserRole();
+        if (!session || (role !== "admin" && role !== "teacher")) {
+            return { error: "You do not have permission to perform this action." };
         }
 
         // Extract form data
@@ -39,6 +39,10 @@ export async function createMaterialAction(
         // Validate common fields
         if (!courseId || !getActiveCourseIds().includes(courseId)) {
             return { error: "Please select a valid course for this material." };
+        }
+        const allowed = await canManageCourse(session.user.githubUsername, courseId, role);
+        if (!allowed) {
+            return { error: "You can only create materials for courses you are assigned to teach." };
         }
         if (!title || !weekStr || !typeStr) {
             return { error: "Please provide title, week, and material type." };

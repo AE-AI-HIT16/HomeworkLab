@@ -1,7 +1,18 @@
 // ─── Roles ──────────────────────────────────────────────
 
 /** Roles within the system */
-export type UserRole = "admin" | "student" | "guest" | "unauthorized";
+export type UserRole = "admin" | "teacher" | "student" | "guest" | "unauthorized";
+
+/** Role inside a specific course membership */
+export type CourseMembershipRole = "teacher";
+
+/** Course-scoped membership (e.g. teacher assigned to one or many courses) */
+export interface CourseMembership {
+    githubUsername: string;
+    courseId: string;
+    role: CourseMembershipRole;
+    active: boolean;
+}
 
 // ─── Users ──────────────────────────────────────────────
 

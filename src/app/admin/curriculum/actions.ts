@@ -1,7 +1,7 @@
 "use server";
 
-import { getCurrentUserRole } from "@/lib/roles";
-import { deleteAssignment, deleteMaterial, updateMaterialTitle } from "@/lib/google-sheets";
+import { canManageCourse, getCurrentUserRole } from "@/lib/roles";
+import { deleteAssignment, deleteMaterial, getAssignmentById, getMaterials, updateMaterialTitle } from "@/lib/google-sheets";
 import { revalidatePath } from "next/cache";
 
 function getErrorMessage(error: unknown, fallback: string): string {
@@ -13,9 +13,19 @@ function getErrorMessage(error: unknown, fallback: string): string {
 
 export async function deleteAssignmentAction(assignmentId: string) {
     try {
-        const { role } = await getCurrentUserRole();
-        if (role !== "admin") {
+        const { role, session } = await getCurrentUserRole();
+        if (!session || (role !== "admin" && role !== "teacher")) {
             return { success: false, error: "Unauthorized" };
+        }
+
+        const assignment = await getAssignmentById(assignmentId);
+        if (!assignment) {
+            return { success: false, error: "Assignment not found." };
+        }
+
+        const allowed = await canManageCourse(session.user.githubUsername, assignment.courseId, role);
+        if (!allowed) {
+            return { success: false, error: "You cannot manage this course." };
         }
 
         await deleteAssignment(assignmentId);
@@ -30,9 +40,20 @@ export async function deleteAssignmentAction(assignmentId: string) {
 
 export async function deleteMaterialAction(materialId: string) {
     try {
-        const { role } = await getCurrentUserRole();
-        if (role !== "admin") {
+        const { role, session } = await getCurrentUserRole();
+        if (!session || (role !== "admin" && role !== "teacher")) {
             return { success: false, error: "Unauthorized" };
+        }
+
+        const materials = await getMaterials();
+        const material = materials.find((m) => m.id === materialId);
+        if (!material) {
+            return { success: false, error: "Material not found." };
+        }
+
+        const allowed = await canManageCourse(session.user.githubUsername, material.courseId, role);
+        if (!allowed) {
+            return { success: false, error: "You cannot manage this course." };
         }
 
         await deleteMaterial(materialId);
@@ -46,13 +67,24 @@ export async function deleteMaterialAction(materialId: string) {
 
 export async function renameMaterialAction(materialId: string, newTitle: string) {
     try {
-        const { role } = await getCurrentUserRole();
-        if (role !== "admin") {
+        const { role, session } = await getCurrentUserRole();
+        if (!session || (role !== "admin" && role !== "teacher")) {
             return { success: false, error: "Unauthorized" };
         }
 
         if (!newTitle.trim()) {
             return { success: false, error: "Title cannot be empty." };
+        }
+
+        const materials = await getMaterials();
+        const material = materials.find((m) => m.id === materialId);
+        if (!material) {
+            return { success: false, error: "Material not found." };
+        }
+
+        const allowed = await canManageCourse(session.user.githubUsername, material.courseId, role);
+        if (!allowed) {
+            return { success: false, error: "You cannot manage this course." };
         }
 
         await updateMaterialTitle(materialId, newTitle.trim());

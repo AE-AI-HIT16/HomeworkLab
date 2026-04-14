@@ -1,5 +1,5 @@
 import { requireSession } from "@/lib/auth";
-import { getCurrentUserRoleWithContext } from "@/lib/roles";
+import { getCurrentUserRoleWithContext, getManagedCourseIdsForUser } from "@/lib/roles";
 import { getStudents, getSubmissions } from "@/lib/google-sheets";
 import { TopNav } from "@/components/TopNav";
 import { StudentSidebar } from "@/components/StudentSidebar";
@@ -18,11 +18,19 @@ export default async function LeaderboardPage() {
     const allStudents = await studentsPromise;
     const { role } = await getCurrentUserRoleWithContext({ session, students: allStudents });
     const activeStudents = allStudents.filter(s => s.active && s.role !== "guest");
-    const allSubmissions = await submissionsPromise;
+    const [allSubmissions, managedCourseIds] = await Promise.all([
+        submissionsPromise,
+        getManagedCourseIdsForUser(session.user.githubUsername, role),
+    ]);
+    const allowedCourseIds = new Set(managedCourseIds);
+    const scopedSubmissions =
+        role === "teacher"
+            ? allSubmissions.filter((s) => allowedCourseIds.has(s.courseId))
+            : allSubmissions;
 
     // Aggregate once by username: O(students + submissions)
     const submissionStats = new Map<string, { totalScore: number; onTimeCount: number; submissionCount: number }>();
-    for (const sub of allSubmissions) {
+    for (const sub of scopedSubmissions) {
         const username = sub.githubUsername.toLowerCase();
         const existing = submissionStats.get(username) ?? { totalScore: 0, onTimeCount: 0, submissionCount: 0 };
 

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useRef, useCallback, startTransition } from "react";
+import { useState, useRef, useCallback, startTransition, useEffect } from "react";
 import { useActionState } from "react";
 import { createAssignmentAction, type CreateAssignmentFormState } from "./actions";
 import type { PromptFile, QuizQuestion } from "@/types";
@@ -55,6 +55,7 @@ export default function CreateAssignmentPage() {
 
     // Course selector
     const [selectedCourseId, setSelectedCourseId] = useState<string>("");
+    const [managedCourseIds, setManagedCourseIds] = useState<string[] | null>(null);
 
     // Quiz builder state
     const [quizQuestions, setQuizQuestions] = useState<QuizQuestion[]>([]);
@@ -257,6 +258,26 @@ export default function CreateAssignmentPage() {
     }, [pendingFiles, formAction, assignmentType, quizQuestions]);
 
     const isUploading = isUploadingFiles || pendingFiles.some((f) => f.status === "uploading");
+    const visibleCourses = managedCourseIds
+        ? courses.filter((course) => managedCourseIds.includes(course.id))
+        : courses;
+    const effectiveSelectedCourseId = visibleCourses.some((course) => course.id === selectedCourseId)
+        ? selectedCourseId
+        : "";
+
+    useEffect(() => {
+        let active = true;
+        fetch("/api/me/managed-courses")
+            .then((res) => res.ok ? res.json() : null)
+            .then((data) => {
+                if (!active || !data || !Array.isArray(data.courseIds)) return;
+                setManagedCourseIds(data.courseIds);
+            })
+            .catch(() => {
+                // Keep graceful fallback to avoid blocking form interactions.
+            });
+        return () => { active = false; };
+    }, []);
 
     return (
         <main className="w-full max-w-5xl mx-auto p-4 sm:p-6 md:p-8 pb-24 md:pb-16 bg-[var(--hw-surface)] text-[var(--hw-on-surface)] antialiased">
@@ -312,7 +333,7 @@ export default function CreateAssignmentPage() {
                     <form ref={formRef} className="space-y-12 pb-20">
                         {/* Hidden input for prompt files */}
                         <input type="hidden" name="promptFilesJson" defaultValue="[]" />
-                        <input type="hidden" name="courseId" value={selectedCourseId} />
+                        <input type="hidden" name="courseId" value={effectiveSelectedCourseId} />
 
                         {/* Section 0: Course Selector */}
                         <section>
@@ -323,38 +344,43 @@ export default function CreateAssignmentPage() {
                                 </h5>
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                {courses.map((course) => (
-                                    <button
-                                        key={course.id}
-                                        type="button"
+                                    {visibleCourses.map((course) => (
+                                        <button
+                                            key={course.id}
+                                            type="button"
                                         onClick={() => setSelectedCourseId(course.id)}
-                                        aria-pressed={selectedCourseId === course.id}
-                                        className={`group relative flex items-center p-5 rounded-xl cursor-pointer transition-all border-2 overflow-hidden ${selectedCourseId === course.id
+                                        aria-pressed={effectiveSelectedCourseId === course.id}
+                                        className={`group relative flex items-center p-5 rounded-xl cursor-pointer transition-all border-2 overflow-hidden ${effectiveSelectedCourseId === course.id
                                                 ? `bg-gradient-to-br ${course.gradient} text-white border-transparent shadow-lg`
                                                 : "bg-[var(--hw-surface-container-lowest)] border-transparent hover:border-slate-200"
                                             } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--hw-primary)] focus-visible:ring-offset-2`}
                                     >
-                                        <div className={`w-11 h-11 rounded-lg flex items-center justify-center transition-colors shrink-0 ${selectedCourseId === course.id
+                                        <div className={`w-11 h-11 rounded-lg flex items-center justify-center transition-colors shrink-0 ${effectiveSelectedCourseId === course.id
                                                 ? "bg-white/20 text-white"
                                                 : `bg-gradient-to-br ${course.gradient} text-white`
                                             }`}>
                                             <span className="material-symbols-outlined text-[22px]">{course.icon}</span>
                                         </div>
                                         <div className="ml-4 text-left flex-1">
-                                            <p className={`text-sm font-bold ${selectedCourseId === course.id ? "text-white" : "text-[var(--hw-on-surface)]"
+                                            <p className={`text-sm font-bold ${effectiveSelectedCourseId === course.id ? "text-white" : "text-[var(--hw-on-surface)]"
                                                 }`}>{course.name}</p>
-                                            <p className={`text-xs ${selectedCourseId === course.id ? "text-white/70" : "text-[var(--hw-on-surface-variant)]"
+                                            <p className={`text-xs ${effectiveSelectedCourseId === course.id ? "text-white/70" : "text-[var(--hw-on-surface-variant)]"
                                                 }`}>{course.tagline}</p>
                                         </div>
-                                        {selectedCourseId === course.id && (
+                                        {effectiveSelectedCourseId === course.id && (
                                             <span className="material-symbols-outlined text-white" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
                                         )}
-                                    </button>
-                                ))}
-                            </div>
-                            {!selectedCourseId && (
-                                <p className="text-xs text-amber-600 mt-3 flex items-center gap-1">
-                                    <span className="material-symbols-outlined text-sm">warning</span>
+                                        </button>
+                                    ))}
+                                </div>
+                                {visibleCourses.length === 0 && (
+                                    <p className="text-xs text-slate-500 mt-3">
+                                        No teaching courses assigned to your account yet.
+                                    </p>
+                                )}
+                                {!effectiveSelectedCourseId && (
+                                    <p className="text-xs text-amber-600 mt-3 flex items-center gap-1">
+                                        <span className="material-symbols-outlined text-sm">warning</span>
                                     Select a course before publishing this assignment.
                                 </p>
                             )}

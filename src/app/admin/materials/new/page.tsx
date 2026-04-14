@@ -45,6 +45,13 @@ export default function CreateMaterialPage() {
     const [postContent, setPostContent] = useState("");
     const [showPreview, setShowPreview] = useState(false);
     const [selectedCourseId, setSelectedCourseId] = useState<string>("");
+    const [managedCourseIds, setManagedCourseIds] = useState<string[] | null>(null);
+    const visibleCourses = managedCourseIds
+        ? courses.filter((course) => managedCourseIds.includes(course.id))
+        : courses;
+    const effectiveSelectedCourseId = visibleCourses.some((course) => course.id === selectedCourseId)
+        ? selectedCourseId
+        : "";
 
     // Reset form on success
     useEffect(() => {
@@ -60,6 +67,20 @@ export default function CreateMaterialPage() {
             return () => window.clearTimeout(timer);
         }
     }, [state.success]);
+
+    useEffect(() => {
+        let active = true;
+        fetch("/api/me/managed-courses")
+            .then((res) => res.ok ? res.json() : null)
+            .then((data) => {
+                if (!active || !data || !Array.isArray(data.courseIds)) return;
+                setManagedCourseIds(data.courseIds);
+            })
+            .catch(() => {
+                // Keep fallback to all courses to avoid blocking UI.
+            });
+        return () => { active = false; };
+    }, []);
 
     return (
         <main className="w-full max-w-4xl mx-auto p-4 sm:p-6 md:p-8 pb-24 md:pb-16 bg-slate-50 text-[var(--hw-on-surface)] antialiased">
@@ -103,7 +124,7 @@ export default function CreateMaterialPage() {
                     <form ref={formRef} action={formAction} className="space-y-8 pb-20">
                         {/* Hidden field for contentMode */}
                         <input type="hidden" name="contentMode" value={contentMode} />
-                        <input type="hidden" name="courseId" value={selectedCourseId} />
+                        <input type="hidden" name="courseId" value={effectiveSelectedCourseId} />
 
                         {/* Section: Course Selector */}
                         <section className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
@@ -116,36 +137,41 @@ export default function CreateMaterialPage() {
                             </div>
                             <div className="p-6">
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                                    {courses.map((course) => (
+                                    {visibleCourses.map((course) => (
                                         <button
                                             key={course.id}
                                             type="button"
                                             onClick={() => setSelectedCourseId(course.id)}
-                                            aria-pressed={selectedCourseId === course.id}
-                                            className={`group flex items-center p-4 rounded-xl cursor-pointer transition-all border-2 overflow-hidden ${selectedCourseId === course.id
+                                            aria-pressed={effectiveSelectedCourseId === course.id}
+                                            className={`group flex items-center p-4 rounded-xl cursor-pointer transition-all border-2 overflow-hidden ${effectiveSelectedCourseId === course.id
                                                     ? `bg-gradient-to-br ${course.gradient} text-white border-transparent shadow-lg`
                                                     : "bg-slate-50 border-slate-200 hover:border-slate-300"
                                                 } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2`}
                                         >
-                                            <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${selectedCourseId === course.id
+                                            <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${effectiveSelectedCourseId === course.id
                                                     ? "bg-white/20 text-white"
                                                     : `bg-gradient-to-br ${course.gradient} text-white`
                                                 }`}>
                                                 <span className="material-symbols-outlined text-[20px]">{course.icon}</span>
                                             </div>
                                             <div className="ml-3 text-left flex-1">
-                                                <p className={`text-sm font-bold ${selectedCourseId === course.id ? "text-white" : "text-slate-900"
+                                                <p className={`text-sm font-bold ${effectiveSelectedCourseId === course.id ? "text-white" : "text-slate-900"
                                                     }`}>{course.name}</p>
-                                                <p className={`text-[10px] ${selectedCourseId === course.id ? "text-white/70" : "text-slate-400"
+                                                <p className={`text-[10px] ${effectiveSelectedCourseId === course.id ? "text-white/70" : "text-slate-400"
                                                     }`}>{course.tagline}</p>
                                             </div>
-                                            {selectedCourseId === course.id && (
+                                            {effectiveSelectedCourseId === course.id && (
                                                 <span className="material-symbols-outlined text-white text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
                                             )}
                                         </button>
                                     ))}
                                 </div>
-                                {!selectedCourseId && (
+                                {visibleCourses.length === 0 && (
+                                    <p className="text-xs text-slate-500 mt-3">
+                                        No teaching courses assigned to your account yet.
+                                    </p>
+                                )}
+                                {!effectiveSelectedCourseId && (
                                     <p className="text-xs text-amber-600 mt-3 flex items-center gap-1">
                                         <span className="material-symbols-outlined text-sm">warning</span>
                                         Select a course before saving this material.

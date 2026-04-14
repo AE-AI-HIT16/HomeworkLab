@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 interface StudentSidebarProps {
-    role: "admin" | "student" | "guest";
+    role: "admin" | "teacher" | "student" | "guest";
 }
 
 export function StudentSidebar({ role }: StudentSidebarProps) {
@@ -41,7 +41,7 @@ export function StudentSidebar({ role }: StudentSidebarProps) {
                 </Link>
             </nav>
 
-            {role === "admin" && (
+            {(role === "admin" || role === "teacher") && (
                 <div className="mt-8 px-2">
                     <Link href="/admin/create-assignment" className="block w-full bg-[var(--hw-primary)] text-white py-2.5 rounded-lg font-medium shadow-sm hover:brightness-110 active:scale-[0.98] transition-all text-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--hw-primary)] focus-visible:ring-offset-2">
                         New Assignment

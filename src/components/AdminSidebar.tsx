@@ -3,7 +3,11 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-export function AdminSidebar() {
+interface AdminSidebarProps {
+    role: "admin" | "teacher";
+}
+
+export function AdminSidebar({ role }: AdminSidebarProps) {
     const pathname = usePathname();
 
     const isPathActive = (path: string) =>
@@ -28,14 +32,18 @@ export function AdminSidebar() {
             </div>
 
             <nav aria-label="Admin sidebar navigation" className="flex-1 space-y-1">
-                <Link href="/admin" aria-current={isPathActive("/admin") ? "page" : undefined} className={navClass("/admin")}>
-                    <span className="material-symbols-outlined text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>dashboard</span>
-                    Dashboard
-                </Link>
-                <Link href="/admin/students" aria-current={isPathActive("/admin/students") ? "page" : undefined} className={navClass("/admin/students")}>
-                    <span className="material-symbols-outlined text-[18px]">group</span>
-                    Students
-                </Link>
+                {role === "admin" && (
+                    <>
+                        <Link href="/admin" aria-current={isPathActive("/admin") ? "page" : undefined} className={navClass("/admin")}>
+                            <span className="material-symbols-outlined text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>dashboard</span>
+                            Dashboard
+                        </Link>
+                        <Link href="/admin/students" aria-current={isPathActive("/admin/students") ? "page" : undefined} className={navClass("/admin/students")}>
+                            <span className="material-symbols-outlined text-[18px]">group</span>
+                            Students
+                        </Link>
+                    </>
+                )}
                 <Link href="/admin/grading" aria-current={isPathActive("/admin/grading") ? "page" : undefined} className={navClass("/admin/grading")}>
                     <span className="material-symbols-outlined text-[18px]">grade</span>
                     Grading

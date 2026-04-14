@@ -1,4 +1,4 @@
-import { getCurrentUserRole } from "@/lib/roles";
+import { canManageCourse, getCurrentUserRole } from "@/lib/roles";
 import { redirect } from "next/navigation";
 import { getAssignmentDetailsWithSubmissions } from "@/lib/google-sheets";
 import { notFound } from "next/navigation";
@@ -19,11 +19,13 @@ function formatDate(iso?: string) {
 
 export default async function GradingDetailPage({ params }: Props) {
     const { id } = await params;
-    const { role } = await getCurrentUserRole();
-    if (role !== "admin") redirect("/dashboard");
+    const { role, session } = await getCurrentUserRole();
+    if (!session || (role !== "admin" && role !== "teacher")) redirect("/dashboard");
 
     const data = await getAssignmentDetailsWithSubmissions(id);
     if (!data) notFound();
+    const allowed = await canManageCourse(session.user.githubUsername, data.assignment.courseId, role);
+    if (!allowed) redirect("/admin/grading");
 
     const { assignment, stats, rows } = data;
     const isPastDue = assignment.dueAt ? new Date(assignment.dueAt) < new Date() : false;

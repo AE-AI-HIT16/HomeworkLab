@@ -144,7 +144,7 @@ export default async function CoursesPage() {
                                     Explore your learning paths · {activeCourses} active courses · {totalLessons} total lessons
                                 </p>
                             </div>
-                            {role === "admin" && (
+                            {(role === "admin" || role === "teacher") && (
                                 <Link href="/admin/curriculum" className="hidden md:flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white text-sm font-semibold rounded-xl hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-600/20 active:scale-[0.98]">
                                     <span className="material-symbols-outlined text-[18px]">tune</span>
                                     Manage Curriculum

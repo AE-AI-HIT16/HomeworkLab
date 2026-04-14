@@ -7,7 +7,9 @@ import { MobileBottomNav } from "@/components/MobileBottomNav";
 
 export default async function AdminDashboardPage() {
     const { role, session } = await getCurrentUserRole();
-    if (role !== "admin" || !session) redirect("/dashboard");
+    if (!session) redirect("/dashboard");
+    if (role === "teacher") redirect("/admin/curriculum");
+    if (role !== "admin") redirect("/dashboard");
 
     const allStudents = await getStudents();
     const activeStudents = allStudents.filter((s) => s.active);

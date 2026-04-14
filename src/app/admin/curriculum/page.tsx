@@ -1,4 +1,4 @@
-import { getCurrentUserRole } from "@/lib/roles";
+import { getCurrentUserRole, getManagedCourseIdsForUser } from "@/lib/roles";
 import { redirect } from "next/navigation";
 import { getAssignments, getMaterials } from "@/lib/google-sheets";
 import { CurriculumList } from "./CurriculumList";
@@ -8,16 +8,21 @@ export const dynamic = "force-dynamic";
 
 export default async function CurriculumPage() {
     const { role, session } = await getCurrentUserRole();
-    if (role !== "admin" || !session) redirect("/dashboard");
+    if ((role !== "admin" && role !== "teacher") || !session) redirect("/dashboard");
 
-    const [assignments, materials] = await Promise.all([
+    const [assignments, materials, managedCourseIds] = await Promise.all([
         getAssignments(),
         getMaterials(),
+        getManagedCourseIdsForUser(session.user.githubUsername, role),
     ]);
 
+    const allowedCourseIds = new Set(managedCourseIds);
+    const visibleAssignments = assignments.filter((a) => allowedCourseIds.has(a.courseId));
+    const visibleMaterials = materials.filter((m) => allowedCourseIds.has(m.courseId));
+
     // Sort assignments by week then lesson
-    const sortedAssignments = [...assignments].sort((a, b) => a.week - b.week || a.lesson - b.lesson);
-    const sortedMaterials = [...materials].sort((a, b) => a.week - b.week);
+    const sortedAssignments = [...visibleAssignments].sort((a, b) => a.week - b.week || a.lesson - b.lesson);
+    const sortedMaterials = [...visibleMaterials].sort((a, b) => a.week - b.week);
 
     return (
         <main className="p-4 sm:p-6 md:p-8 max-w-5xl mx-auto pb-24 md:pb-20">
@@ -27,7 +32,7 @@ export default async function CurriculumPage() {
                     <p className="text-[10px] uppercase font-bold tracking-widest text-indigo-600 mb-1">Content Manager</p>
                     <h1 className="text-2xl font-bold tracking-tight text-slate-900">Curriculum</h1>
                     <p className="text-sm text-slate-500 mt-1">
-                        {assignments.length} assignments · {materials.length} materials
+                        {visibleAssignments.length} assignments · {visibleMaterials.length} materials
                     </p>
                 </div>
                 <div className="flex gap-3">

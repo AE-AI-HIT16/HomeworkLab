@@ -3,7 +3,7 @@
 import type { Assignment, Submission, SubmissionType, SubmissionFile } from "@/types";
 import type { CreateAssignmentInput, ActionResult } from "@/types";
 import { saveAssignment, saveSubmission, getAssignmentById } from "@/lib/google-sheets";
-import { getCurrentUserRole } from "@/lib/roles";
+import { canManageCourse, getCurrentUserRole } from "@/lib/roles";
 import { createAssignmentFolders, normalizeFileName, uploadSubmissionFile } from "@/lib/google-drive";
 import { getActiveCourseIds } from "@/lib/courses";
 
@@ -29,15 +29,19 @@ function guessMimeType(filename: string): string {
 }
 
 export async function createAssignment(input: CreateAssignmentInput): Promise<ActionResult> {
-    // 1. Verify admin role
-    const { role } = await getCurrentUserRole();
-    if (role !== "admin") {
+    // 1. Verify role
+    const { role, session } = await getCurrentUserRole();
+    if (!session || (role !== "admin" && role !== "teacher")) {
         return { success: false, error: "You do not have permission to create assignments." };
     }
 
     // 2. Validate input
     if (!input.courseId || !getActiveCourseIds().includes(input.courseId)) {
         return { success: false, error: "Please select a valid course." };
+    }
+    const allowed = await canManageCourse(session.user.githubUsername, input.courseId, role);
+    if (!allowed) {
+        return { success: false, error: "You can only create assignments for courses you are assigned to teach." };
     }
     if (!input.title.trim()) {
         return { success: false, error: "Title cannot be empty." };

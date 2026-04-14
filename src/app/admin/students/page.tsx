@@ -1,8 +1,10 @@
 import { getCurrentUserRole } from "@/lib/roles";
 import { redirect } from "next/navigation";
-import { getStudents, getAssignments, getSubmissions } from "@/lib/google-sheets";
+import { getStudents, getAssignments, getSubmissions, getCourseMembers } from "@/lib/google-sheets";
+import { getActiveCourseIds, getCourseById } from "@/lib/courses";
 import Link from "next/link";
 import { RoleToggleButton } from "@/components/RoleToggleButton";
+import { TeacherCourseManager } from "@/components/TeacherCourseManager";
 
 export const dynamic = "force-dynamic";
 
@@ -10,10 +12,11 @@ export default async function AdminStudentsPage() {
     const { role } = await getCurrentUserRole();
     if (role !== "admin") redirect("/dashboard");
 
-    const [studentsFromSheet, assignments, submissions] = await Promise.all([
+    const [studentsFromSheet, assignments, submissions, courseMembers] = await Promise.all([
         getStudents(),
         getAssignments(),
         getSubmissions(),
+        getCourseMembers(),
     ]);
 
     // If the Students sheet is empty, derive unique students from submissions
@@ -30,6 +33,46 @@ export default async function AdminStudentsPage() {
 
     const publishedAssignments = assignments.filter((a) => a.published);
     const total = publishedAssignments.length;
+    const studentNameByUsername = new Map(
+        students.map((student) => [student.githubUsername.toLowerCase(), student.name])
+    );
+
+    const teacherAssignmentsMap = new Map<string, Set<string>>();
+    for (const membership of courseMembers) {
+        const lowerUsername = membership.githubUsername.toLowerCase();
+        if (!teacherAssignmentsMap.has(lowerUsername)) {
+            teacherAssignmentsMap.set(lowerUsername, new Set());
+        }
+        teacherAssignmentsMap.get(lowerUsername)?.add(membership.courseId);
+    }
+
+    const teacherAssignments = Array.from(teacherAssignmentsMap.entries())
+        .map(([lowerUsername, courseIdsSet]) => {
+            const student = students.find((s) => s.githubUsername.toLowerCase() === lowerUsername);
+            const displayName = student?.name || studentNameByUsername.get(lowerUsername) || lowerUsername;
+            const githubUsername = student?.githubUsername || lowerUsername;
+            return {
+                githubUsername,
+                name: displayName,
+                courseIds: Array.from(courseIdsSet).sort(),
+            };
+        })
+        .sort((a, b) => a.name.localeCompare(b.name));
+
+    const teacherUsernames = new Set(teacherAssignments.map((assignment) => assignment.githubUsername.toLowerCase()));
+
+    const teacherOptions = students
+        .filter((student) => student.active)
+        .map((student) => ({
+            githubUsername: student.githubUsername,
+            name: student.name || student.githubUsername,
+        }))
+        .sort((a, b) => a.name.localeCompare(b.name));
+
+    const courseOptions = getActiveCourseIds().map((courseId) => {
+        const course = getCourseById(courseId);
+        return { id: courseId, name: course?.name ?? courseId };
+    });
 
     // Build per-student stats
     const now = new Date();
@@ -96,6 +139,12 @@ export default async function AdminStudentsPage() {
                 </div>
             </div>
 
+            <TeacherCourseManager
+                teacherOptions={teacherOptions}
+                courseOptions={courseOptions}
+                teacherAssignments={teacherAssignments}
+            />
+
             {/* Student Table */}
             <div className="bg-white border border-slate-100 rounded-xl shadow-sm overflow-hidden">
                 <div className="px-5 py-4 border-b border-slate-100">
@@ -122,8 +171,11 @@ export default async function AdminStudentsPage() {
                                     </td>
                                 </tr>
                             ) : (
-                                studentStats.map(({ student, submitted, late, avgGrade, completionPct, missedOverdue }) => (
-                                    <tr key={student.githubUsername} className="hover:bg-slate-50 transition-colors">
+                                studentStats.map(({ student, submitted, late, avgGrade, completionPct, missedOverdue }) => {
+                                    const isTeacher = teacherUsernames.has(student.githubUsername.toLowerCase());
+
+                                    return (
+                                        <tr key={student.githubUsername} className="hover:bg-slate-50 transition-colors">
                                         <td className="px-5 py-4">
                                             <div className="flex items-center gap-3">
                                                 <div className="w-8 h-8 rounded-full bg-[var(--hw-primary-fixed-dim)] text-[var(--hw-primary)] flex items-center justify-center font-bold text-xs flex-shrink-0">
@@ -137,16 +189,24 @@ export default async function AdminStudentsPage() {
                                         </td>
                                         <td className="px-5 py-4">
                                             <div className="flex flex-col gap-2">
-                                                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold w-fit ${
-                                                    student.role === "guest"
-                                                        ? "bg-teal-50 text-teal-700 border border-teal-200"
-                                                        : "bg-[var(--hw-primary-fixed)] text-[var(--hw-primary)] border border-[var(--hw-primary-fixed-dim)]"
-                                                }`}>
-                                                    <span className="material-symbols-outlined text-[10px]">
-                                                        {student.role === "guest" ? "visibility" : "school"}
+                                                <div className="flex flex-wrap items-center gap-1.5">
+                                                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold w-fit ${
+                                                        student.role === "guest"
+                                                            ? "bg-teal-50 text-teal-700 border border-teal-200"
+                                                            : "bg-[var(--hw-primary-fixed)] text-[var(--hw-primary)] border border-[var(--hw-primary-fixed-dim)]"
+                                                    }`}>
+                                                        <span className="material-symbols-outlined text-[10px]">
+                                                            {student.role === "guest" ? "visibility" : "school"}
+                                                        </span>
+                                                        {student.role === "guest" ? "Guest" : "Student"}
                                                     </span>
-                                                    {student.role === "guest" ? "Guest" : "Student"}
-                                                </span>
+                                                    {isTeacher && (
+                                                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-violet-50 text-violet-700 border border-violet-200">
+                                                            <span className="material-symbols-outlined text-[10px]">co_present</span>
+                                                            Teacher
+                                                        </span>
+                                                    )}
+                                                </div>
                                                 <RoleToggleButton githubUsername={student.githubUsername} currentRole={student.role} />
                                             </div>
                                         </td>
@@ -195,7 +255,8 @@ export default async function AdminStudentsPage() {
                                             )}
                                         </td>
                                     </tr>
-                                ))
+                                    );
+                                })
                             )}
                         </tbody>
                     </table>

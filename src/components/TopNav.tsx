@@ -13,7 +13,7 @@ interface TopNavProps {
         image?: string | null;
         githubUsername?: string;
     };
-    role: "admin" | "student" | "guest";
+    role: "admin" | "teacher" | "student" | "guest";
     showSearch?: boolean;
 }
 
@@ -37,6 +37,12 @@ export function TopNav({ user, role, showSearch = false }: TopNavProps) {
             { href: "/admin", label: "Analytics" },
             { href: "/admin/curriculum", label: "Curriculum" },
         ]
+        : role === "teacher"
+            ? [
+                { href: "/dashboard", label: "Dashboard" },
+                { href: "/admin/grading", label: "Grading" },
+                { href: "/admin/curriculum", label: "Curriculum" },
+            ]
         : [
             { href: "/dashboard", label: "Dashboard" },
             { href: "/courses", label: "Courses" },
@@ -119,7 +125,7 @@ export function TopNav({ user, role, showSearch = false }: TopNavProps) {
                                 {role === "guest" ? "guest" : role}
                             </div>
                         </div>
-                        {role === "admin" && (
+                        {(role === "admin" || role === "teacher") && (
                             <Link
                                 href="/admin/curriculum"
                                 className="flex items-center gap-2 px-3 py-2 text-sm text-slate-600 hover:bg-slate-50 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--hw-primary)]"

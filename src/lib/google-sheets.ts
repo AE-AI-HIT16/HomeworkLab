@@ -1,6 +1,6 @@
 import { google } from "googleapis";
 import { unstable_cache, revalidateTag } from "next/cache";
-import type { Student, Assignment, Submission, PromptFile, SubmissionFile, SubmissionType, Material, QuizQuestion } from "@/types";
+import type { Student, Assignment, Submission, PromptFile, SubmissionFile, SubmissionType, Material, QuizQuestion, CourseMembership } from "@/types";
 
 // Auth scopes for Google Sheets
 const SCOPES = ["https://www.googleapis.com/auth/spreadsheets"];
@@ -58,6 +58,175 @@ export const getStudents = unstable_cache(async (): Promise<Student[]> => {
         return [];
     }
 }, ['sheets-students'], { tags: ['sheets-students'], revalidate: 3600 });
+
+// ─── Course Memberships ───────────────────────────────────────────────────
+
+/**
+ * Course-scoped memberships.
+ * Sheet columns:
+ *   A: githubUsername
+ *   B: courseId
+ *   C: roleInCourse ("teacher")
+ *   D: active ("TRUE"/"FALSE")
+ */
+export const getCourseMembers = unstable_cache(async (): Promise<CourseMembership[]> => {
+    const sheets = getSheetsApi();
+    if (!sheets) return [];
+
+    try {
+        const res = await sheets.spreadsheets.values.get({
+            spreadsheetId: GOOGLE_SHEET_ID,
+            range: "CourseMembers!A2:D",
+        });
+
+        const rows = res.data.values || [];
+        return rows.map((row) => {
+            return {
+                githubUsername: String(row[0] ?? "").trim(),
+                courseId: String(row[1] ?? "").trim(),
+                role: "teacher" as const,
+                active: String(row[3]).trim().toLowerCase() === "true",
+            };
+        }).filter((m) => m.githubUsername && m.courseId && m.active);
+    } catch (e: unknown) {
+        const error = e as { response?: { status: number }; code?: number };
+        if (error?.response?.status === 400 || error?.code === 400) {
+            // Optional sheet: keep backward compatibility if not created yet
+            console.warn("CourseMembers sheet not found or invalid range. Returning empty list.");
+            return [];
+        }
+        console.error("Failed to get course members from Google Sheets", e);
+        return [];
+    }
+}, ['sheets-course-members'], { tags: ['sheets-course-members'], revalidate: 3600 });
+
+interface CourseMembershipRow {
+    githubUsername: string;
+    courseId: string;
+    role: string;
+    active: boolean;
+    rowNumber: number;
+}
+
+async function getCourseMembershipRowsRaw(sheets: ReturnType<typeof google.sheets>): Promise<CourseMembershipRow[]> {
+    const res = await sheets.spreadsheets.values.get({
+        spreadsheetId: GOOGLE_SHEET_ID,
+        range: "CourseMembers!A2:D",
+    });
+
+    const rows = res.data.values || [];
+    return rows.map((row, index) => ({
+        githubUsername: String(row[0] ?? "").trim(),
+        courseId: String(row[1] ?? "").trim(),
+        role: String(row[2] ?? "").trim().toLowerCase(),
+        active: String(row[3] ?? "").trim().toLowerCase() === "true",
+        rowNumber: index + 2, // A2 starts at physical row 2
+    }));
+}
+
+/**
+ * Assign teacher access to a specific course.
+ * If an existing inactive mapping is found, it will be reactivated.
+ */
+export async function assignTeacherToCourse(githubUsername: string, courseId: string): Promise<void> {
+    const sheets = getSheetsApi();
+    if (!sheets) throw new Error("Google Sheets credentials missing.");
+
+    const normalizedUsername = githubUsername.trim();
+    const normalizedCourseId = courseId.trim();
+    if (!normalizedUsername || !normalizedCourseId) {
+        throw new Error("Missing githubUsername or courseId.");
+    }
+
+    try {
+        const rows = await getCourseMembershipRowsRaw(sheets);
+        const matches = rows.filter(
+            (row) =>
+                row.githubUsername.toLowerCase() === normalizedUsername.toLowerCase() &&
+                row.courseId.toLowerCase() === normalizedCourseId.toLowerCase() &&
+                row.role === "teacher"
+        );
+
+        if (matches.some((row) => row.active)) {
+            return;
+        }
+
+        if (matches.length > 0) {
+            const target = matches[0];
+            await sheets.spreadsheets.values.update({
+                spreadsheetId: GOOGLE_SHEET_ID,
+                range: `CourseMembers!A${target.rowNumber}:D${target.rowNumber}`,
+                valueInputOption: "USER_ENTERED",
+                requestBody: { values: [[normalizedUsername, normalizedCourseId, "teacher", "TRUE"]] },
+            });
+        } else {
+            await sheets.spreadsheets.values.append({
+                spreadsheetId: GOOGLE_SHEET_ID,
+                range: "CourseMembers!A:D",
+                valueInputOption: "USER_ENTERED",
+                requestBody: { values: [[normalizedUsername, normalizedCourseId, "teacher", "TRUE"]] },
+            });
+        }
+
+        revalidateTag('sheets-course-members', {});
+    } catch (e: unknown) {
+        const error = e as { response?: { status: number }; code?: number };
+        if (error?.response?.status === 400 || error?.code === 400) {
+            throw new Error("CourseMembers sheet not found or invalid range.");
+        }
+        console.error("Failed to assign teacher to course in Google Sheets", e);
+        throw e;
+    }
+}
+
+/**
+ * Remove teacher access from a specific course (soft delete by setting active=FALSE).
+ */
+export async function removeTeacherFromCourse(githubUsername: string, courseId: string): Promise<void> {
+    const sheets = getSheetsApi();
+    if (!sheets) throw new Error("Google Sheets credentials missing.");
+
+    const normalizedUsername = githubUsername.trim();
+    const normalizedCourseId = courseId.trim();
+    if (!normalizedUsername || !normalizedCourseId) {
+        throw new Error("Missing githubUsername or courseId.");
+    }
+
+    try {
+        const rows = await getCourseMembershipRowsRaw(sheets);
+        const activeMatches = rows.filter(
+            (row) =>
+                row.active &&
+                row.role === "teacher" &&
+                row.githubUsername.toLowerCase() === normalizedUsername.toLowerCase() &&
+                row.courseId.toLowerCase() === normalizedCourseId.toLowerCase()
+        );
+
+        if (activeMatches.length === 0) {
+            return;
+        }
+
+        await sheets.spreadsheets.values.batchUpdate({
+            spreadsheetId: GOOGLE_SHEET_ID,
+            requestBody: {
+                valueInputOption: "USER_ENTERED",
+                data: activeMatches.map((row) => ({
+                    range: `CourseMembers!D${row.rowNumber}`,
+                    values: [["FALSE"]],
+                })),
+            },
+        });
+
+        revalidateTag('sheets-course-members', {});
+    } catch (e: unknown) {
+        const error = e as { response?: { status: number }; code?: number };
+        if (error?.response?.status === 400 || error?.code === 400) {
+            throw new Error("CourseMembers sheet not found or invalid range.");
+        }
+        console.error("Failed to remove teacher from course in Google Sheets", e);
+        throw e;
+    }
+}
 
 /**
  * Update the role of a student in the Google Sheet (column E).

@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
     const { role, session } = await getCurrentUserRole();
-    if (role !== "admin" || !session) {
+    if ((role !== "admin" && role !== "teacher") || !session) {
         redirect("/dashboard");
     }
 
@@ -18,9 +18,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
                 email: session.user.email,
                 image: session.user.image,
                 githubUsername: session.user.githubUsername
-            }} role="admin" />
+            }} role={role} />
             <div className="flex flex-1 pt-16">
-                <AdminSidebar />
+                <AdminSidebar role={role} />
                 <div className="flex-1 md:ml-56 relative w-full">
                     {children}
                 </div>

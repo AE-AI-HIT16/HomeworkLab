@@ -1,7 +1,7 @@
 "use server";
 
 import { auth } from "@/auth";
-import { getUserRole } from "@/lib/roles";
+import { canManageCourse, getCurrentUserRoleWithContext } from "@/lib/roles";
 import { saveAssignment } from "@/lib/google-sheets";
 import { createAssignmentFolders } from "@/lib/google-drive";
 import { redirect } from "next/navigation";
@@ -24,8 +24,8 @@ export async function createAssignmentAction(
     }
 
     // Role check — only admins can create assignments
-    const role = await getUserRole(session.user.githubUsername);
-    if (role !== "admin") {
+    const { role } = await getCurrentUserRoleWithContext({ session });
+    if (role !== "admin" && role !== "teacher") {
         return { error: "You do not have permission to create assignments." };
     }
 
@@ -45,6 +45,10 @@ export async function createAssignmentAction(
     // Validation
     if (!courseId || !getActiveCourseIds().includes(courseId)) {
         return { error: "Please select a valid course for this assignment." };
+    }
+    const allowed = await canManageCourse(session.user.githubUsername, courseId, role);
+    if (!allowed) {
+        return { error: "You can only create assignments for courses you are assigned to teach." };
     }
     if (!title?.trim()) {
         return { error: "Please enter a title for the assignment." };

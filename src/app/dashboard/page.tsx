@@ -37,6 +37,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
     const { role } = await getCurrentUserRoleWithContext({ session });
     const user = session.user;
     const { q } = await searchParams;
+    const adminWorkspaceHref = role === "teacher" ? "/admin/curriculum" : "/admin";
 
     const allAssignments = await getAssignments();
     const publishedAssignments = allAssignments.filter((a) => a.published);
@@ -114,13 +115,13 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
                         <div>
                             <h1 className="text-2xl font-bold tracking-tight text-[var(--hw-on-surface)] mb-1">Learning Hub</h1>
                             <p className="text-[var(--hw-on-surface-variant)] text-sm">
-                                {role === "admin"
+                                {role === "admin" || role === "teacher"
                                     ? "You are viewing the student-facing dashboard."
                                     : `Welcome back, ${user.name?.split(" ")[0] ?? user.githubUsername}`}
                             </p>
                         </div>
-                        {role === "admin" && (
-                            <Link href="/admin" className="hidden md:inline-flex items-center gap-2 px-4 py-2.5 bg-[var(--hw-primary)] text-white text-sm font-semibold rounded-xl hover:brightness-110 transition-all shadow-md shadow-[var(--hw-primary)]/20">
+                        {(role === "admin" || role === "teacher") && (
+                            <Link href={adminWorkspaceHref} className="hidden md:inline-flex items-center gap-2 px-4 py-2.5 bg-[var(--hw-primary)] text-white text-sm font-semibold rounded-xl hover:brightness-110 transition-all shadow-md shadow-[var(--hw-primary)]/20">
                                 Open Admin Workspace
                                 <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
                             </Link>

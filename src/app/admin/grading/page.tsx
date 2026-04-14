@@ -1,4 +1,4 @@
-import { getCurrentUserRole } from "@/lib/roles";
+import { getCurrentUserRole, getManagedCourseIdsForUser } from "@/lib/roles";
 import { redirect } from "next/navigation";
 import { getAssignments, getSubmissions } from "@/lib/google-sheets";
 import Link from "next/link";
@@ -11,15 +11,26 @@ function formatDate(iso?: string) {
 }
 
 export default async function AdminGradingPage() {
-    const { role } = await getCurrentUserRole();
-    if (role !== "admin") redirect("/dashboard");
+    const { role, session } = await getCurrentUserRole();
+    if (!session || (role !== "admin" && role !== "teacher")) redirect("/dashboard");
 
-    const [assignments, submissions] = await Promise.all([
+    const [assignments, submissions, managedCourseIds] = await Promise.all([
         getAssignments(),
         getSubmissions(),
+        getManagedCourseIdsForUser(session.user.githubUsername, role),
     ]);
 
-    const published = assignments
+    const allowedCourseIds = new Set(managedCourseIds);
+    const filteredAssignments = assignments.filter((a) => allowedCourseIds.has(a.courseId));
+    const filteredSubmissions = submissions.filter((s) => allowedCourseIds.has(s.courseId));
+    const submissionsByAssignment = new Map<string, typeof filteredSubmissions>();
+    for (const submission of filteredSubmissions) {
+        const current = submissionsByAssignment.get(submission.assignmentId) ?? [];
+        current.push(submission);
+        submissionsByAssignment.set(submission.assignmentId, current);
+    }
+
+    const published = filteredAssignments
         .filter((a) => a.published)
         .sort((a, b) => a.week - b.week || a.lesson - b.lesson);
 
@@ -36,7 +47,7 @@ export default async function AdminGradingPage() {
                     <div className="text-center py-16 text-slate-400">No published assignments yet.</div>
                 )}
                 {published.map((assignment) => {
-                    const subs = submissions.filter((s) => s.assignmentId === assignment.id);
+                    const subs = submissionsByAssignment.get(assignment.id) ?? [];
                     const graded = subs.filter((s) => s.grade !== undefined);
                     const avgGrade = graded.length > 0
                         ? Math.round(graded.reduce((sum, s) => sum + (s.grade ?? 0), 0) / graded.length)

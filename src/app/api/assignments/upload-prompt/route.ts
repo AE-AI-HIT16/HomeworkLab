@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
     }
 
     const role = await getUserRole(session.user.githubUsername);
-    if (role !== "admin") {
+    if (role !== "admin" && role !== "teacher") {
         return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
