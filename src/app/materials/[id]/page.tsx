@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { requireSession } from "@/lib/auth";
-import { getCurrentUserRole } from "@/lib/roles";
+import { getCurrentUserRoleWithContext } from "@/lib/roles";
 import { getMaterials } from "@/lib/google-sheets";
 import { TopNav } from "@/components/TopNav";
 
@@ -40,7 +40,7 @@ function renderMarkdown(content: string): string {
 export default async function MaterialDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
     const session = await requireSession();
-    const { role } = await getCurrentUserRole();
+    const { role } = await getCurrentUserRoleWithContext({ session });
     const user = session.user;
 
     const allMaterials = await getMaterials();

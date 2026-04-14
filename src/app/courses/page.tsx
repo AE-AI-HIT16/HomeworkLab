@@ -1,5 +1,5 @@
 import { requireSession } from "@/lib/auth";
-import { getCurrentUserRole } from "@/lib/roles";
+import { getCurrentUserRoleWithContext } from "@/lib/roles";
 import Link from "next/link";
 import { TopNav } from "@/components/TopNav";
 import { StudentSidebar } from "@/components/StudentSidebar";
@@ -108,7 +108,7 @@ function CourseCard({ course }: { course: Course }) {
 
 export default async function CoursesPage() {
     const session = await requireSession();
-    const { role } = await getCurrentUserRole();
+    const { role } = await getCurrentUserRoleWithContext({ session });
     const user = session.user;
 
     const activeCourses = courses.filter((c) => c.status === "active").length;

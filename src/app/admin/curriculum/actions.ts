@@ -4,6 +4,13 @@ import { getCurrentUserRole } from "@/lib/roles";
 import { deleteAssignment, deleteMaterial, updateMaterialTitle } from "@/lib/google-sheets";
 import { revalidatePath } from "next/cache";
 
+function getErrorMessage(error: unknown, fallback: string): string {
+    if (error instanceof Error && error.message) {
+        return error.message;
+    }
+    return fallback;
+}
+
 export async function deleteAssignmentAction(assignmentId: string) {
     try {
         const { role } = await getCurrentUserRole();
@@ -16,8 +23,8 @@ export async function deleteAssignmentAction(assignmentId: string) {
         revalidatePath("/admin/curriculum");
         revalidatePath("/courses/[slug]", "page");
         return { success: true };
-    } catch (error: any) {
-        return { success: false, error: error.message || "Failed to delete assignment." };
+    } catch (error: unknown) {
+        return { success: false, error: getErrorMessage(error, "Failed to delete assignment.") };
     }
 }
 
@@ -32,8 +39,8 @@ export async function deleteMaterialAction(materialId: string) {
         revalidatePath("/admin/curriculum");
         revalidatePath("/courses/[slug]", "page");
         return { success: true };
-    } catch (error: any) {
-        return { success: false, error: error.message || "Failed to delete material." };
+    } catch (error: unknown) {
+        return { success: false, error: getErrorMessage(error, "Failed to delete material.") };
     }
 }
 
@@ -52,7 +59,7 @@ export async function renameMaterialAction(materialId: string, newTitle: string)
         revalidatePath("/admin/curriculum");
         revalidatePath("/courses/[slug]", "page");
         return { success: true };
-    } catch (error: any) {
-        return { success: false, error: error.message || "Failed to rename material." };
+    } catch (error: unknown) {
+        return { success: false, error: getErrorMessage(error, "Failed to rename material.") };
     }
 }

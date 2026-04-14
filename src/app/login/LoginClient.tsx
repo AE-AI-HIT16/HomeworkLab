@@ -33,7 +33,7 @@ export default function LoginClient({ accessDenied, deniedUser }: LoginClientPro
             {/* Circuit Board Background */}
             <div className="fixed inset-0 z-[-1] overflow-hidden">
                 <Image
-                    src="/landing/circuit-bg.jpg"
+                    src="/landing/circuit-bg.png"
                     alt=""
                     fill
                     className="object-cover opacity-[0.03] grayscale"

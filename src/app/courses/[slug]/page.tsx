@@ -3,7 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { getCourseById } from "@/lib/courses";
 import { requireSession } from "@/lib/auth";
-import { getCurrentUserRole } from "@/lib/roles";
+import { getCurrentUserRoleWithContext } from "@/lib/roles";
 import { getAssignmentsByCourse, getSubmissionsByStudent, getMaterialsByCourse } from "@/lib/google-sheets";
 import { TopNav } from "@/components/TopNav";
 import type { Assignment, Submission, Material } from "@/types";
@@ -43,7 +43,7 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
     }
 
     const session = await requireSession();
-    const { role } = await getCurrentUserRole();
+    const { role } = await getCurrentUserRoleWithContext({ session });
     const user = session.user;
 
     // Fetch assignments and materials filtered by this course's ID
@@ -99,7 +99,7 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
 
     // Calculate Progress dynamically if data exists
     const totalAssignments = publishedAssignments.length;
-    const submittedCount = courseSubmissions.filter(s => publishedAssignments.some(a => a.id === s.assignmentId)).length;
+    const submittedCount = new Set(courseSubmissions.map((s) => s.assignmentId)).size;
     const progressPct = totalAssignments > 0 ? Math.round((submittedCount / totalAssignments) * 100) : course.progress;
 
     // Find next actionable assignment

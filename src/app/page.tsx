@@ -76,7 +76,7 @@ export default function LandingPage() {
                 <div className="w-3 h-3 rounded-full bg-[#e0e3e5]" />
                 <div className="ml-4 h-6 w-48 bg-[#f2f4f6] rounded-full" />
               </div>
-              <Image alt="Dashboard Mockup" className="w-full rounded-xl object-cover shadow-inner" src="/landing/hero-dashboard.jpg" width={1200} height={675} priority />
+              <Image alt="Dashboard Mockup" className="w-full rounded-xl object-cover shadow-inner" src="/landing/hero-dashboard.png" width={1200} height={675} priority />
             </div>
 
             {/* Floating Element */}
@@ -153,7 +153,7 @@ export default function LandingPage() {
           </div>
           <div className="relative">
             <div className="aspect-square rounded-2xl overflow-hidden shadow-[0_32px_64px_-12px_rgba(19,20,74,0.06)]">
-              <Image alt="Coding Interface" className="w-full h-full object-cover" src="/landing/coding-screen.jpg" width={600} height={600} />
+              <Image alt="Coding Interface" className="w-full h-full object-cover" src="/landing/coding-screen.png" width={600} height={600} />
             </div>
             <div className="absolute -bottom-10 -left-10 bg-white p-8 rounded-2xl shadow-2xl border border-[#c7c4d7]/15 max-w-xs">
               <div className="flex items-center gap-4 mb-4">
@@ -188,7 +188,7 @@ export default function LandingPage() {
                 <p className="text-[#464554] max-w-md">Track deadlines with millisecond precision, submit via GitHub, and manage large datasets without leaving the app.</p>
               </div>
               <div className="mt-8 transform group-hover:translate-y-[-10px] transition-transform duration-500">
-                <Image alt="Student Workspace" className="rounded-xl shadow-lg border border-[#c7c4d7]/10" src="/landing/student-workspace.jpg" width={800} height={450} />
+                <Image alt="Student Workspace" className="rounded-xl shadow-lg border border-[#c7c4d7]/10" src="/landing/student-workspace.png" width={800} height={450} />
               </div>
             </div>
             <div id="instructors" className="md:col-span-5 bg-[#6063ee] rounded-2xl p-10 flex flex-col justify-between text-white overflow-hidden group">
@@ -284,7 +284,7 @@ export default function LandingPage() {
               <p className="text-xl font-medium italic mb-8">&ldquo;HIT - AI/DATA has cut our administrative time by 40%. Our students finally have a single source of truth for their AI projects.&rdquo;</p>
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-full overflow-hidden">
-                  <Image alt="Dr. Marcus Chen" className="object-cover" src="/landing/mentor-male.jpg" width={48} height={48} />
+                  <Image alt="Dr. Marcus Chen" className="object-cover" src="/landing/mentor-male.png" width={48} height={48} />
                 </div>
                 <div>
                   <div className="font-bold">Dr. Marcus Chen</div>
@@ -296,7 +296,7 @@ export default function LandingPage() {
               <p className="text-xl font-medium italic mb-8">&ldquo;The GitHub integration is a game-changer. No more hunting for repository links in Discord threads.&rdquo;</p>
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-full overflow-hidden">
-                  <Image alt="Sarah Jenkins" className="object-cover" src="/landing/mentor-female.jpg" width={48} height={48} />
+                  <Image alt="Sarah Jenkins" className="object-cover" src="/landing/mentor-female.png" width={48} height={48} />
                 </div>
                 <div>
                   <div className="font-bold">Sarah Jenkins</div>

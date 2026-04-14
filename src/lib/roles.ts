@@ -1,7 +1,8 @@
 import { auth } from "@/auth";
 import { getStudents } from "@/lib/google-sheets";
 import { redirect } from "next/navigation";
-import type { UserRole } from "@/types";
+import type { Student, UserRole } from "@/types";
+import type { Session } from "next-auth";
 
 import { env } from "@/lib/env";
 
@@ -20,7 +21,7 @@ function getAdminUsernames(): string[] {
  *   2. student — nếu username nằm trong sheet Students và active
  *   3. unauthorized — tất cả trường hợp còn lại
  */
-export async function getUserRole(githubUsername: string): Promise<UserRole> {
+export async function getUserRole(githubUsername: string, studentsOverride?: Student[]): Promise<UserRole> {
     const lower = githubUsername.toLowerCase();
 
     // Check admin
@@ -29,7 +30,7 @@ export async function getUserRole(githubUsername: string): Promise<UserRole> {
     }
 
     // Check allowed student/guest via Google Sheets
-    const students = await getStudents();
+    const students = studentsOverride ?? await getStudents();
     const found = students.find(
         (s) => s.githubUsername.toLowerCase() === lower && s.active
     );
@@ -49,15 +50,23 @@ export async function getUserRole(githubUsername: string): Promise<UserRole> {
  * (thay thế chức năng bảo vệ của proxy.ts trước đây).
  */
 export async function getCurrentUserRole() {
-    const session = await auth();
+    return getCurrentUserRoleWithContext();
+}
+
+interface CurrentUserRoleOptions {
+    session?: Session | null;
+    students?: Student[];
+}
+
+export async function getCurrentUserRoleWithContext(options: CurrentUserRoleOptions = {}) {
+    const session = options.session ?? await auth();
 
     if (!session?.user?.githubUsername) {
         redirect("/login");
     }
 
-    const role = await getUserRole(session.user.githubUsername);
+    const role = await getUserRole(session.user.githubUsername, options.students);
 
-    // Authorization check moved from proxy.ts into Node.js space
     if (role === "unauthorized") {
         redirect("/unauthorized");
     }

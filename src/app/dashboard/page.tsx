@@ -1,5 +1,5 @@
 import { requireSession } from "@/lib/auth";
-import { getCurrentUserRole } from "@/lib/roles";
+import { getCurrentUserRoleWithContext } from "@/lib/roles";
 import Link from "next/link";
 import { getAssignments, getSubmissionsByStudent } from "@/lib/google-sheets";
 import type { Assignment, Submission } from "@/types";
@@ -33,13 +33,14 @@ function formatDueDate(dueAt?: string) {
 }
 
 export default async function DashboardPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
-    await requireSession();
-    const { role, session } = await getCurrentUserRole();
-    const user = session!.user;
+    const session = await requireSession();
+    const { role } = await getCurrentUserRoleWithContext({ session });
+    const user = session.user;
     const { q } = await searchParams;
 
     const allAssignments = await getAssignments();
     const publishedAssignments = allAssignments.filter((a) => a.published);
+    const publishedAssignmentIds = new Set(publishedAssignments.map((a) => a.id));
     const assignments = q
         ? publishedAssignments.filter((a) =>
             a.title.toLowerCase().includes(q.toLowerCase()) ||
@@ -53,7 +54,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
 
     // Stats
     const totalAssignments = publishedAssignments.length;
-    const submittedCount = userSubmissions.filter(s => publishedAssignments.some(a => a.id === s.assignmentId)).length;
+    const submittedCount = userSubmissions.filter((s) => publishedAssignmentIds.has(s.assignmentId)).length;
     const completionPct = totalAssignments > 0 ? Math.round((submittedCount / totalAssignments) * 100) : 0;
 
     // Advanced Stats

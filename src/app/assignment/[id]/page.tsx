@@ -1,5 +1,5 @@
 import { requireSession } from "@/lib/auth";
-import { getCurrentUserRole } from "@/lib/roles";
+import { getCurrentUserRoleWithContext } from "@/lib/roles";
 import { getAssignmentById, getSubmission } from "@/lib/google-sheets";
 import { notFound } from "next/navigation";
 import Link from "next/link";
@@ -46,7 +46,7 @@ function translateResourceName(name: string): string {
 export default async function AssignmentPage({ params }: AssignmentPageProps) {
     const { id } = await params;
     const session = await requireSession();
-    const { role } = await getCurrentUserRole();
+    const { role } = await getCurrentUserRoleWithContext({ session });
     const user = session.user;
 
     const assignment = await getAssignmentById(id);

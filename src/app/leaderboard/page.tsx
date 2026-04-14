@@ -1,32 +1,45 @@
 import { requireSession } from "@/lib/auth";
-import { getCurrentUserRole } from "@/lib/roles";
+import { getCurrentUserRoleWithContext } from "@/lib/roles";
 import { getStudents, getSubmissions } from "@/lib/google-sheets";
 import { TopNav } from "@/components/TopNav";
 import { StudentSidebar } from "@/components/StudentSidebar";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
+import Image from "next/image";
 
 export const dynamic = "force-dynamic";
 
 export default async function LeaderboardPage() {
     const session = await requireSession();
-    const { role } = await getCurrentUserRole();
     const user = session.user;
 
-    const allStudents = await getStudents();
-    const activeStudents = allStudents.filter(s => s.active && s.role !== "guest");
-    const allSubmissions = await getSubmissions();
+    const studentsPromise = getStudents();
+    const submissionsPromise = getSubmissions();
 
-    // Data Aggregation
-    const rawLeaderboard = activeStudents.map(student => {
-        const studentSubs = allSubmissions.filter(s => s.githubUsername.toLowerCase() === student.githubUsername.toLowerCase());
-        const totalScore = studentSubs.reduce((sum, sub) => sum + (sub.grade || 0), 0);
-        const onTimeCount = studentSubs.filter(s => !s.isLate).length;
-        
+    const allStudents = await studentsPromise;
+    const { role } = await getCurrentUserRoleWithContext({ session, students: allStudents });
+    const activeStudents = allStudents.filter(s => s.active && s.role !== "guest");
+    const allSubmissions = await submissionsPromise;
+
+    // Aggregate once by username: O(students + submissions)
+    const submissionStats = new Map<string, { totalScore: number; onTimeCount: number; submissionCount: number }>();
+    for (const sub of allSubmissions) {
+        const username = sub.githubUsername.toLowerCase();
+        const existing = submissionStats.get(username) ?? { totalScore: 0, onTimeCount: 0, submissionCount: 0 };
+
+        existing.submissionCount += 1;
+        if (!sub.isLate) existing.onTimeCount += 1;
+        if (sub.grade !== undefined) existing.totalScore += sub.grade;
+
+        submissionStats.set(username, existing);
+    }
+
+    const rawLeaderboard = activeStudents.map((student) => {
+        const stats = submissionStats.get(student.githubUsername.toLowerCase());
         return {
             ...student,
-            totalScore,
-            onTimeCount,
-            submissionCount: studentSubs.length
+            totalScore: stats?.totalScore ?? 0,
+            onTimeCount: stats?.onTimeCount ?? 0,
+            submissionCount: stats?.submissionCount ?? 0,
         };
     });
 
@@ -100,7 +113,7 @@ export default async function LeaderboardPage() {
                                             <div className="flex flex-col items-center flex-1 z-20">
                                                 <div className="relative mb-3 sm:mb-4 group">
                                                     <div className="absolute inset-0 bg-slate-300 rounded-full blur-xl opacity-60 group-hover:opacity-100 transition-opacity" />
-                                                    <img src={`https://github.com/${top2.githubUsername}.png`} alt={top2.name} className="relative w-16 h-16 sm:w-20 sm:h-20 xl:w-24 xl:h-24 rounded-full border-4 xl:border-[6px] border-slate-200 shadow-xl object-cover bg-white" />
+                                                    <Image src={`https://github.com/${top2.githubUsername}.png`} alt={top2.name} width={96} height={96} priority className="relative w-16 h-16 sm:w-20 sm:h-20 xl:w-24 xl:h-24 rounded-full border-4 xl:border-[6px] border-slate-200 shadow-xl object-cover bg-white" />
                                                     <div className="absolute -bottom-2 -right-2 w-7 h-7 sm:w-8 sm:h-8 xl:w-9 xl:h-9 bg-gradient-to-br from-slate-100 to-slate-300 border-2 xl:border-[3px] border-white rounded-full flex items-center justify-center text-[10px] sm:text-xs font-black text-slate-700 shadow-sm">
                                                         #2
                                                     </div>
@@ -122,7 +135,7 @@ export default async function LeaderboardPage() {
                                                         <span className="material-symbols-outlined text-[36px] xl:text-[42px]" style={{ fontVariationSettings: "'FILL' 1" }}>crown</span>
                                                     </div>
                                                     <div className="absolute inset-0 bg-amber-400 rounded-full blur-xl opacity-60 group-hover:opacity-100 transition-opacity animate-pulse" />
-                                                    <img src={`https://github.com/${top1.githubUsername}.png`} alt={top1.name} className="relative w-20 h-20 sm:w-24 sm:h-24 xl:w-28 xl:h-28 rounded-full border-4 xl:border-[6px] border-amber-300 shadow-[0_0_30px_rgba(251,191,36,0.4)] object-cover bg-white" />
+                                                    <Image src={`https://github.com/${top1.githubUsername}.png`} alt={top1.name} width={112} height={112} priority className="relative w-20 h-20 sm:w-24 sm:h-24 xl:w-28 xl:h-28 rounded-full border-4 xl:border-[6px] border-amber-300 shadow-[0_0_30px_rgba(251,191,36,0.4)] object-cover bg-white" />
                                                 </div>
                                                 <h3 className="text-sm sm:text-base xl:text-lg font-black text-slate-900 text-center line-clamp-2 w-full px-1 bg-clip-text text-transparent bg-gradient-to-r from-amber-600 to-amber-500 tracking-tight">{top1.name}</h3>
                                                 <p className="text-[10px] sm:text-sm xl:text-[15px] text-amber-600 font-black mb-3 sm:mb-4">{top1.totalScore} XP</p>
@@ -138,7 +151,7 @@ export default async function LeaderboardPage() {
                                             <div className="flex flex-col items-center flex-1 z-10">
                                                 <div className="relative mb-3 sm:mb-4 group">
                                                     <div className="absolute inset-0 bg-orange-300 rounded-full blur-xl opacity-60 group-hover:opacity-100 transition-opacity" />
-                                                    <img src={`https://github.com/${top3.githubUsername}.png`} alt={top3.name} className="relative w-14 h-14 sm:w-16 sm:h-16 xl:w-20 xl:h-20 rounded-full border-4 xl:border-[6px] border-orange-200 shadow-xl object-cover bg-white" />
+                                                    <Image src={`https://github.com/${top3.githubUsername}.png`} alt={top3.name} width={80} height={80} priority className="relative w-14 h-14 sm:w-16 sm:h-16 xl:w-20 xl:h-20 rounded-full border-4 xl:border-[6px] border-orange-200 shadow-xl object-cover bg-white" />
                                                     <div className="absolute -bottom-2 -right-2 w-6 h-6 sm:w-7 sm:h-7 xl:w-8 xl:h-8 bg-gradient-to-br from-orange-100 to-orange-300 border-2 xl:border-[3px] border-white rounded-full flex items-center justify-center text-[9px] sm:text-[10px] xl:text-[11px] font-black text-orange-800 shadow-sm">
                                                         #3
                                                     </div>
@@ -176,7 +189,7 @@ export default async function LeaderboardPage() {
                                                     #{rank}
                                                 </div>
                                                 <div className="col-span-7 sm:col-span-6 flex items-center gap-2 sm:gap-3">
-                                                    <img src={`https://github.com/${student.githubUsername}.png`} alt={student.name} className="w-6 h-6 sm:w-8 sm:h-8 rounded-full border border-slate-200 object-cover bg-white" />
+                                                    <Image src={`https://github.com/${student.githubUsername}.png`} alt={student.name} width={32} height={32} className="w-6 h-6 sm:w-8 sm:h-8 rounded-full border border-slate-200 object-cover bg-white" />
                                                     <div className="min-w-0 flex flex-col justify-center">
                                                         <p className={`text-xs sm:text-sm font-semibold truncate ${isCurrentUser ? 'text-[var(--hw-primary)]' : 'text-slate-900'}`}>{student.name}</p>
                                                         {isCurrentUser && <p className="text-[9px] sm:text-[10px] text-[var(--hw-primary)] font-medium leading-tight">You</p>}

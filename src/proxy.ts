@@ -39,5 +39,6 @@ export const proxy = auth((req: NextRequest & { auth: Session | null }) => {
 });
 
 export const config = {
-    matcher: ["/((?!api/auth|_next/static|_next/image|favicon.ico).*)"],
+    // Skip Next internals and all static files (e.g. /landing/*.png in public/)
+    matcher: ["/((?!api/auth|_next/static|_next/image|favicon.ico|.*\\.[^/]+$).*)"],
 };
