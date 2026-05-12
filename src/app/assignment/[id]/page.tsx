@@ -49,12 +49,14 @@ export default async function AssignmentPage({ params }: AssignmentPageProps) {
     const { role } = await getCurrentUserRoleWithContext({ session });
     const user = session.user;
 
-    const assignment = await getAssignmentById(id);
+    const [assignment, submission] = await Promise.all([
+        getAssignmentById(id),
+        getSubmission(id, user.githubUsername),
+    ]);
     if (!assignment || !assignment.published) {
         notFound();
     }
 
-    const submission = await getSubmission(id, user.githubUsername);
     const isPastDue = assignment.dueAt ? new Date(assignment.dueAt) < new Date() : false;
     const isSubmitted = !!submission;
     const isLate = submission?.isLate ?? false;

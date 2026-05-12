@@ -4,8 +4,9 @@ import type { Assignment, Submission, SubmissionType, SubmissionFile } from "@/t
 import type { CreateAssignmentInput, ActionResult } from "@/types";
 import { saveAssignment, saveSubmission, getAssignmentById } from "@/lib/google-sheets";
 import { canManageCourse, getCurrentUserRole } from "@/lib/roles";
-import { createAssignmentFolders, normalizeFileName, uploadSubmissionFile } from "@/lib/google-drive";
+import { createAssignmentFolders, findOrCreateFolder, normalizeFileName, uploadSubmissionFile } from "@/lib/google-drive";
 import { getActiveCourseIds } from "@/lib/courses";
+import { isValidRepoUrl } from "@/lib/validation";
 
 /**
  * Generate assignment ID in format: w{week}-l{lesson}
@@ -59,7 +60,10 @@ export async function createAssignment(input: CreateAssignmentInput): Promise<Ac
     // Handle Drive folder creation
     let driveFolderId: string | undefined = undefined;
     try {
-        const folders = await createAssignmentFolders(input.week, input.lesson, input.title.trim());
+        const folders = await createAssignmentFolders(input.week, input.lesson, input.title.trim(), {
+            courseId: input.courseId,
+            assignmentId: id,
+        });
         driveFolderId = folders.parentFolderId;
     } catch (e) {
         console.error("Error creating Drive folder:", e);
@@ -117,6 +121,10 @@ export async function submitAssignment(formData: FormData): Promise<ActionResult
     const repoUrl = formData.get("repoUrl") ? String(formData.get("repoUrl")) : undefined;
     const file = formData.get("file") as File | null;
 
+    if (type !== "file" && type !== "repo_link") {
+        return { success: false, error: "Unsupported submission type." };
+    }
+
     // 3. Get assignment to check deadline
     const assignment = await getAssignmentById(assignmentId);
     if (!assignment) {
@@ -154,9 +162,13 @@ export async function submitAssignment(formData: FormData): Promise<ActionResult
             const arrayBuffer = await file.arrayBuffer();
             const buffer = Buffer.from(arrayBuffer);
 
-            // Find "submission" folder by regenerating it from assignment name
-            const folders = await createAssignmentFolders(assignment.week, assignment.lesson, assignment.title);
-            const folderId = folders.submissionFolderId;
+            // Prefer the assignment's persisted Drive folder to avoid colliding with similarly named assignments.
+            const folderId = assignment.driveFolderId
+                ? await findOrCreateFolder("student-submissions", assignment.driveFolderId)
+                : (await createAssignmentFolders(assignment.week, assignment.lesson, assignment.title, {
+                    courseId: assignment.courseId,
+                    assignmentId: assignment.id,
+                })).submissionFolderId;
 
             if (!folderId) {
                 return { success: false, error: "The submission directory has not been created. Please notify your instructor." };
@@ -176,6 +188,8 @@ export async function submitAssignment(formData: FormData): Promise<ActionResult
             console.error(e);
             return { success: false, error: "Error uploading file to Google Drive." };
         }
+    } else if (!repoUrl || !isValidRepoUrl(repoUrl)) {
+        return { success: false, error: "Invalid GitHub repository URL." };
     }
 
     const submission: Submission = {

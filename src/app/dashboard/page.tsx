@@ -36,10 +36,13 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
     const session = await requireSession();
     const { role } = await getCurrentUserRoleWithContext({ session });
     const user = session.user;
-    const { q } = await searchParams;
     const adminWorkspaceHref = role === "teacher" ? "/admin/curriculum" : "/admin";
 
-    const allAssignments = await getAssignments();
+    const [{ q }, allAssignments, userSubmissions] = await Promise.all([
+        searchParams,
+        getAssignments(),
+        getSubmissionsByStudent(user.githubUsername),
+    ]);
     const publishedAssignments = allAssignments.filter((a) => a.published);
     const publishedAssignmentIds = new Set(publishedAssignments.map((a) => a.id));
     const assignments = q
@@ -48,7 +51,6 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
             (a.description ?? "").toLowerCase().includes(q.toLowerCase())
         )
         : publishedAssignments;
-    const userSubmissions = await getSubmissionsByStudent(user.githubUsername);
     const submissionMap = new Map<string, Submission>(
         userSubmissions.map((s) => [s.assignmentId, s])
     );

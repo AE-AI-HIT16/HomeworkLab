@@ -5,6 +5,7 @@ import { getActiveCourseIds, getCourseById } from "@/lib/courses";
 import Link from "next/link";
 import { RoleToggleButton } from "@/components/RoleToggleButton";
 import { TeacherCourseManager } from "@/components/TeacherCourseManager";
+import { groupSubmissionsByStudent } from "@/lib/analytics";
 
 export const dynamic = "force-dynamic";
 
@@ -31,7 +32,10 @@ export default async function AdminStudentsPage() {
             ).values()
         );
 
+    const expectedStudents = students.filter((s) => s.active && s.role !== "guest");
     const publishedAssignments = assignments.filter((a) => a.published);
+    const publishedAssignmentIds = new Set(publishedAssignments.map((assignment) => assignment.id));
+    const submissionsByStudent = groupSubmissionsByStudent(submissions);
     const total = publishedAssignments.length;
     const studentNameByUsername = new Map(
         students.map((student) => [student.githubUsername.toLowerCase(), student.name])
@@ -76,35 +80,57 @@ export default async function AdminStudentsPage() {
 
     // Build per-student stats
     const now = new Date();
-    const overdueAssignments = publishedAssignments.filter(
-        (a) => a.dueAt && new Date(a.dueAt) < now
+    const overdueAssignmentIds = new Set(
+        publishedAssignments
+            .filter((assignment) => assignment.dueAt && new Date(assignment.dueAt) < now)
+            .map((assignment) => assignment.id)
     );
 
     const studentStats = students.map((student) => {
-        const studentSubs = submissions.filter(
-            (s) => s.githubUsername.toLowerCase() === student.githubUsername.toLowerCase()
-        );
-        const submitted = studentSubs.filter((s) =>
-            publishedAssignments.some((a) => a.id === s.assignmentId)
-        ).length;
-        const late = studentSubs.filter((s) => s.isLate).length;
-        const graded = studentSubs.filter((s) => s.grade !== undefined);
+        const studentSubs = submissionsByStudent.get(student.githubUsername.toLowerCase()) ?? [];
+        const submittedAssignmentIds = new Set<string>();
+        let submitted = 0;
+        let late = 0;
+        let gradeTotal = 0;
+        let gradeCount = 0;
+
+        for (const submission of studentSubs) {
+            if (publishedAssignmentIds.has(submission.assignmentId)) {
+                submitted += 1;
+                submittedAssignmentIds.add(submission.assignmentId);
+            }
+            if (submission.isLate) {
+                late += 1;
+            }
+            if (submission.grade !== undefined) {
+                gradeTotal += submission.grade;
+                gradeCount += 1;
+            }
+        }
+
         const avgGrade =
-            graded.length > 0
-                ? Math.round(graded.reduce((sum, s) => sum + (s.grade ?? 0), 0) / graded.length)
+            gradeCount > 0
+                ? Math.round(gradeTotal / gradeCount)
                 : null;
         const completionPct = total > 0 ? Math.round((submitted / total) * 100) : 0;
 
         // Count overdue assignments this student hasn't submitted
-        const missedOverdue = overdueAssignments.filter(
-            (a) => !studentSubs.some((s) => s.assignmentId === a.id)
-        ).length;
+        let missedOverdue = 0;
+        for (const assignmentId of overdueAssignmentIds) {
+            if (!submittedAssignmentIds.has(assignmentId)) {
+                missedOverdue += 1;
+            }
+        }
 
         return { student, submitted, late, avgGrade, completionPct, missedOverdue };
     });
 
-    const missing = studentStats.filter((s) => s.submitted === 0 && s.missedOverdue > 0).length;
-    const fullySubmitted = studentStats.filter((s) => s.submitted === total && total > 0).length;
+    const expectedStudentNames = new Set(expectedStudents.map((s) => s.githubUsername.toLowerCase()));
+    const expectedStudentStats = studentStats.filter((s) =>
+        expectedStudentNames.has(s.student.githubUsername.toLowerCase())
+    );
+    const missing = expectedStudentStats.filter((s) => s.submitted === 0 && s.missedOverdue > 0).length;
+    const fullySubmitted = expectedStudentStats.filter((s) => s.submitted === total && total > 0).length;
 
     return (
         <main className="max-w-5xl mx-auto p-6 md:p-8">
@@ -244,7 +270,9 @@ export default async function AdminStudentsPage() {
                                             )}
                                         </td>
                                         <td className="px-5 py-4">
-                                            {submitted === total && total > 0 ? (
+                                            {student.role === "guest" ? (
+                                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-teal-50 text-teal-700 border border-teal-200">Observer</span>
+                                            ) : submitted === total && total > 0 ? (
                                                 <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-100">Complete</span>
                                             ) : submitted > 0 ? (
                                                 <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-[var(--hw-primary-fixed)] text-[var(--hw-primary)] border border-[var(--hw-primary-fixed-dim)]">In Progress</span>

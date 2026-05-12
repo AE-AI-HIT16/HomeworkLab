@@ -5,10 +5,11 @@ import { useActionState, useEffect, useRef, useState } from "react";
 import { createMaterialAction, type CreateMaterialFormState } from "./actions";
 import type { MaterialContentMode } from "@/types";
 import { courses } from "@/lib/courses";
+import { sanitizeHtml } from "@/lib/sanitize";
 
 function MarkdownPreview({ content }: { content: string }) {
     // Simple markdown-to-html for preview (headings, bold, italic, code, lists)
-    const rendered = content
+    const rendered = sanitizeHtml(content
         .replace(/^### (.+)$/gm, '<h3 class="text-lg font-bold text-slate-800 mb-2 mt-4">$1</h3>')
         .replace(/^## (.+)$/gm, '<h2 class="text-xl font-bold text-slate-900 mb-3 mt-6">$1</h2>')
         .replace(/^# (.+)$/gm, '<h1 class="text-2xl font-extrabold text-slate-900 mb-4 mt-6">$1</h1>')
@@ -18,7 +19,7 @@ function MarkdownPreview({ content }: { content: string }) {
         .replace(/^- (.+)$/gm, '<li class="ml-4 list-disc text-slate-700">$1</li>')
         .replace(/^(\d+\.) (.+)$/gm, '<li class="ml-4 list-decimal text-slate-700">$2</li>')
         .replace(/\n\n/g, '<br/><br/>')
-        .replace(/\n/g, '<br/>');
+        .replace(/\n/g, '<br/>'));
 
     return (
         <div
@@ -46,9 +47,10 @@ export default function CreateMaterialPage() {
     const [showPreview, setShowPreview] = useState(false);
     const [selectedCourseId, setSelectedCourseId] = useState<string>("");
     const [managedCourseIds, setManagedCourseIds] = useState<string[] | null>(null);
+    const availableCourses = courses.filter((course) => course.status === "active");
     const visibleCourses = managedCourseIds
-        ? courses.filter((course) => managedCourseIds.includes(course.id))
-        : courses;
+        ? availableCourses.filter((course) => managedCourseIds.includes(course.id))
+        : availableCourses;
     const effectiveSelectedCourseId = visibleCourses.some((course) => course.id === selectedCourseId)
         ? selectedCourseId
         : "";

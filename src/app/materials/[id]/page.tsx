@@ -4,11 +4,12 @@ import { requireSession } from "@/lib/auth";
 import { getCurrentUserRoleWithContext } from "@/lib/roles";
 import { getMaterials } from "@/lib/google-sheets";
 import { TopNav } from "@/components/TopNav";
+import { sanitizeHtml } from "@/lib/sanitize";
 
 export const dynamic = "force-dynamic";
 
 function renderMarkdown(content: string): string {
-    return content
+    const html = content
         // Code blocks (triple backtick)
         .replace(/```(\w*)\n([\s\S]*?)```/g, (_m, lang, code) =>
             `<pre class="bg-slate-900 text-slate-100 rounded-xl p-4 overflow-x-auto my-4 text-sm font-mono"><code>${code.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</code></pre>`)
@@ -35,6 +36,8 @@ function renderMarkdown(content: string): string {
         // Paragraphs
         .replace(/\n\n/g, '</p><p class="text-slate-700 leading-relaxed mb-4">')
         .replace(/\n/g, '<br/>');
+
+    return sanitizeHtml(html);
 }
 
 export default async function MaterialDetailPage({ params }: { params: Promise<{ id: string }> }) {

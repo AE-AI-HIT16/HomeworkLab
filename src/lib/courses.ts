@@ -70,5 +70,5 @@ export function getCourseById(id: string): Course | undefined {
 
 /** Get all valid course IDs for validation */
 export function getActiveCourseIds(): string[] {
-    return courses.map((c) => c.id);
+    return courses.filter((c) => c.status === "active").map((c) => c.id);
 }

@@ -26,11 +26,17 @@ export async function submitQuizAction(
     if (role === "guest") {
         return { success: false, error: "Guest accounts cannot submit assignments." };
     }
+    if (role !== "student" && role !== "admin") {
+        return { success: false, error: "You do not have permission to submit quizzes." };
+    }
 
     // Get the assignment
     const assignment = await getAssignmentById(assignmentId);
     if (!assignment) {
         return { success: false, error: "Assignment not found." };
+    }
+    if (!assignment.published && role !== "admin") {
+        return { success: false, error: "Assignment is not published yet." };
     }
 
     if (assignment.assignmentType !== "quiz" || !assignment.quizData) {
@@ -39,6 +45,12 @@ export async function submitQuizAction(
 
     if (answers.length !== assignment.quizData.length) {
         return { success: false, error: "The number of answers does not match the number of questions." };
+    }
+    if (!answers.every((answer) => Number.isInteger(answer) && answer >= 0)) {
+        return { success: false, error: "Invalid quiz answers." };
+    }
+    if (answers.some((answer, index) => answer >= assignment.quizData![index].options.length)) {
+        return { success: false, error: "Invalid quiz answers." };
     }
 
     // Grade the quiz

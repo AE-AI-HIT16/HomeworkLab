@@ -13,6 +13,70 @@ export interface CreateAssignmentFormState {
     success?: boolean;
 }
 
+function parseVietnamDueAt(datePart: string, timePart: string): string | undefined {
+    if (!datePart) return undefined;
+    if (!timePart) {
+        throw new Error("Please enter a due time.");
+    }
+
+    const dateMatch = datePart.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (!dateMatch) {
+        throw new Error("Invalid due date.");
+    }
+
+    const timeMatch = timePart.trim().match(/^(\d{1,2})(?::(\d{2}))?\s*(AM|PM)?$/i);
+    if (!timeMatch) {
+        throw new Error("Invalid due time. Use a format like 14:00 or 11:59 PM.");
+    }
+
+    const year = Number(dateMatch[1]);
+    const month = Number(dateMatch[2]);
+    const day = Number(dateMatch[3]);
+    let hour = Number(timeMatch[1]);
+    const minute = timeMatch[2] ? Number(timeMatch[2]) : 0;
+    const meridiem = timeMatch[3]?.toUpperCase();
+
+    if (meridiem) {
+        if (hour < 1 || hour > 12) {
+            throw new Error("Invalid due time. Use a 12-hour time between 1 and 12.");
+        }
+        if (meridiem === "AM") hour = hour === 12 ? 0 : hour;
+        if (meridiem === "PM") hour = hour === 12 ? 12 : hour + 12;
+    } else if (hour < 0 || hour > 23) {
+        throw new Error("Invalid due time. Use a 24-hour time between 00:00 and 23:59.");
+    }
+
+    if (minute < 0 || minute > 59) {
+        throw new Error("Invalid due time. Minutes must be between 00 and 59.");
+    }
+
+    const localDateCheck = new Date(Date.UTC(year, month - 1, day));
+    if (
+        localDateCheck.getUTCFullYear() !== year ||
+        localDateCheck.getUTCMonth() !== month - 1 ||
+        localDateCheck.getUTCDate() !== day
+    ) {
+        throw new Error("Invalid due date.");
+    }
+
+    // Vietnam is UTC+07:00 and has no daylight saving time.
+    return new Date(Date.UTC(year, month - 1, day, hour - 7, minute)).toISOString();
+}
+
+function parsePositiveNumberFromLabel(value: string, fieldName: string): number {
+    const match = value?.match(/(\d+)/);
+    if (!match) {
+        throw new Error(`Please enter a valid ${fieldName}.`);
+    }
+
+    const parsed = Number(match[1]);
+    if (!Number.isInteger(parsed) || parsed < 1) {
+        throw new Error(`${fieldName} must be a positive number.`);
+    }
+
+    return parsed;
+}
+
 export async function createAssignmentAction(
     _prevState: CreateAssignmentFormState,
     formData: FormData
@@ -56,10 +120,14 @@ export async function createAssignmentAction(
 
     // Parse week/lesson numbers — extract first number from any format
     // Supports: "3", "Week 3", "3 - Machine Learning", "3_Decision Tree", etc.
-    const weekMatch = week?.match(/(\d+)/);
-    const lessonMatch = lesson?.match(/(\d+)/);
-    const weekNum = weekMatch ? parseInt(weekMatch[1]) : 1;
-    const lessonNum = lessonMatch ? parseInt(lessonMatch[1]) : 1;
+    let weekNum: number;
+    let lessonNum: number;
+    try {
+        weekNum = parsePositiveNumberFromLabel(week, "week");
+        lessonNum = parsePositiveNumberFromLabel(lesson, "lesson");
+    } catch (error) {
+        return { error: error instanceof Error ? error.message : "Invalid week or lesson." };
+    }
 
     // Parse prompt files
     let promptFiles: PromptFile[] = [];
@@ -87,7 +155,7 @@ export async function createAssignmentAction(
                 if (validOptions.length < 2) {
                     return { error: `Question "${q.question.substring(0, 30)}..." must have at least 2 options.` };
                 }
-                if (q.correctIndex < 0 || q.correctIndex >= q.options.length) {
+                if (q.correctIndex < 0 || q.correctIndex >= q.options.length || !q.options[q.correctIndex]?.trim()) {
                     return { error: `Question "${q.question.substring(0, 30)}..." has no correct answer selected.` };
                 }
             }
@@ -117,25 +185,11 @@ export async function createAssignmentAction(
         });
     }
 
-    // Combine Date and Time
     let dueAt: string | undefined = undefined;
-    if (datePart && timePart) {
-        try {
-            // Attempt to parse date + time
-            // timePart could be "14:30" or "2:30 PM"
-            const dateTimeStr = `${datePart} ${timePart}`;
-            const parsedDate = new Date(dateTimeStr);
-            if (!isNaN(parsedDate.getTime())) {
-                dueAt = parsedDate.toISOString();
-            } else {
-                // If direct parse fails, try more robustly
-                dueAt = new Date(datePart).toISOString(); // fallback to just date if time is weird
-            }
-        } catch {
-            dueAt = datePart ? new Date(datePart).toISOString() : undefined;
-        }
-    } else if (datePart) {
-        dueAt = new Date(datePart).toISOString();
+    try {
+        dueAt = parseVietnamDueAt(datePart, timePart);
+    } catch (error) {
+        return { error: error instanceof Error ? error.message : "Invalid due date or time." };
     }
 
     // Generate unique ID
@@ -145,7 +199,10 @@ export async function createAssignmentAction(
     // Create Drive folder structure
     let driveFolderId: string | undefined;
     try {
-        const folders = await createAssignmentFolders(weekNum, lessonNum, title.trim());
+        const folders = await createAssignmentFolders(weekNum, lessonNum, title.trim(), {
+            courseId,
+            assignmentId: id,
+        });
         driveFolderId = folders.parentFolderId;
     } catch (err) {
         console.warn("Could not create Drive folders:", err);

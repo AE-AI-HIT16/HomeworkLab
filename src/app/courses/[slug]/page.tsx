@@ -46,15 +46,17 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
     const { role } = await getCurrentUserRoleWithContext({ session });
     const user = session.user;
 
-    // Fetch assignments and materials filtered by this course's ID
-    const allAssignments = await getAssignmentsByCourse(course.id);
+    // Fetch course data in parallel; each helper uses the shared Sheets cache underneath.
+    const [allAssignments, userSubmissions, allMaterials] = await Promise.all([
+        getAssignmentsByCourse(course.id),
+        getSubmissionsByStudent(user.githubUsername),
+        getMaterialsByCourse(course.id),
+    ]);
     const publishedAssignments = allAssignments.filter((a) => a.published);
-    const userSubmissions = await getSubmissionsByStudent(user.githubUsername);
     // Filter submissions to only those relevant to this course's assignments
     const courseAssignmentIds = new Set(publishedAssignments.map((a) => a.id));
     const courseSubmissions = userSubmissions.filter((s) => courseAssignmentIds.has(s.assignmentId));
 
-    const allMaterials = await getMaterialsByCourse(course.id);
     const publishedMaterials = allMaterials.filter((m) => m.published);
     const firstMaterial = publishedMaterials[0];
     const courseMaterialsHref = firstMaterial ? `/materials/${firstMaterial.id}` : `/courses/${course.id}`;

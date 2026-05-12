@@ -2,8 +2,9 @@ import Link from "next/link";
 import { getCurrentUserRole } from "@/lib/roles";
 import { AdminAssignmentCard } from "@/components/AdminAssignmentCard";
 import { redirect } from "next/navigation";
-import { getAssignments, getSubmissionsByAssignment, getStudents } from "@/lib/google-sheets";
+import { getAssignments, getSubmissions, getStudents } from "@/lib/google-sheets";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
+import { groupSubmissionsByAssignment } from "@/lib/analytics";
 
 export default async function AdminDashboardPage() {
     const { role, session } = await getCurrentUserRole();
@@ -11,48 +12,70 @@ export default async function AdminDashboardPage() {
     if (role === "teacher") redirect("/admin/curriculum");
     if (role !== "admin") redirect("/dashboard");
 
-    const allStudents = await getStudents();
-    const activeStudents = allStudents.filter((s) => s.active);
-    const assignments = await getAssignments();
+    const [allStudents, assignments, submissions] = await Promise.all([
+        getStudents(),
+        getAssignments(),
+        getSubmissions(),
+    ]);
+    const activeStudents = allStudents.filter((s) => s.active && s.role !== "guest");
+    const assignmentIds = new Set(assignments.map((assignment) => assignment.id));
+    const relevantSubmissions = submissions.filter((submission) => assignmentIds.has(submission.assignmentId));
+    const submissionsByAssignment = groupSubmissionsByAssignment(relevantSubmissions);
 
     const sortedAssignments = [...assignments].sort(
         (a, b) => b.week - a.week || b.lesson - a.lesson
     );
 
-    const allAssignmentsWithSubmissions = await Promise.all(
-        sortedAssignments.map(async (a) => {
-            const subs = await getSubmissionsByAssignment(a.id);
-            const submittedUsernames = new Set(subs.map(s => s.githubUsername));
-            return {
-                assignment: a,
-                submissions: subs,
-                missingStudents: activeStudents.filter((s) => !submittedUsernames.has(s.githubUsername))
-            };
-        })
-    );
+    const allAssignmentsWithSubmissions = sortedAssignments.map((assignment) => {
+        const assignmentSubmissions = submissionsByAssignment.get(assignment.id) ?? [];
+        const submittedUsernames = new Set(
+            assignmentSubmissions.map((submission) => submission.githubUsername.toLowerCase())
+        );
+        return {
+            assignment,
+            submissions: assignmentSubmissions,
+            missingStudents: activeStudents.filter(
+                (student) => !submittedUsernames.has(student.githubUsername.toLowerCase())
+            ),
+        };
+    });
 
-    const totalSubmissionsCount = allAssignmentsWithSubmissions.reduce((acc, curr) => acc + curr.submissions.length, 0);
+    const totalSubmissionsCount = relevantSubmissions.length;
 
     const activeAssignmentsCount = assignments.filter((a) => a.published).length;
     
     // Detailed Metrics
-    const gradedSubmissions = allAssignmentsWithSubmissions.flatMap(a => a.submissions).filter(s => s.grade !== undefined);
+    const gradedSubmissions = relevantSubmissions.filter((submission) => submission.grade !== undefined);
     const averageScore = gradedSubmissions.length > 0 
         ? Math.round(gradedSubmissions.reduce((acc, s) => acc + (s.grade || 0), 0) / gradedSubmissions.length)
         : 0;
 
-    const pendingGradingCount = allAssignmentsWithSubmissions.flatMap(a => a.submissions).filter(s => s.grade === undefined).length;
-    const unreachableStudentsCount = activeStudents.filter(s => !allAssignmentsWithSubmissions.some(a => a.submissions.some(sub => sub.githubUsername === s.githubUsername))).length;
+    const pendingGradingCount = relevantSubmissions.filter((submission) => submission.grade === undefined).length;
+    const studentsWithSubmissions = new Set(
+        relevantSubmissions.map((submission) => submission.githubUsername.toLowerCase())
+    );
+    const unreachableStudentsCount = activeStudents.filter(
+        (student) => !studentsWithSubmissions.has(student.githubUsername.toLowerCase())
+    ).length;
 
     const maxPossibleSubmissions = assignments.length * activeStudents.length;
 
     // Weekly performance calculation (last 5 weeks)
     const currentWeek = Math.max(...assignments.map(a => a.week), 0);
+    const gradesByWeek = new Map<number, number[]>();
+    for (const assignment of assignments) {
+        const assignmentSubmissions = submissionsByAssignment.get(assignment.id) ?? [];
+        for (const submission of assignmentSubmissions) {
+            if (submission.grade === undefined) continue;
+            const current = gradesByWeek.get(assignment.week) ?? [];
+            current.push(submission.grade);
+            gradesByWeek.set(assignment.week, current);
+        }
+    }
     const weeklyAverages = Array.from({ length: 5 }, (_, i) => {
         const week = currentWeek - (4 - i);
-        const weekAssignments = allAssignmentsWithSubmissions.filter(a => a.assignment.week === week);
-        const weekGrades = weekAssignments.flatMap(a => a.submissions).filter(s => s.grade !== undefined);
-        const avg = weekGrades.length > 0 ? Math.round(weekGrades.reduce((acc, s) => acc + (s.grade || 0), 0) / weekGrades.length) : 0;
+        const weekGrades = gradesByWeek.get(week) ?? [];
+        const avg = weekGrades.length > 0 ? Math.round(weekGrades.reduce((acc, grade) => acc + grade, 0) / weekGrades.length) : 0;
         return { week, avg };
     });
 

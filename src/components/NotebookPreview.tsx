@@ -7,6 +7,7 @@ import "highlight.js/styles/github.css";
 import { marked } from "marked";
 import katex from "katex";
 import "katex/dist/katex.min.css";
+import { sanitizeHtml } from "@/lib/sanitize";
 
 hljs.registerLanguage("python", python);
 
@@ -76,7 +77,7 @@ function renderMathInMarkdown(source: string): string {
 
 function MarkdownCell({ source }: { source: string }) {
     const preprocessed = renderMathInMarkdown(source);
-    const html = marked.parse(preprocessed, { async: false }) as string;
+    const html = sanitizeHtml(marked.parse(preprocessed, { async: false }) as string);
     return (
         <div
             className="prose prose-sm max-w-none text-[var(--hw-on-surface)] px-5 py-4 overflow-hidden break-words
@@ -90,7 +91,7 @@ function MarkdownCell({ source }: { source: string }) {
 }
 
 function CodeCell({ source, index }: { source: string; index: number }) {
-    const highlighted = hljs.highlight(source, { language: "python" }).value;
+    const highlighted = sanitizeHtml(hljs.highlight(source, { language: "python" }).value);
     return (
         <div className="group">
             <div className="flex items-center gap-2 px-5 pt-3 pb-1">

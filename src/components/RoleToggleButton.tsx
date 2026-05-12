@@ -1,6 +1,7 @@
 "use client";
 
 import { useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { toggleStudentRole } from "@/app/admin/students/actions";
 
 interface RoleToggleButtonProps {
@@ -10,13 +11,20 @@ interface RoleToggleButtonProps {
 
 export function RoleToggleButton({ githubUsername, currentRole }: RoleToggleButtonProps) {
     const [isPending, startTransition] = useTransition();
+    const router = useRouter();
 
     const nextRole = currentRole === "student" ? "guest" : "student";
     const isGuest = currentRole === "guest";
 
     const handleClick = () => {
         startTransition(async () => {
-            await toggleStudentRole(githubUsername, nextRole);
+            const result = await toggleStudentRole(githubUsername, nextRole);
+            if (!result.success) {
+                window.alert(result.error ?? "Failed to update role.");
+                return;
+            }
+
+            router.refresh();
         });
     };
 

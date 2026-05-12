@@ -107,15 +107,27 @@ export interface AssignmentFolders {
     submissionFolderId?: string;
 }
 
+interface CreateAssignmentFolderOptions {
+    courseId?: string;
+    assignmentId?: string;
+}
+
 /** 
  * Create folder structure for an assignment:
  * ROOT > [W{week}-L{lesson}] {title} > [course-materials, student-submissions]
  */
-export async function createAssignmentFolders(week: number, lesson: number, title: string): Promise<AssignmentFolders> {
+export async function createAssignmentFolders(
+    week: number,
+    lesson: number,
+    title: string,
+    options: CreateAssignmentFolderOptions = {}
+): Promise<AssignmentFolders> {
     const drive = getDriveApi();
     if (!drive) return {};
 
-    const parentName = `[W${week}-L${lesson}] ${title}`;
+    const coursePrefix = options.courseId ? `[${options.courseId}] ` : "";
+    const assignmentSuffix = options.assignmentId ? ` (${options.assignmentId})` : "";
+    const parentName = `${coursePrefix}[W${week}-L${lesson}] ${title}${assignmentSuffix}`;
 
     // Create parent folder
     const parentFolderId = await findOrCreateFolder(parentName);

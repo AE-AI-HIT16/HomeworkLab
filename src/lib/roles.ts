@@ -3,6 +3,7 @@ import { getCourseMembers, getStudents } from "@/lib/google-sheets";
 import { redirect } from "next/navigation";
 import type { CourseMembership, Student, UserRole } from "@/types";
 import type { Session } from "next-auth";
+import { cache } from "react";
 
 import { env } from "@/lib/env";
 import { getActiveCourseIds } from "@/lib/courses";
@@ -56,9 +57,7 @@ export async function getUserRole(githubUsername: string, studentsOverride?: Stu
  * Nếu role="unauthorized", sẽ tự động redirect tới /unauthorized 
  * (thay thế chức năng bảo vệ của proxy.ts trước đây).
  */
-export async function getCurrentUserRole() {
-    return getCurrentUserRoleWithContext();
-}
+export const getCurrentUserRole = cache(async () => getCurrentUserRoleWithContext());
 
 interface CurrentUserRoleOptions {
     session?: Session | null;

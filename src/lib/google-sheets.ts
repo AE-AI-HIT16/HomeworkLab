@@ -795,15 +795,16 @@ export interface AssignmentDetailData {
  * Get assignment details along with associated students and submissions.
  */
 export async function getAssignmentDetailsWithSubmissions(assignmentId: string): Promise<AssignmentDetailData | null> {
-    const assignment = await getAssignmentById(assignmentId);
+    const [assignment, allStudents, submissions] = await Promise.all([
+        getAssignmentById(assignmentId),
+        getStudents(),
+        getSubmissions(),
+    ]);
     if (!assignment) return null;
 
-    const [allStudents, allSubmissions] = await Promise.all([
-        getStudents(),
-        getSubmissionsByAssignment(assignmentId),
-    ]);
+    const allSubmissions = submissions.filter((submission) => submission.assignmentId === assignmentId);
 
-    const activeStudents = allStudents.filter((s) => s.active);
+    const activeStudents = allStudents.filter((s) => s.active && s.role !== "guest");
 
     // Map submissions by github username
     const subMap = new Map<string, Submission>();

@@ -111,6 +111,13 @@ export default function CreateAssignmentPage() {
     const [isUploadingFiles, setIsUploadingFiles] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const formRef = useRef<HTMLFormElement>(null);
+    const availableCourses = courses.filter((course) => course.status === "active");
+    const visibleCourses = managedCourseIds
+        ? availableCourses.filter((course) => managedCourseIds.includes(course.id))
+        : availableCourses;
+    const effectiveSelectedCourseId = visibleCourses.some((course) => course.id === selectedCourseId)
+        ? selectedCourseId
+        : "";
 
     const addFiles = useCallback((newFiles: FileList | File[]) => {
         const filesArray = Array.from(newFiles);
@@ -170,6 +177,15 @@ export default function CreateAssignmentPage() {
         const form = formRef.current;
         if (!form) return;
 
+        if (!effectiveSelectedCourseId) {
+            alert("Please select a course before publishing this assignment.");
+            return;
+        }
+
+        if (!form.reportValidity()) {
+            return;
+        }
+
         setIsUploadingFiles(true);
 
         try {
@@ -194,6 +210,7 @@ export default function CreateAssignmentPage() {
                     toUpload.map(async (pf) => {
                         const uploadForm = new FormData();
                         uploadForm.append("file", pf.file);
+                        uploadForm.append("courseId", effectiveSelectedCourseId);
                         try {
                             const res = await fetch("/api/assignments/upload-prompt", {
                                 method: "POST",
@@ -255,15 +272,9 @@ export default function CreateAssignmentPage() {
         } finally {
             setIsUploadingFiles(false);
         }
-    }, [pendingFiles, formAction, assignmentType, quizQuestions]);
+    }, [pendingFiles, formAction, assignmentType, quizQuestions, effectiveSelectedCourseId]);
 
     const isUploading = isUploadingFiles || pendingFiles.some((f) => f.status === "uploading");
-    const visibleCourses = managedCourseIds
-        ? courses.filter((course) => managedCourseIds.includes(course.id))
-        : courses;
-    const effectiveSelectedCourseId = visibleCourses.some((course) => course.id === selectedCourseId)
-        ? selectedCourseId
-        : "";
 
     useEffect(() => {
         let active = true;

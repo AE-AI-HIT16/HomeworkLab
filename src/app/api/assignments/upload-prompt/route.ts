@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
-import { getUserRole } from "@/lib/roles";
+import { canManageCourse, getUserRole } from "@/lib/roles";
 import { findOrCreateFolder, uploadPromptFile } from "@/lib/google-drive";
 import { env } from "@/lib/env";
+import { getActiveCourseIds } from "@/lib/courses";
 
 const ALLOWED_EXTENSIONS = [".pdf", ".docx", ".zip", ".ipynb"];
+const MAX_FILE_SIZE = 20 * 1024 * 1024;
 
 export async function POST(req: NextRequest) {
     // 1. Auth check
@@ -32,6 +34,20 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
+    const courseId = formData.get("courseId")?.toString().trim() ?? "";
+    if (!courseId || !getActiveCourseIds().includes(courseId)) {
+        return NextResponse.json({ error: "Please select a valid course before uploading files." }, { status: 400 });
+    }
+
+    const allowed = await canManageCourse(session.user.githubUsername, courseId, role);
+    if (!allowed) {
+        return NextResponse.json({ error: "You cannot upload prompt files for this course." }, { status: 403 });
+    }
+
+    if (file.size > MAX_FILE_SIZE) {
+        return NextResponse.json({ error: "File size exceeds the 20MB limit." }, { status: 400 });
+    }
+
     // 3. Validate file type by extension
     const fileName = file.name;
     const ext = "." + fileName.split(".").pop()?.toLowerCase();
@@ -52,19 +68,19 @@ export async function POST(req: NextRequest) {
     }
 
     // 5. Get or create upload folder
-    const folderId = (formData.get("folderId") as string) || env.GOOGLE_DRIVE_ROOT_FOLDER_ID;
-
-    if (!folderId) {
+    const rootFolderId = env.GOOGLE_DRIVE_ROOT_FOLDER_ID;
+    if (!rootFolderId) {
         return NextResponse.json(
             { error: "Google Drive is not configured. Please set GOOGLE_DRIVE_ROOT_FOLDER_ID in your environment." },
             { status: 503 }
         );
     }
 
-    // Ensure de-bai folder exists under the given folder
-    let targetFolderId = folderId;
+    // Keep prompt uploads course-scoped. Do not accept arbitrary folder IDs from the client.
+    let targetFolderId = rootFolderId;
     try {
-        const promptFolderId = await findOrCreateFolder("de-bai", folderId);
+        const courseFolderId = await findOrCreateFolder(courseId, rootFolderId);
+        const promptFolderId = await findOrCreateFolder("de-bai", courseFolderId ?? rootFolderId);
         if (promptFolderId) targetFolderId = promptFolderId;
     } catch (err) {
         console.warn("Could not create de-bai subfolder, uploading to root:", err);
