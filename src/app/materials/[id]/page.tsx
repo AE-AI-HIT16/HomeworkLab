@@ -4,40 +4,12 @@ import { requireSession } from "@/lib/auth";
 import { getCurrentUserRoleWithContext } from "@/lib/roles";
 import { getMaterials } from "@/lib/google-sheets";
 import { TopNav } from "@/components/TopNav";
-import { sanitizeHtml } from "@/lib/sanitize";
+import { marked } from "marked";
 
 export const dynamic = "force-dynamic";
 
 function renderMarkdown(content: string): string {
-    const html = content
-        // Code blocks (triple backtick)
-        .replace(/```(\w*)\n([\s\S]*?)```/g, (_m, lang, code) =>
-            `<pre class="bg-slate-900 text-slate-100 rounded-xl p-4 overflow-x-auto my-4 text-sm font-mono"><code>${code.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</code></pre>`)
-        // Headings
-        .replace(/^#### (.+)$/gm, '<h4 class="text-base font-bold text-slate-800 mb-2 mt-5">$1</h4>')
-        .replace(/^### (.+)$/gm, '<h3 class="text-lg font-bold text-slate-800 mb-2 mt-6">$1</h3>')
-        .replace(/^## (.+)$/gm, '<h2 class="text-xl font-bold text-slate-900 mb-3 mt-8 pb-2 border-b border-slate-200">$1</h2>')
-        .replace(/^# (.+)$/gm, '<h1 class="text-2xl font-extrabold text-slate-900 mb-4 mt-8">$1</h1>')
-        // Bold & italic
-        .replace(/\*\*(.+?)\*\*/g, '<strong class="font-semibold">$1</strong>')
-        .replace(/\*(.+?)\*/g, '<em>$1</em>')
-        // Inline code
-        .replace(/`([^`]+)`/g, '<code class="bg-indigo-50 text-indigo-700 px-1.5 py-0.5 rounded text-sm font-mono">$1</code>')
-        // Unordered lists
-        .replace(/^- (.+)$/gm, '<li class="ml-5 list-disc text-slate-700 leading-relaxed">$1</li>')
-        // Ordered lists
-        .replace(/^(\d+)\. (.+)$/gm, '<li class="ml-5 list-decimal text-slate-700 leading-relaxed">$2</li>')
-        // Images
-        .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" class="rounded-xl my-4 max-w-full shadow-sm"/>')
-        // Links
-        .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-indigo-600 hover:text-indigo-800 underline font-medium">$1</a>')
-        // Horizontal rules
-        .replace(/^---$/gm, '<hr class="my-6 border-slate-200"/>')
-        // Paragraphs
-        .replace(/\n\n/g, '</p><p class="text-slate-700 leading-relaxed mb-4">')
-        .replace(/\n/g, '<br/>');
-
-    return sanitizeHtml(html);
+    return marked.parse(content, { async: false }) as string;
 }
 
 export default async function MaterialDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -173,7 +145,7 @@ export default async function MaterialDetailPage({ params }: { params: Promise<{
                             <div
                                 className="prose prose-slate max-w-none"
                                 dangerouslySetInnerHTML={{
-                                    __html: `<p class="text-slate-700 leading-relaxed mb-4">${renderMarkdown(material.postContent)}</p>`,
+                                    __html: renderMarkdown(material.postContent),
                                 }}
                             />
                             {material.url && (
