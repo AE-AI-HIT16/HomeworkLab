@@ -8,14 +8,16 @@ import { QuizForm } from "@/components/QuizForm";
 import { NotebookPreview } from "@/components/NotebookPreview";
 import { TopNav } from "@/components/TopNav";
 import { marked } from "marked";
-import { sanitizeHtml } from "@/lib/sanitize";
 
 interface AssignmentPageProps {
     params: Promise<{ id: string }>;
 }
 
+// Render admin-authored markdown. Mirrors the materials page (server component,
+// marked only) — sanitizeHtml relies on isomorphic-dompurify, which fails in
+// Vercel's serverless runtime when run server-side.
 function renderMarkdown(content: string): string {
-    return sanitizeHtml(marked.parse(content, { async: false }) as string);
+    return marked.parse(content, { async: false }) as string;
 }
 
 function formatDate(iso?: string): string {
