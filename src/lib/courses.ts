@@ -55,12 +55,12 @@ export const courses: Course[] = [
         lessons: 10,
         assignments: 5,
         progress: 0,
-        status: "coming-soon",
+        status: "active",
         gradient: "from-amber-500 via-orange-500 to-rose-500",
         icon: "smart_toy",
         accentColor: "text-amber-600",
         buttonClass:
-            "bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200",
+            "bg-amber-600 hover:bg-amber-700 text-white shadow-lg shadow-amber-600/25",
     },
 ];
 
