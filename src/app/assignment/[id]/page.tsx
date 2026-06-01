@@ -7,9 +7,15 @@ import { SubmissionForm } from "@/components/SubmissionForm";
 import { QuizForm } from "@/components/QuizForm";
 import { NotebookPreview } from "@/components/NotebookPreview";
 import { TopNav } from "@/components/TopNav";
+import { marked } from "marked";
+import { sanitizeHtml } from "@/lib/sanitize";
 
 interface AssignmentPageProps {
     params: Promise<{ id: string }>;
+}
+
+function renderMarkdown(content: string): string {
+    return sanitizeHtml(marked.parse(content, { async: false }) as string);
 }
 
 function formatDate(iso?: string): string {
@@ -170,9 +176,16 @@ export default async function AssignmentPage({ params }: AssignmentPageProps) {
                             {isSubmitted ? "Assignment Overview" : "Assignment Brief"}
                         </h2>
                         <div className="bg-[var(--hw-surface-container-lowest)] p-6 rounded-xl shadow-[0_12px_40px_rgba(26,28,29,0.04)]">
-                            <p className="text-[var(--hw-on-surface-variant)] leading-relaxed mb-6">
-                                {assignment.description || "No description provided for this assignment."}
-                            </p>
+                            {assignment.description ? (
+                                <div
+                                    className="prose prose-slate max-w-none text-[var(--hw-on-surface-variant)] leading-relaxed mb-6"
+                                    dangerouslySetInnerHTML={{ __html: renderMarkdown(assignment.description) }}
+                                />
+                            ) : (
+                                <p className="text-[var(--hw-on-surface-variant)] leading-relaxed mb-6">
+                                    No description provided for this assignment.
+                                </p>
+                            )}
                             <div className="flex items-center gap-2 mb-4">
                                 <span className="material-symbols-outlined text-[var(--hw-primary)] text-lg" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
                                 <span className="font-medium text-sm">Key Requirements</span>
