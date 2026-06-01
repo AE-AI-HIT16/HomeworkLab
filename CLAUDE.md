@@ -69,12 +69,20 @@ Drive auth supports two modes (controlled by env vars):
 - Service Account (`GOOGLE_SERVICE_ACCOUNT_EMAIL` + `GOOGLE_PRIVATE_KEY`) — default
 - OAuth2 (`GOOGLE_CLIENT_ID` + `GOOGLE_CLIENT_SECRET` + `GOOGLE_REFRESH_TOKEN`) — see `OAUTH2_INSTRUCTIONS.md`
 
+When Drive is unconfigured, `getDriveApi()` returns null and the file proxy serves a mock notebook — dev works without Drive credentials.
+
+**File access control** is enforced in `/api/drive/file` via `src/lib/drive-access.ts`, not by Drive ACLs. `getDriveFileAccessIndex()` builds a cached map of every Drive file ID referenced by an assignment or material, tagged with its `courseId` and `published` flag. A file is downloadable only if it appears in that index: admins get any indexed file, teachers only files in courses they manage, students only files marked `published`. A Drive file not referenced anywhere is unreachable through the proxy.
+
 ### Environment variables
 
 `src/lib/env.ts` validates env vars server-side at import time. It is **server-only** — importing it in client code throws. In development, missing vars produce a warning but do not crash. In production (`NODE_ENV=production` or `STRICT_ENV=true`), missing required vars throw immediately.
 
 Required vars: `AUTH_SECRET`, `AUTH_GITHUB_ID`, `AUTH_GITHUB_SECRET`  
 Optional but needed for full functionality: `ADMIN_GITHUB_USERNAMES`, `GOOGLE_SHEET_ID`, `GOOGLE_SERVICE_ACCOUNT_EMAIL`, `GOOGLE_PRIVATE_KEY`, `GOOGLE_DRIVE_ROOT_FOLDER_ID`
+
+### Markdown & notebook rendering
+
+User-authored content (material post bodies, `.ipynb` cells) is rendered with `marked`, math via KaTeX, code highlighting via `highlight.js`, then **always** passed through `sanitizeHtml()` in `src/lib/sanitize.ts` (DOMPurify, scripts/styles stripped) before `dangerouslySetInnerHTML`. Never render untrusted HTML without `sanitizeHtml()`. Notebook JSON is fetched client-side through `/api/drive/file` and previewed by `src/components/NotebookPreview.tsx`.
 
 ### Key route layout
 
