@@ -29,10 +29,12 @@ Sheet tabs and their column layout:
 | `Students` | A2:E | githubUsername, name, email, active, role |
 | `CourseMembers` | A2:D | githubUsername, courseId, role ("teacher"), active |
 | `Assignments` | A2:N | id, week, lesson, title, description, dueAt, published, driveFolderId, promptFilesJSON, createdAt, updatedAt, assignmentType, quizData, courseId |
-| `Materials` | A2:I | id, courseId, week, title, url, type, published, contentMode, postContent |
-| `Submissions` | A2:N | id, assignmentId, courseId, githubUsername, studentName, submittedAt, type, isLate, fileJSON, repoUrl, grade, feedback, quizAnswers, quizScore |
+| `Materials` | A2:I | id, week, title, url, type, published, contentMode, postContent, courseId |
+| `Submissions` | A2:N | id, assignmentId, githubUsername, studentName, submittedAt, type, isLate, fileJSON, repoUrl, grade, feedback, quizAnswers, quizScore, courseId |
 
 `CourseMembers` is optional — the code gracefully handles a missing tab (returns empty array).
+
+`courseId` is the **last** column on `Assignments`/`Materials`/`Submissions` (appended after the original schema), and reads default a blank/legacy value to `"ai-core"`. When adding columns, append to the right and bump the range; the reader maps by fixed index, so never reorder existing columns.
 
 ### Role system
 
