@@ -1,110 +1,69 @@
+import Link from "next/link";
 import { auth, signOut } from "@/auth";
+import { UserCircleMinus, SignOut, EnvelopeSimple } from "@phosphor-icons/react/dist/ssr";
 
 export default async function UnauthorizedPage() {
-    const session = await auth();
-    const githubUsername = session?.user?.githubUsername || "[Your GitHub Username]";
-    const name = session?.user?.name || "[Your Name]";
+  const session = await auth();
+  const githubUsername = session?.user?.githubUsername || "[Your GitHub Username]";
+  const name = session?.user?.name || "[Your Name]";
 
-    const mailToUrl = `mailto:nguyenhuyhoangqbx5@gmail.com?subject=${encodeURIComponent("Request access to HIT AI/DATA")}&body=${encodeURIComponent(`Hello Admin,\n\nPlease add my GitHub account to the authorized list for the HIT AI/DATA system.\n\nMy information:\n- Full name: ${name}\n- GitHub username: ${githubUsername}\n\nThank you!`)}`;
-    return (
-        <div className="min-h-screen flex flex-col bg-[var(--hw-surface)] text-[var(--hw-on-surface)]">
-            {/* Top Nav */}
-            <nav className="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-md shadow-sm flex items-center justify-between px-6 py-3">
-                <div className="flex items-center gap-8">
-                    <span className="text-xl font-bold tracking-tight">HIT <span className="text-[var(--hw-primary)]">AI/DATA</span></span>
-                    <div className="hidden md:flex items-center gap-6">
-                        <span className="text-[var(--hw-outline)] cursor-default">Dashboard</span>
-                        <span className="text-[var(--hw-outline)] cursor-default">Assignments</span>
-                        <span className="text-[var(--hw-outline)] cursor-default">Classroom</span>
-                    </div>
-                </div>
-                <div className="flex items-center gap-4">
-                    <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg cursor-default">
-                        <span className="text-sm font-medium text-[var(--hw-on-surface-variant)]">Support</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <button
-                            type="button"
-                            disabled
-                            aria-label="Notifications unavailable"
-                            title="Notifications unavailable"
-                            className="p-2 text-slate-300 cursor-not-allowed rounded-full"
-                        >
-                            <span className="material-symbols-outlined">notifications</span>
-                        </button>
-                        <button
-                            type="button"
-                            disabled
-                            aria-label="Settings unavailable"
-                            title="Settings unavailable"
-                            className="p-2 text-slate-300 cursor-not-allowed rounded-full"
-                        >
-                            <span className="material-symbols-outlined">settings</span>
-                        </button>
-                        <div className="w-8 h-8 rounded-full bg-[var(--hw-surface-container-high)] overflow-hidden ml-2 border border-[var(--hw-outline-variant)]/50" />
-                    </div>
-                </div>
-            </nav>
+  const mailToUrl = `mailto:nguyenhuyhoangqbx5@gmail.com?subject=${encodeURIComponent(
+    "Request access to HIT AI/DATA"
+  )}&body=${encodeURIComponent(
+    `Hello Admin,\n\nPlease add my GitHub account to the authorized list for the HIT AI/DATA system.\n\nMy information:\n- Full name: ${name}\n- GitHub username: ${githubUsername}\n\nThank you!`
+  )}`;
 
-            {/* Main Content */}
-            <main className="flex-grow flex items-center justify-center px-6 pt-24 pb-12 relative z-10 w-full">
-                <div className="bg-[var(--hw-surface-container-lowest)] rounded-xl pt-10 pb-8 px-8 sm:px-10 max-w-[420px] w-full shadow-[0_12px_40px_rgba(26,28,29,0.04)] relative z-10 border border-[var(--hw-outline-variant)]/20 mx-auto">
-                    <div className="flex flex-col items-center text-center">
-                        <div className="w-16 h-16 bg-[var(--hw-surface-container-high)] text-[var(--hw-outline)] rounded-full flex items-center justify-center mb-6 shadow-sm">
-                            <span className="material-symbols-outlined text-4xl" style={{ fontVariationSettings: "'FILL' 0" }}>person_off</span>
-                        </div>
+  return (
+    <div className="site flex min-h-[100dvh] flex-col">
+      <header className="mx-auto w-full max-w-7xl px-6 py-6">
+        <Link href="/" className="font-display text-lg font-extrabold tracking-tight text-[var(--brand-ink)]">
+          HIT <span className="text-[var(--ink-faint)]">/</span> AI·DATA
+        </Link>
+      </header>
 
-                        <h1 className="text-[1.75rem] font-semibold tracking-tight mb-2 text-[var(--hw-on-surface)]">
-                            Account Not Authorized
-                        </h1>
+      <main className="flex flex-1 items-center justify-center px-6 pb-16">
+        <div className="w-full max-w-[440px] rounded-2xl border border-[var(--line)] bg-[var(--surface-2)] p-8 text-center shadow-[var(--shadow-lift)] sm:p-10">
+          <span className="mx-auto flex size-16 items-center justify-center rounded-full bg-[var(--brand-soft)] text-[var(--brand-ink)]">
+            <UserCircleMinus size={34} weight="duotone" />
+          </span>
 
-                        <p className="text-[14px] text-[var(--hw-on-surface-variant)] leading-relaxed mb-8 px-2">
-                            Your GitHub account is not on the
-                            authorized list for AI Class 101 yet.
-                            <br /><br />
-                            If you think this is a mistake, please reach out to your instructor or the class administrator.
-                        </p>
+          <h1 className="font-display mt-6 text-2xl font-bold tracking-tight text-[var(--ink)]">
+            Account not authorized
+          </h1>
+          <p className="mt-3 leading-relaxed text-[var(--ink-muted)]">
+            Your GitHub account isn&apos;t on the enrolled list for this workspace yet. If you
+            think this is a mistake, reach out to your instructor or the class administrator.
+          </p>
 
-                        <div className="w-full flex justify-center mb-4">
-                            <a
-                                href={mailToUrl}
-                                className="w-full sm:w-auto px-8 py-3 bg-[var(--hw-primary)] text-white font-medium rounded-lg hover:brightness-110 active:scale-95 transition-all text-sm flex items-center justify-center gap-2 shadow-sm"
-                            >
-                                Contact Admin
-                            </a>
-                        </div>
+          <a
+            href={mailToUrl}
+            className="press mt-8 inline-flex w-full items-center justify-center gap-2 rounded-full bg-[var(--brand)] px-7 py-3.5 font-semibold text-[var(--on-brand)] hover:bg-[var(--brand-strong)]"
+          >
+            <EnvelopeSimple size={18} weight="bold" />
+            Contact admin
+          </a>
 
-                        <div className="w-full flex justify-center mt-2">
-                            <form
-                                className="w-full"
-                                action={async () => {
-                                    "use server";
-                                    await signOut({ redirectTo: "/login" });
-                                }}
-                            >
-                                <button
-                                    type="submit"
-                                    className="w-full text-[13px] font-medium text-[var(--hw-primary)] hover:text-[var(--hw-on-primary-fixed-variant)] bg-transparent py-2 transition-colors flex items-center justify-center"
-                                >
-                                    Sign Out & Try Different Account
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </main>
-
-            {/* Footer */}
-            <footer className="py-12 px-6 flex flex-col lg:flex-row justify-between items-center gap-6 text-[var(--hw-on-surface-variant)]/40">
-                <div className="flex items-center gap-6">
-                    <span className="text-[10px] font-bold uppercase tracking-[0.2em]">© 2024 HIT — AI/DATA</span>
-                    <div className="w-1 h-1 bg-[var(--hw-outline-variant)]/30 rounded-full" />
-                    <span className="text-[10px] font-bold uppercase tracking-[0.2em] hover:text-[var(--hw-primary)] transition-colors cursor-pointer">Privacy Policy</span>
-                </div>
-                <div className="flex items-center gap-4">
-                    <span className="text-[11px] font-medium italic">Authenticated via GitHub</span>
-                </div>
-            </footer>
+          <form
+            className="mt-3"
+            action={async () => {
+              "use server";
+              await signOut({ redirectTo: "/login" });
+            }}
+          >
+            <button
+              type="submit"
+              className="press inline-flex w-full items-center justify-center gap-2 rounded-full py-3 text-sm font-semibold text-[var(--ink-muted)] hover:text-[var(--ink)]"
+            >
+              <SignOut size={16} weight="bold" />
+              Sign out and try a different account
+            </button>
+          </form>
         </div>
-    );
+      </main>
+
+      <footer className="mx-auto w-full max-w-7xl px-6 py-8 text-center text-sm text-[var(--ink-muted)]">
+        © 2026 HIT - AI/DATA
+      </footer>
+    </div>
+  );
 }

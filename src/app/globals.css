@@ -64,7 +64,9 @@
 @theme inline {
   --color-background: var(--hw-surface);
   --color-foreground: var(--hw-on-surface);
-  --font-sans: 'Inter', sans-serif;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-outfit), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, SFMono-Regular, monospace;
 
   /* Design tokens as Tailwind colors */
   --color-hw-primary: var(--hw-primary);
@@ -110,7 +112,7 @@
 body {
   background: var(--hw-surface);
   color: var(--hw-on-surface);
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -137,4 +139,125 @@ body {
 .inference-glow {
   background: linear-gradient(90deg, #4648d4, #6063ee, #4648d4);
   background-size: 200% 100%;
+}
+
+/* ───────────────────────────────────────────────────────────────────────────
+   PUBLIC SURFACE THEME (.site): self-contained semantic token system.
+   Used by every public/marketing page (landing, about, contact, login, errors…).
+   Scoped to .site so dark mode does NOT leak into the dashboard/admin
+   surfaces (which are not yet dark-ready). One accent (indigo) is locked across
+   the whole page in both themes; brand fills stay #4648d4, accent text/icons
+   lighten in dark for AA contrast against the off-black surface.
+   ─────────────────────────────────────────────────────────────────────────── */
+.site {
+  /* Surfaces (light) */
+  --surface: #f6f8fb;        /* page background */
+  --surface-2: #ffffff;      /* elevated cards */
+  --surface-3: #eef1f5;      /* alternating section background */
+  --surface-inset: #e7ebf1;  /* image wells, hairline blocks */
+
+  /* Ink */
+  --ink: #14161b;
+  --ink-muted: #555b66;
+  --ink-faint: #8a909c;
+
+  /* Lines */
+  --line: #e2e6ec;
+  --line-strong: #d2d8e0;
+
+  /* Brand (indigo, preserved from the existing brand) */
+  --brand: #4648d4;          /* fills / buttons (white text on it = AAA in both modes) */
+  --brand-strong: #393bbf;
+  --brand-ink: #4648d4;      /* accent text + icons on light surfaces */
+  --brand-soft: rgba(70, 72, 212, 0.08);
+  --on-brand: #ffffff;
+
+  /* Shadow tinted toward the brand hue, never pure black */
+  --shadow-card: 0 1px 2px rgba(28, 30, 64, 0.04), 0 12px 32px -12px rgba(28, 30, 64, 0.12);
+  --shadow-lift: 0 1px 2px rgba(28, 30, 64, 0.05), 0 24px 56px -20px rgba(28, 30, 64, 0.22);
+
+  background: var(--surface);
+  color: var(--ink);
+  font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  .site {
+    --surface: #0c0d12;
+    --surface-2: #15171f;
+    --surface-3: #111219;
+    --surface-inset: #1b1d27;
+
+    --ink: #f1f2f5;
+    --ink-muted: #a3a8b4;
+    --ink-faint: #6f7480;
+
+    --line: #262a35;
+    --line-strong: #333846;
+
+    --brand: #5a5cf0;
+    --brand-strong: #6f71ff;
+    --brand-ink: #a9aaff;       /* lighter indigo for readable accent text on dark */
+    --brand-soft: rgba(120, 122, 255, 0.12);
+    --on-brand: #ffffff;
+
+    --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.4), 0 12px 32px -12px rgba(0, 0, 0, 0.55);
+    --shadow-lift: 0 1px 2px rgba(0, 0, 0, 0.45), 0 24px 56px -20px rgba(0, 0, 0, 0.7);
+  }
+}
+
+/* Subtle dot field: replaces the animated glow-orbs (LILA-rule slop). */
+.site .dot-field {
+  background-image: radial-gradient(circle, var(--line-strong) 0.8px, transparent 0.8px);
+  background-size: 30px 30px;
+}
+
+/* Tactile press for interactive elements */
+.site .press { transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.18s, color 0.18s, border-color 0.18s; }
+.site .press:active { transform: translateY(1px) scale(0.985); }
+
+/* Scroll-reveal: CSS scroll-driven animation only where supported AND motion is allowed.
+   Outside @supports the initial hidden state never applies, so unsupporting
+   browsers simply render everything visible. MOTION_INTENSITY: 4 (CSS-only). */
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    .site .reveal {
+      opacity: 0;
+      animation: reveal-up linear both;
+      animation-timeline: view();
+      animation-range: entry 2% cover 26%;
+    }
+  }
+}
+
+@keyframes reveal-up {
+  from { opacity: 0; transform: translateY(28px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Honor reduced-motion across the whole public surface (MOTION_INTENSITY 4). */
+@media (prefers-reduced-motion: reduce) {
+  .site *,
+  .site *::before,
+  .site *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* Visible keyboard focus on every interactive element across public surfaces. */
+.site :focus-visible {
+  outline: 2px solid var(--brand-ink);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+.site :disabled,
+.site [aria-disabled="true"] {
+  cursor: not-allowed;
+}
+
+/* Smooth anchor scrolling, reduced-motion safe (app-wide nicety). */
+@media (prefers-reduced-motion: no-preference) {
+  html { scroll-behavior: smooth; }
 }

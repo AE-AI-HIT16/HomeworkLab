@@ -46,8 +46,11 @@ export function AssignmentCard({ assignment, submission }: AssignmentCardProps) 
     const isPastDue = assignment.dueAt ? new Date(assignment.dueAt) < new Date() : false;
 
     return (
-        <Link href={`/assignment/${assignment.id}`}>
-            <div className="border rounded-lg p-4 hover:border-blue-400 hover:shadow-sm transition group cursor-pointer">
+        <Link
+            href={`/assignment/${assignment.id}`}
+            className="block rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--hw-primary)] focus-visible:ring-offset-2"
+        >
+            <div className="border border-[var(--hw-outline-variant)]/40 rounded-lg p-4 transition-all hover:border-[var(--hw-primary)]/50 hover:shadow-sm active:scale-[0.99] group cursor-pointer">
                 <div className="flex items-start justify-between gap-3">
                     <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
@@ -58,7 +61,7 @@ export function AssignmentCard({ assignment, submission }: AssignmentCardProps) 
                                 {badge.label}
                             </span>
                         </div>
-                        <h3 className="font-semibold text-gray-900 group-hover:text-blue-600 transition truncate">
+                        <h3 className="font-semibold text-gray-900 group-hover:text-[var(--hw-primary)] transition-colors truncate">
                             {assignment.title}
                         </h3>
                         {assignment.description && (
@@ -68,13 +71,15 @@ export function AssignmentCard({ assignment, submission }: AssignmentCardProps) 
                         )}
                     </div>
                 </div>
-                <div className="mt-3 flex items-center gap-3 text-xs text-gray-400">
-                    <span>
-                        📄 {assignment.promptFiles.length} prompt file
+                <div className="mt-3 flex items-center gap-4 text-xs text-gray-400">
+                    <span className="inline-flex items-center gap-1">
+                        <span className="material-symbols-outlined text-[14px]">description</span>
+                        {assignment.promptFiles.length} prompt file
                         {assignment.promptFiles.length === 1 ? "" : "s"}
                     </span>
-                    <span className={isPastDue && status === "not_submitted" ? "text-red-500 font-medium" : ""}>
-                        🕐 {formatDeadline(assignment.dueAt)}
+                    <span className={`inline-flex items-center gap-1 ${isPastDue && status === "not_submitted" ? "text-red-500 font-medium" : ""}`}>
+                        <span className="material-symbols-outlined text-[14px]">schedule</span>
+                        {formatDeadline(assignment.dueAt)}
                     </span>
                 </div>
             </div>

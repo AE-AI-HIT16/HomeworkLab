@@ -9,6 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@phosphor-icons/react": "^2.1.10",
     "@types/katex": "^0.16.8",
     "googleapis": "^171.4.0",
     "highlight.js": "^11.11.1",
