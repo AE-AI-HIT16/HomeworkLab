@@ -60,6 +60,10 @@ export function TeacherCourseManager({
     };
 
     const handleRemove = (githubUsername: string, courseId: string) => {
+        const courseName = courseNameById.get(courseId) ?? courseId;
+        if (!window.confirm(`Remove "${courseName}" access from this teacher? They will no longer be able to manage this course.`)) {
+            return;
+        }
         startTransition(async () => {
             setFeedback(null);
             const result = await removeTeacherCourse(githubUsername, courseId);

@@ -1,11 +1,11 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
 import { getCourseById } from "@/lib/courses";
 import { requireSession } from "@/lib/auth";
 import { getCurrentUserRoleWithContext } from "@/lib/roles";
 import { getAssignmentsByCourse, getSubmissionsByStudent, getMaterialsByCourse } from "@/lib/google-sheets";
 import { TopNav } from "@/components/TopNav";
+import { MobileBottomNav } from "@/components/MobileBottomNav";
 import type { Assignment, Submission, Material } from "@/types";
 
 export const dynamic = "force-dynamic";
@@ -129,9 +129,6 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
             <main className="pt-16">
                 {/* ═══ HERO SECTION ═══ */}
                 <div className={`relative bg-gradient-to-br ${course.gradient} pt-20 pb-12 px-6 md:px-12 overflow-hidden`}>
-                    <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-[0.05] mix-blend-overlay" />
-                    <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4" />
-
                     <div className="max-w-6xl mx-auto relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-8 text-white">
                         <div className="max-w-2xl">
                             <Link href="/courses" className="inline-flex items-center gap-2 text-white/70 hover:text-white text-sm font-medium mb-6 transition-colors">
@@ -402,7 +399,7 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
                             <h3 className="text-sm font-bold tracking-widest text-slate-400 uppercase mb-4">Resources</h3>
                             <div className="space-y-2">
                                 <a href={courseMaterialsHref} className="flex items-center gap-3 p-3 bg-white rounded-xl border border-slate-200 hover:border-indigo-300 hover:text-indigo-600 transition-colors group">
-                                    <Image src="https://upload.wikimedia.org/wikipedia/commons/4/45/Notion_app_logo.png" className="w-5 h-5 opacity-70 group-hover:opacity-100" alt="Notion" width={20} height={20} unoptimized />
+                                    <span className="material-symbols-outlined text-slate-400 group-hover:text-indigo-600">description</span>
                                     <span className="text-sm font-medium text-slate-700 group-hover:text-indigo-600">Course Materials</span>
                                 </a>
                                 <a href="https://m.me/j/AbZAVqiI0kPWfa3X/?send_source=gc:copy_invite_link_c" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-3 bg-white rounded-xl border border-slate-200 hover:border-indigo-300 hover:text-indigo-600 transition-colors group">
@@ -414,6 +411,8 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
                     </div>
                 </div>
             </main>
+
+            <MobileBottomNav variant="student" />
         </div>
     );
 }

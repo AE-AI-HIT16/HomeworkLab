@@ -130,7 +130,7 @@ export function QuizForm({ assignmentId, questions, existingSubmission, isPastDu
                                 {result.correctCount}/{result.totalCount} correct
                             </p>
                             <p className="text-xs text-[var(--hw-on-surface-variant)]">
-                                {result.score >= 80 ? "Excellent! 🎉" : result.score >= 60 ? "Great job! 👍" : "Review and try again 📚"}
+                                {result.score >= 80 ? "Excellent work" : result.score >= 60 ? "Good effort" : "Review and try again"}
                             </p>
                         </div>
                     </div>
@@ -147,7 +147,7 @@ export function QuizForm({ assignmentId, questions, existingSubmission, isPastDu
 
                     <div className="mt-4 flex items-center justify-between">
                         <p className="text-xs text-[var(--hw-on-surface-variant)] italic">
-                            {existingSubmission?.isLate ? "⚠️ Submitted late" : "✓ On time"}
+                            {existingSubmission?.isLate ? "Submitted late" : "On time"}
                         </p>
                         <button
                             onClick={handleRetake}
@@ -162,7 +162,7 @@ export function QuizForm({ assignmentId, questions, existingSubmission, isPastDu
                     <div className="mt-4 flex items-start gap-2.5 p-3 bg-white/50 rounded-lg">
                         <span className="material-symbols-outlined text-[var(--hw-on-surface-variant)] text-sm flex-shrink-0 mt-0.5">info</span>
                         <p className="text-[11px] text-[var(--hw-on-surface-variant)] leading-relaxed">
-                            You can review your selected answers below. Retake the quiz anytime to improve your score.
+                            The correct answer for each question is highlighted in green below. You can retake the quiz to improve your score.
                         </p>
                     </div>
                 </div>
@@ -191,7 +191,7 @@ export function QuizForm({ assignmentId, questions, existingSubmission, isPastDu
                 </div>
             )}
 
-            {/* Questions — reveal correct/wrong status, but not the correct answers for wrong ones */}
+            {/* Questions — in result view, highlight the correct answer and the student's wrong pick */}
             {(view === "idle" || view === "result") && (
                 <div className="space-y-4">
                     {questions.map((q, qIdx) => {
@@ -247,26 +247,27 @@ export function QuizForm({ assignmentId, questions, existingSubmission, isPastDu
                                     {q.options.map((opt, oIdx) => {
                                         if (!opt.trim()) return null;
                                         const isSelected = answers[qIdx] === oIdx;
+                                        const isCorrectOption = oIdx === q.correctIndex;
+                                        // In result view, always surface the correct answer (green) and the
+                                        // student's wrong pick (red) so wrong answers become a learning moment.
+                                        const showAsCorrect = view === "result" && isCorrectOption;
+                                        const showAsWrong = view === "result" && isSelected && !isCorrectOption;
 
                                         let optionClasses = "bg-[var(--hw-surface-container-lowest)] border-[var(--hw-outline-variant)]/20 hover:border-[var(--hw-primary)]/40";
                                         let labelClasses = "bg-[var(--hw-surface-container-high)] text-[var(--hw-on-surface-variant)]";
                                         let textClasses = "text-[var(--hw-on-surface)]";
 
-                                        if (isSelected) {
-                                            if (view === "result") {
-                                                if (isCorrect) {
-                                                    optionClasses = "bg-emerald-500 text-white border-emerald-500 shadow-sm";
-                                                    labelClasses = "bg-white/20 text-white";
-                                                    textClasses = "text-white font-medium";
-                                                } else {
-                                                    optionClasses = "bg-red-500 text-white border-red-500 shadow-sm";
-                                                    labelClasses = "bg-white/20 text-white";
-                                                    textClasses = "text-white font-medium";
-                                                }
-                                            } else {
-                                                optionClasses = "bg-[var(--hw-primary)]/5 border-[var(--hw-primary)] shadow-sm";
-                                                labelClasses = "bg-[var(--hw-primary)] text-white";
-                                            }
+                                        if (showAsCorrect) {
+                                            optionClasses = "bg-emerald-500 text-white border-emerald-500 shadow-sm";
+                                            labelClasses = "bg-white/20 text-white";
+                                            textClasses = "text-white font-medium";
+                                        } else if (showAsWrong) {
+                                            optionClasses = "bg-red-500 text-white border-red-500 shadow-sm";
+                                            labelClasses = "bg-white/20 text-white";
+                                            textClasses = "text-white font-medium";
+                                        } else if (isSelected && view === "idle") {
+                                            optionClasses = "bg-[var(--hw-primary)]/5 border-[var(--hw-primary)] shadow-sm";
+                                            labelClasses = "bg-[var(--hw-primary)] text-white";
                                         }
 
                                         return (
@@ -275,7 +276,7 @@ export function QuizForm({ assignmentId, questions, existingSubmission, isPastDu
                                                 type="button"
                                                 disabled={view === "result"}
                                                 onClick={() => handleSelect(qIdx, oIdx)}
-                                                className={`w-full flex items-start gap-3 p-3 rounded-lg border-2 transition-all text-left ${optionClasses}`}
+                                                className={`w-full flex items-start gap-3 p-3 rounded-lg border-2 transition-all text-left disabled:cursor-default ${optionClasses}`}
                                             >
                                                 <span className={`w-6 h-6 rounded text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5 ${labelClasses}`}>
                                                     {String.fromCharCode(65 + oIdx)}
@@ -283,9 +284,16 @@ export function QuizForm({ assignmentId, questions, existingSubmission, isPastDu
                                                 <div className={`flex-1 text-sm ${textClasses}`}>
                                                     {renderContent(opt)}
                                                 </div>
-                                                {isSelected && view === "result" && (
-                                                    <span className="material-symbols-outlined text-sm pt-0.5" style={{ fontVariationSettings: "'FILL' 1" }}>
-                                                        {isCorrect ? "check_circle" : "cancel"}
+                                                {showAsCorrect && (
+                                                    <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider pt-0.5 whitespace-nowrap">
+                                                        <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
+                                                        {isSelected ? "Your answer" : "Correct answer"}
+                                                    </span>
+                                                )}
+                                                {showAsWrong && (
+                                                    <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider pt-0.5 whitespace-nowrap">
+                                                        <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>cancel</span>
+                                                        Your answer
                                                     </span>
                                                 )}
                                             </button>

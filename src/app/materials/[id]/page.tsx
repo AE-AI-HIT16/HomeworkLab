@@ -4,6 +4,7 @@ import { requireSession } from "@/lib/auth";
 import { getCurrentUserRoleWithContext } from "@/lib/roles";
 import { getMaterials } from "@/lib/google-sheets";
 import { TopNav } from "@/components/TopNav";
+import { MobileBottomNav } from "@/components/MobileBottomNav";
 import { marked } from "marked";
 
 export const dynamic = "force-dynamic";
@@ -99,7 +100,7 @@ export default async function MaterialDetailPage({ params }: { params: Promise<{
 
     // ── Post / Link: Article layout ──
     return (
-        <div className="min-h-screen bg-[var(--hw-surface)] text-[var(--hw-on-surface)] antialiased">
+        <div className="min-h-screen bg-[var(--hw-surface)] text-[var(--hw-on-surface)] antialiased pb-24 md:pb-0">
             <TopNav
                 user={{
                     name: user.name,
@@ -113,10 +114,7 @@ export default async function MaterialDetailPage({ params }: { params: Promise<{
 
             <main className="pt-16">
                 {/* Compact Header */}
-                <div className="bg-gradient-to-br from-indigo-500 via-indigo-600 to-violet-600 pt-12 pb-10 px-6 md:px-12 relative overflow-hidden">
-                    <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-[0.05] mix-blend-overlay" />
-                    <div className="absolute top-0 right-0 w-72 h-72 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4" />
-
+                <div className="bg-gradient-to-br from-indigo-600 to-indigo-700 pt-12 pb-10 px-6 md:px-12 relative overflow-hidden">
                     <div className="max-w-3xl mx-auto relative z-10 text-white">
                         <Link href={backToCourseHref} className="inline-flex items-center gap-2 text-white/70 hover:text-white text-sm font-medium mb-6 transition-colors">
                             <span className="material-symbols-outlined text-[18px]">arrow_back</span>
@@ -179,6 +177,8 @@ export default async function MaterialDetailPage({ params }: { params: Promise<{
                     )}
                 </div>
             </main>
+
+            <MobileBottomNav variant="student" />
         </div>
     );
 }

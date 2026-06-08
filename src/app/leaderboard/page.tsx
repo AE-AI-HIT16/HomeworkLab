@@ -94,7 +94,7 @@ export default async function LeaderboardPage() {
                             Global Leaderboard
                         </h1>
                         <p className="text-[var(--hw-on-surface-variant)] text-sm">
-                            Earn XP by submitting your assignments and competing with peers!
+                            Ranked by total graded score. On-time submissions break ties.
                         </p>
                     </header>
 
@@ -110,7 +110,7 @@ export default async function LeaderboardPage() {
                                         <span className="material-symbols-outlined text-[32px] text-amber-500" style={{ fontVariationSettings: "'FILL' 1" }}>social_leaderboard</span>
                                     </div>
                                     <h2 className="text-2xl font-extrabold tracking-tight text-slate-800 mb-2">Hall of Fame</h2>
-                                    <p className="text-sm text-slate-500 text-center max-w-[280px] font-medium leading-relaxed mb-8">Top 3 performers of the active session. Submit assignments early to climb the ranks!</p>
+                                    <p className="text-sm text-slate-500 text-center max-w-[280px] font-medium leading-relaxed mb-8">Top 3 performers this session, ranked by total graded score.</p>
                                 </div>
 
                                 {/* Podium Container */}
@@ -120,7 +120,6 @@ export default async function LeaderboardPage() {
                                         {top2 && (
                                             <div className="flex flex-col items-center flex-1 z-20">
                                                 <div className="relative mb-3 sm:mb-4 group">
-                                                    <div className="absolute inset-0 bg-slate-300 rounded-full blur-xl opacity-60 group-hover:opacity-100 transition-opacity" />
                                                     <Image src={`https://github.com/${top2.githubUsername}.png`} alt={top2.name} width={96} height={96} priority className="relative w-16 h-16 sm:w-20 sm:h-20 xl:w-24 xl:h-24 rounded-full border-4 xl:border-[6px] border-slate-200 shadow-xl object-cover bg-white" />
                                                     <div className="absolute -bottom-2 -right-2 w-7 h-7 sm:w-8 sm:h-8 xl:w-9 xl:h-9 bg-gradient-to-br from-slate-100 to-slate-300 border-2 xl:border-[3px] border-white rounded-full flex items-center justify-center text-[10px] sm:text-xs font-black text-slate-700 shadow-sm">
                                                         #2
@@ -137,18 +136,15 @@ export default async function LeaderboardPage() {
                                         {/* Rank 1 (Gold) */}
                                         {top1 && (
                                             <div className="flex flex-col items-center flex-[1.2] sm:flex-[1.3] z-30 shadow-[0_-10px_40px_rgba(251,191,36,0.1)] rounded-t-2xl xl:rounded-t-[2.5rem] relative">
-                                                <div className="absolute -top-16 left-1/2 -translate-x-1/2 w-[200%] h-[200%] bg-amber-400/20 blur-3xl rounded-t-full opacity-0 xl:opacity-100 pointer-events-none" />
                                                 <div className="relative mb-3 sm:mb-4 group pt-4 xl:pt-6">
-                                                    <div className="absolute -top-4 xl:-top-6 left-1/2 -translate-x-1/2 w-10 sm:w-12 xl:w-14 animate-bounce text-amber-400 drop-shadow-md z-10 flex justify-center">
+                                                    <div className="absolute -top-4 xl:-top-6 left-1/2 -translate-x-1/2 w-10 sm:w-12 xl:w-14 text-amber-400 drop-shadow-md z-10 flex justify-center">
                                                         <span className="material-symbols-outlined text-[36px] xl:text-[42px]" style={{ fontVariationSettings: "'FILL' 1" }}>crown</span>
                                                     </div>
-                                                    <div className="absolute inset-0 bg-amber-400 rounded-full blur-xl opacity-60 group-hover:opacity-100 transition-opacity animate-pulse" />
                                                     <Image src={`https://github.com/${top1.githubUsername}.png`} alt={top1.name} width={112} height={112} priority className="relative w-20 h-20 sm:w-24 sm:h-24 xl:w-28 xl:h-28 rounded-full border-4 xl:border-[6px] border-amber-300 shadow-[0_0_30px_rgba(251,191,36,0.4)] object-cover bg-white" />
                                                 </div>
                                                 <h3 className="text-sm sm:text-base xl:text-lg font-black text-slate-900 text-center line-clamp-2 w-full px-1 bg-clip-text text-transparent bg-gradient-to-r from-amber-600 to-amber-500 tracking-tight">{top1.name}</h3>
                                                 <p className="text-[10px] sm:text-sm xl:text-[15px] text-amber-600 font-black mb-3 sm:mb-4">{top1.totalScore} XP</p>
                                                 <div className="w-full h-[180px] sm:h-[240px] xl:h-[300px] bg-gradient-to-t from-amber-200/90 to-amber-50 rounded-t-2xl xl:rounded-t-[2.5rem] border-t-2 border-x border-white shadow-inner flex flex-col items-center justify-start pt-6 sm:pt-8 backdrop-blur-md relative overflow-hidden">
-                                                    <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cream-pixels.png')] opacity-20 mix-blend-overlay pointer-events-none"></div>
                                                     <span className="text-6xl sm:text-7xl xl:text-8xl opacity-30 text-amber-600 font-black tracking-tighter drop-shadow-md relative z-10">1</span>
                                                 </div>
                                             </div>
@@ -158,7 +154,6 @@ export default async function LeaderboardPage() {
                                         {top3 && (
                                             <div className="flex flex-col items-center flex-1 z-10">
                                                 <div className="relative mb-3 sm:mb-4 group">
-                                                    <div className="absolute inset-0 bg-orange-300 rounded-full blur-xl opacity-60 group-hover:opacity-100 transition-opacity" />
                                                     <Image src={`https://github.com/${top3.githubUsername}.png`} alt={top3.name} width={80} height={80} priority className="relative w-14 h-14 sm:w-16 sm:h-16 xl:w-20 xl:h-20 rounded-full border-4 xl:border-[6px] border-orange-200 shadow-xl object-cover bg-white" />
                                                     <div className="absolute -bottom-2 -right-2 w-6 h-6 sm:w-7 sm:h-7 xl:w-8 xl:h-8 bg-gradient-to-br from-orange-100 to-orange-300 border-2 xl:border-[3px] border-white rounded-full flex items-center justify-center text-[9px] sm:text-[10px] xl:text-[11px] font-black text-orange-800 shadow-sm">
                                                         #3
@@ -222,7 +217,7 @@ export default async function LeaderboardPage() {
                                 {currentUserStats && (
                                     <div className="bg-slate-50/80 backdrop-blur-md border-t border-[var(--hw-surface-container-high)] p-4 shrink-0 flex flex-row items-center justify-between">
                                         <div className="flex items-center gap-3 sm:gap-4 shrink-0 overflow-hidden">
-                                            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-xl flex flex-col items-center justify-center text-white font-bold shadow-inner shrink-0">
+                                            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-[var(--hw-primary)] rounded-xl flex flex-col items-center justify-center text-white font-bold shadow-inner shrink-0">
                                                 <span className="text-[8px] sm:text-[10px] uppercase tracking-widest opacity-80 mb-[-2px]">Rank</span>
                                                 <span className="text-base sm:text-lg leading-none">#{currentUserRank}</span>
                                             </div>
@@ -239,7 +234,7 @@ export default async function LeaderboardPage() {
                                             ) : currentUserRank === 1 ? (
                                                 <p className="text-[10px] sm:text-xs font-bold text-amber-500 flex items-center gap-1">
                                                     <span className="material-symbols-outlined text-[14px] sm:text-[16px]" style={{ fontVariationSettings: "'FILL' 1" }}>stars</span>
-                                                    You are #1!
+                                                    You are #1
                                                 </p>
                                             ) : null}
                                             <div className="h-1.5 w-20 sm:w-32 bg-slate-200 rounded-full mt-1 sm:mt-1.5 overflow-hidden">

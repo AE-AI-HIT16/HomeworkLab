@@ -170,7 +170,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
                                 {urgentAssignments.length}
                             </p>
                             <p className={`text-[11px] mt-2 ${urgentAssignments.length > 0 ? "text-red-500" : "text-emerald-600"}`}>
-                                {urgentAssignments.length > 0 ? "Due soon or overdue" : "All caught up!"}
+                                {urgentAssignments.length > 0 ? "Due soon or overdue" : "All caught up"}
                             </p>
                         </div>
                     </div>
@@ -184,11 +184,6 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
                                 <h2 className="text-sm font-bold tracking-widest text-[var(--hw-outline)] uppercase mb-4">Continue Learning</h2>
                                 {nextUp ? (
                                     <div className="bg-[var(--hw-primary)] rounded-2xl p-6 md:p-8 shadow-xl shadow-[var(--hw-primary)]/20 text-white relative overflow-hidden group">
-                                        {/* Decorative backgrounds */}
-                                        <div className="absolute -top-24 -right-24 w-64 h-64 bg-white/10 rounded-full blur-3xl group-hover:scale-110 transition-transform duration-700" />
-                                        <div className="absolute -bottom-12 -left-12 w-40 h-40 bg-indigo-900/40 rounded-full blur-2xl group-hover:scale-110 transition-transform duration-700 delay-100" />
-                                        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-[0.03] mix-blend-overlay" />
-
                                         <div className="relative z-10 flex flex-col md:flex-row gap-6 md:items-center justify-between">
                                             <div>
                                                 <span className="inline-block px-2.5 py-1 bg-white/20 backdrop-blur-md rounded-md text-[10px] font-bold tracking-widest uppercase mb-3">
@@ -225,9 +220,9 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
                                         <div className="w-16 h-16 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center mb-4">
                                             <span className="material-symbols-outlined text-[32px]">celebration</span>
                                         </div>
-                                        <h3 className="text-lg font-bold text-[var(--hw-on-surface)] mb-2">You&apos;re all caught up!</h3>
+                                        <h3 className="text-lg font-bold text-[var(--hw-on-surface)] mb-2">You&apos;re all caught up</h3>
                                         <p className="text-[var(--hw-on-surface-variant)] text-sm max-w-md">
-                                            You&apos;ve completed all published assignments. Great job staying on top of your studies!
+                                            You&apos;ve completed all published assignments. Nothing is pending right now.
                                         </p>
                                     </div>
                                 )}

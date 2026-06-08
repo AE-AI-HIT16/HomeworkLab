@@ -320,7 +320,11 @@ export function EditAssignmentModal({
                                             {quizQuestions.length > 1 && (
                                                 <button
                                                     type="button"
-                                                    onClick={() => removeQuestion(qIdx)}
+                                                    onClick={() => {
+                                                        if (window.confirm(`Delete question ${qIdx + 1}? This cannot be undone.`)) {
+                                                            removeQuestion(qIdx);
+                                                        }
+                                                    }}
                                                     aria-label={`Delete question ${qIdx + 1}`}
                                                     className="p-1 text-red-400 hover:text-red-600 hover:bg-red-50 rounded transition-all"
                                                     title="Delete question"

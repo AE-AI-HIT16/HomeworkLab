@@ -21,7 +21,7 @@ function renderMarkdown(content: string): string {
 }
 
 function formatDate(iso?: string): string {
-    if (!iso) return "—";
+    if (!iso) return "Not set";
     return new Date(iso).toLocaleDateString("en-US", {
         month: "short",
         day: "numeric",
@@ -30,7 +30,7 @@ function formatDate(iso?: string): string {
 }
 
 function formatDateTime(iso?: string): string {
-    if (!iso) return "—";
+    if (!iso) return "Not set";
     return new Date(iso).toLocaleDateString("en-US", {
         month: "short",
         day: "numeric",
@@ -110,7 +110,6 @@ export default async function AssignmentPage({ params }: AssignmentPageProps) {
 
                     <div className="mt-auto px-2 pb-4">
                         <div className="p-4 bg-[var(--hw-primary-fixed)]/50 rounded-xl border border-[var(--hw-primary-fixed-dim)] relative overflow-hidden group">
-                            <div className="absolute top-0 right-0 w-12 h-12 bg-indigo-200 rounded-full blur-xl opacity-30 -mr-6 -mt-6" />
                             <p className="text-[10px] font-bold text-indigo-800 uppercase mb-1 relative z-10">Performance</p>
                             <p className="text-xs text-[var(--hw-primary)] font-medium relative z-10">
                                 {isSubmitted ? "Check your grades on the dashboard." : "Complete this task to improve your score."}
