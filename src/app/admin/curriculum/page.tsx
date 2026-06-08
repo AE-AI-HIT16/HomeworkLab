@@ -48,7 +48,7 @@ export default async function CurriculumPage() {
             </div>
 
             {/* Content List */}
-            <CurriculumList assignments={sortedAssignments} materials={sortedMaterials} />
+            <CurriculumList assignments={sortedAssignments} materials={sortedMaterials} courseIds={managedCourseIds} />
         </main>
     );
 }

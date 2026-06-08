@@ -3,23 +3,7 @@
 import { useState, useTransition, useRef } from "react";
 import { deleteAssignmentAction, deleteMaterialAction, renameMaterialAction } from "./actions";
 import type { Assignment, Material } from "@/types";
-import { getCourseById } from "@/lib/courses";
-
-function getCourseBadge(courseId?: string) {
-    if (!courseId) return null;
-    const course = getCourseById(courseId);
-    if (!course) return null;
-    const colorMap: Record<string, string> = {
-        "ai-core": "bg-indigo-100 text-indigo-700",
-        "data-engineer": "bg-emerald-100 text-emerald-700",
-        "aiml-engineer": "bg-purple-100 text-purple-700",
-    };
-    return (
-        <span className={`text-[9px] font-bold uppercase px-1.5 py-0.5 rounded ${colorMap[courseId] || "bg-slate-100 text-slate-600"}`}>
-            {course.name}
-        </span>
-    );
-}
+import { courses } from "@/lib/courses";
 
 interface DeleteButtonProps {
     id: string;
@@ -156,31 +140,80 @@ function EditTitleButton({ id, currentTitle, onRenamed }: EditTitleButtonProps) 
 interface CurriculumListProps {
     assignments: Assignment[];
     materials: Material[];
+    courseIds: string[];
 }
 
-export function CurriculumList({ assignments: initialAssignments, materials: initialMaterials }: CurriculumListProps) {
+export function CurriculumList({ assignments: initialAssignments, materials: initialMaterials, courseIds }: CurriculumListProps) {
     const [assignments, setAssignments] = useState(initialAssignments);
     const [materials, setMaterials] = useState(initialMaterials);
 
-    // Group by week
+    // One tab per managed course, in canonical catalog order.
+    const managedSet = new Set(courseIds);
+    const courseTabs = courses.filter((c) => managedSet.has(c.id));
+    const [activeCourse, setActiveCourse] = useState(courseTabs[0]?.id ?? "");
+    const activeCourseName = courseTabs.find((c) => c.id === activeCourse)?.name ?? "this course";
+
+    const countForCourse = (courseId: string) =>
+        assignments.filter((a) => a.courseId === courseId).length +
+        materials.filter((m) => m.courseId === courseId).length;
+
+    // Scope the content list to the selected course, then group by week.
+    const visibleAssignments = assignments.filter((a) => a.courseId === activeCourse);
+    const visibleMaterials = materials.filter((m) => m.courseId === activeCourse);
     const weeks = new Set([
-        ...assignments.map(a => a.week),
-        ...materials.map(m => m.week),
+        ...visibleAssignments.map(a => a.week),
+        ...visibleMaterials.map(m => m.week),
     ]);
     const sortedWeeks = Array.from(weeks).sort((a, b) => a - b);
 
+    if (courseTabs.length === 0) {
+        return (
+            <div className="bg-white border border-dashed border-slate-300 rounded-2xl p-12 text-center">
+                <span className="material-symbols-outlined text-[48px] text-slate-300 mb-3 block">inventory_2</span>
+                <h3 className="font-bold text-slate-900 mb-1">No courses to manage</h3>
+                <p className="text-sm text-slate-500">You do not have any courses assigned yet.</p>
+            </div>
+        );
+    }
+
     return (
         <div className="space-y-6">
+            {/* Course tabs — manage each course's curriculum separately */}
+            <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
+                {courseTabs.map((course) => {
+                    const isActive = course.id === activeCourse;
+                    return (
+                        <button
+                            key={course.id}
+                            type="button"
+                            onClick={() => setActiveCourse(course.id)}
+                            aria-pressed={isActive}
+                            className={`shrink-0 inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ${
+                                isActive
+                                    ? "bg-indigo-600 text-white shadow-sm shadow-indigo-600/20"
+                                    : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-50"
+                            }`}
+                        >
+                            <span className="material-symbols-outlined text-[18px]">{course.icon}</span>
+                            {course.name}
+                            <span className={`text-[11px] font-bold px-1.5 py-0.5 rounded-full ${isActive ? "bg-white/20 text-white" : "bg-slate-100 text-slate-500"}`}>
+                                {countForCourse(course.id)}
+                            </span>
+                        </button>
+                    );
+                })}
+            </div>
+
             {sortedWeeks.length === 0 ? (
                 <div className="bg-white border border-dashed border-slate-300 rounded-2xl p-12 text-center">
                     <span className="material-symbols-outlined text-[48px] text-slate-300 mb-3 block">inventory_2</span>
-                    <h3 className="font-bold text-slate-900 mb-1">No content yet</h3>
-                    <p className="text-sm text-slate-500">Add assignments or materials from the left sidebar.</p>
+                    <h3 className="font-bold text-slate-900 mb-1">No content in {activeCourseName} yet</h3>
+                    <p className="text-sm text-slate-500">Use Add Material or Add Assignment to populate this course.</p>
                 </div>
             ) : (
                 sortedWeeks.map(weekNum => {
-                    const weekAssignments = assignments.filter(a => a.week === weekNum);
-                    const weekMaterials = materials.filter(m => m.week === weekNum);
+                    const weekAssignments = visibleAssignments.filter(a => a.week === weekNum);
+                    const weekMaterials = visibleMaterials.filter(m => m.week === weekNum);
 
                     return (
                         <div key={weekNum} className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
@@ -216,7 +249,6 @@ export function CurriculumList({ assignments: initialAssignments, materials: ini
                                                     {!m.published && (
                                                         <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 bg-amber-100 text-amber-700 rounded">Draft</span>
                                                     )}
-                                                    {getCourseBadge(m.courseId)}
                                                     {m.contentMode && m.contentMode !== "link" && (
                                                         <span className={`text-[9px] font-bold uppercase px-1.5 py-0.5 rounded ${m.contentMode === "post"
                                                                 ? "bg-violet-100 text-violet-700"
@@ -263,7 +295,6 @@ export function CurriculumList({ assignments: initialAssignments, materials: ini
                                                     {!a.published && (
                                                         <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 bg-amber-100 text-amber-700 rounded">Draft</span>
                                                     )}
-                                                    {getCourseBadge(a.courseId)}
                                                 </div>
                                                 <h4 className="text-sm font-semibold text-slate-800 flex items-center gap-2">
                                                     {a.title}

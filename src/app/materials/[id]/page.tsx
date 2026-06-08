@@ -115,7 +115,7 @@ export default async function MaterialDetailPage({ params }: { params: Promise<{
             <main className="pt-16">
                 {/* Compact Header */}
                 <div className="bg-gradient-to-br from-indigo-600 to-indigo-700 pt-12 pb-10 px-6 md:px-12 relative overflow-hidden">
-                    <div className="max-w-3xl mx-auto relative z-10 text-white">
+                    <div className="max-w-5xl mx-auto relative z-10 text-white">
                         <Link href={backToCourseHref} className="inline-flex items-center gap-2 text-white/70 hover:text-white text-sm font-medium mb-6 transition-colors">
                             <span className="material-symbols-outlined text-[18px]">arrow_back</span>
                             Back to Course
@@ -137,7 +137,7 @@ export default async function MaterialDetailPage({ params }: { params: Promise<{
                 </div>
 
                 {/* Article Body */}
-                <div className="max-w-3xl mx-auto px-6 md:px-8 py-10">
+                <div className="max-w-5xl mx-auto px-6 md:px-8 py-10">
                     {material.contentMode === "post" && material.postContent ? (
                         <article className="bg-white border border-slate-200 rounded-2xl p-8 md:p-12 shadow-sm">
                             <div
